@@ -96,12 +96,20 @@ class Snap_Sidebar_Cart_Admin {
      *
      * @since    1.0.0
      */
+    /**
+     * Registra las opciones del plugin.
+     *
+     * @since    1.0.0
+     */
     public function register_settings() {
         register_setting(
             'snap_sidebar_cart_options_group',
             'snap_sidebar_cart_options',
             array($this, 'validate_options')
         );
+        
+        // Agregar debug
+        error_log('Registrando settings para snap_sidebar_cart_options_group');
     }
 
     /**
@@ -111,6 +119,9 @@ class Snap_Sidebar_Cart_Admin {
      * @param    array    $input    Array con todas las opciones.
      */
     public function validate_options($input) {
+        // Log completo de lo que se recibe
+        error_log('Input completo en validate_options: ' . print_r($input, true));
+        
         // Inicializar el array de nuevas opciones
         $new_input = array();
         

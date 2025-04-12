@@ -26,7 +26,12 @@
     </h2>
     
     <form method="post" action="options.php">
-        <?php settings_fields('snap_sidebar_cart_options_group'); ?>
+        <?php 
+        settings_fields('snap_sidebar_cart_options_group'); 
+        
+        // Agregar debug
+        error_log('Form de configuración: ' . print_r($_POST, true));
+        ?>
         
         <?php if ($active_tab === 'general') : ?>
             <div id="general-settings" class="snap-sidebar-cart-settings-section">
@@ -227,6 +232,11 @@
             </div>
         <?php endif; ?>
         
-        <?php submit_button(__('Guardar cambios', 'snap-sidebar-cart')); ?>
+        <?php 
+        // Debug de las opciones actuales
+        error_log('Opciones actuales en el formulario: ' . print_r($this->options, true));
+        
+        submit_button(__('Guardar cambios', 'snap-sidebar-cart')); 
+        ?>
     </form>
 </div>
