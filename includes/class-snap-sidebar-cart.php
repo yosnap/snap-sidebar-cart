@@ -7,15 +7,6 @@
 class Snap_Sidebar_Cart {
 
     /**
-     * El cargador que es responsable de mantener y registrar todos los hooks del plugin.
-     *
-     * @since    1.0.0
-     * @access   protected
-     * @var      array    $loader    Mantiene y registra todos los hooks para el plugin.
-     */
-    protected $loader;
-
-    /**
      * Las opciones del plugin.
      *
      * @since    1.0.0
@@ -32,9 +23,9 @@ class Snap_Sidebar_Cart {
      */
     public function __construct() {
         $this->load_dependencies();
+        $this->load_options();
         $this->define_admin_hooks();
         $this->define_public_hooks();
-        $this->load_options();
     }
 
     /**
@@ -84,6 +75,16 @@ class Snap_Sidebar_Cart {
         
         // Combinamos las opciones por defecto con las guardadas
         $this->options = wp_parse_args($saved_options, $default_options);
+        
+        // Aseguramos que el array de styles exista
+        if (!isset($this->options['styles']) || !is_array($this->options['styles'])) {
+            $this->options['styles'] = $default_options['styles'];
+        }
+        
+        // Aseguramos que el array de related_products exista
+        if (!isset($this->options['related_products']) || !is_array($this->options['related_products'])) {
+            $this->options['related_products'] = $default_options['related_products'];
+        }
         
         // Aseguramos que ciertos valores críticos nunca estén vacíos
         if (empty($this->options['container_selector'])) {

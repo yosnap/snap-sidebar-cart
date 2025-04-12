@@ -1,146 +1,119 @@
-# Instrucciones de Instalación y Uso
+# Guía de Instalación y Configuración de Snap Sidebar Cart
+
+Esta guía proporcionará instrucciones detalladas para instalar, configurar y optimizar el plugin Snap Sidebar Cart en tu tienda WooCommerce.
+
+## Requisitos previos
+
+Antes de instalar el plugin, asegúrate de que tu sistema cumple con los siguientes requisitos:
+
+- WordPress 5.0 o superior
+- WooCommerce 4.0 o superior
+- PHP 7.3 o superior
+- Un tema compatible con WooCommerce
+- Permisos para instalar plugins (rol de administrador)
 
 ## Instalación
 
-### Método 1: Instalación desde el repositorio
+### Método 1: Instalación directa desde el directorio de WordPress
 
-1. Clona este repositorio en la carpeta `/wp-content/plugins/` de tu instalación de WordPress:
-   ```
-   git clone https://github.com/yosnap/snap-sidebar-cart.git
-   ```
+1. Inicia sesión en tu panel de administración de WordPress
+2. Ve a Plugins > Añadir nuevo
+3. Busca "Snap Sidebar Cart"
+4. Haz clic en "Instalar ahora" junto al plugin Snap Sidebar Cart
+5. Una vez instalado, haz clic en "Activar"
 
-2. Activa el plugin a través del menú 'Plugins' en WordPress.
+### Método 2: Instalación manual mediante subida de archivos
 
-3. Configura el carrito en WooCommerce > Carrito Lateral.
+1. Descarga el archivo ZIP del plugin desde [GitHub](https://github.com/username/snap-sidebar-cart/releases)
+2. Inicia sesión en tu panel de administración de WordPress
+3. Ve a Plugins > Añadir nuevo > Subir plugin
+4. Haz clic en "Examinar..." y selecciona el archivo ZIP descargado
+5. Haz clic en "Instalar ahora"
+6. Una vez instalado, haz clic en "Activar plugin"
 
-### Método 2: Instalación manual
+### Método 3: Instalación mediante FTP
 
-1. Descarga el archivo ZIP del repositorio.
+1. Descarga y descomprime el archivo ZIP del plugin
+2. Conéctate a tu servidor mediante FTP
+3. Sube la carpeta `snap-sidebar-cart` descomprimida a la carpeta `/wp-content/plugins/` de tu sitio WordPress
+4. Inicia sesión en tu panel de administración de WordPress
+5. Ve a Plugins y activa "Snap Sidebar Cart"
 
-2. Ve a la sección de Plugins > Añadir nuevo > Subir plugin en tu panel de administración de WordPress.
+## Configuración inicial
 
-3. Selecciona el archivo ZIP descargado y haz clic en "Instalar ahora".
+Una vez activado el plugin, es importante configurarlo para adaptarlo a las necesidades de tu tienda:
 
-4. Activa el plugin y confíguralo en WooCommerce > Carrito Lateral.
+1. Ve a Ajustes > Carrito Lateral en tu panel de administración
+2. En la sección "Configuración General":
+   - Define un título para el carrito (por defecto es "Carrito de compra")
+   - Configura los selectores CSS para activar el carrito (por defecto incluye `.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart`)
+   - Decide si el carrito debe abrirse automáticamente cuando se añade un producto
+   - Configura si quieres mostrar la información de envío
 
-## Requisitos
+3. En la sección "Personalización de Estilos":
+   - Ajusta el ancho del carrito lateral (por defecto es 400px)
+   - Personaliza los colores de fondo, encabezado, texto y botones según tu tema
 
-- WordPress 5.6 o superior
-- WooCommerce 5.0 o superior
-- PHP 7.3 o superior
+4. En la sección "Productos Relacionados":
+   - Activa o desactiva la visualización de productos relacionados
+   - Configura el número de productos a mostrar
+   - Define el número de columnas para la visualización
+   - Selecciona cómo ordenar los productos relacionados
 
-## Configuración
+5. Haz clic en "Guardar cambios"
 
-### Opciones Básicas
+## Personalización avanzada
 
-1. **Título del carrito**: Personaliza el texto que aparece en la cabecera del carrito.
+### Integrando con temas personalizados
 
-2. **Selector del contenedor**: ID del elemento HTML donde se insertará el carrito. Utilízalo si quieres colocar el carrito en un lugar específico de tu sitio.
+Si tu tema tiene un diseño personalizado, puede que necesites ajustar los selectores CSS:
 
-3. **Selectores de activación**: Lista de selectores CSS (separados por comas) que al hacer clic abrirán el carrito. Por defecto, se usará `.add_to_cart_button`.
+1. Identifica los botones o iconos que deseas usar para activar el carrito lateral
+2. Observa sus clases CSS usando las herramientas de desarrollador del navegador
+3. Añade estos selectores en la configuración del plugin, separados por comas
 
-### Estilos
+### Optimización para dispositivos móviles
 
-1. **Color primario**: Define el color principal del carrito (cabecera, pie, botones).
+El plugin está diseñado para ser responsive, pero puedes hacer ajustes adicionales:
 
-2. **Color secundario**: Define el color complementario (generalmente para textos).
+1. Considera reducir el número de productos relacionados y columnas en móviles
+2. Prueba diferentes anchos para el carrito en la configuración
+3. Verifica la apariencia en varios dispositivos después de personalizar
 
-3. **Ancho del carrito**: Establece el ancho del carrito lateral en píxeles o porcentaje.
+## Solución de problemas comunes
 
-### Productos Relacionados
+### El carrito no se abre al hacer clic en los botones
 
-1. **Mostrar productos relacionados**: Activa o desactiva la sección de productos relacionados.
-
-2. **Cantidad de productos relacionados**: Define cuántos productos relacionados mostrar en el slider.
-
-### Información Adicional
-
-1. **Mostrar costo de envío**: Activa o desactiva la información de envío en el pie del carrito.
-
-## Uso de Shortcodes
-
-### Contenedor del Carrito
-
-Puedes insertar el contenedor del carrito en cualquier parte de tu sitio con el shortcode:
-
-```
-[sidebar_cart id="mi-carrito" class="mi-clase"]
-```
-
-Parámetros:
-- `id`: ID personalizado para el contenedor (opcional)
-- `class`: Clases CSS adicionales (opcional)
-
-### Botón del Carrito
-
-Puedes insertar un botón para abrir el carrito con el shortcode:
-
-```
-[sidebar_cart_button text="Ver carrito" class="mi-boton"]
-```
-
-Parámetros:
-- `text`: Texto personalizado para el botón (opcional)
-- `class`: Clases CSS adicionales (opcional)
-
-## Personalización Avanzada
-
-### Hooks y Filtros
-
-El plugin proporciona varios hooks y filtros para desarrolladores:
-
-```php
-// Añadir contenido antes del listado de productos
-add_action('snap_sidebar_cart_before_content', 'mi_funcion_personalizada');
-function mi_funcion_personalizada() {
-    echo '<div class="mi-banner">Oferta especial!</div>';
-}
-
-// Modificar el precio mostrado
-add_filter('snap_sidebar_cart_product_price_html', 'modificar_precio', 10, 2);
-function modificar_precio($price_html, $product) {
-    // Modificar el precio
-    return $price_html . ' <small>+impuestos</small>';
-}
-
-// Añadir estilos personalizados
-add_filter('snap_sidebar_cart_custom_css', 'mis_estilos_personalizados');
-function mis_estilos_personalizados($css) {
-    $css .= '.snap-sidebar-cart-header { font-family: "Montserrat", sans-serif; }';
-    return $css;
-}
-```
-
-## Solución de Problemas
-
-### El carrito no se abre al hacer clic en "Añadir al carrito"
-
-1. Verifica que el selector de activación (`.add_to_cart_button`) coincida con el selector de tu botón de "Añadir al carrito".
-2. Comprueba que no haya conflictos con otros plugins que modifiquen el comportamiento del carrito.
-
-### Los estilos no se aplican correctamente
-
-1. Verifica que no haya conflictos de CSS con tu tema.
-2. Comprueba la consola del navegador para ver si hay errores JavaScript.
+- Verifica que los selectores CSS configurados coincidan con los elementos de tu tema
+- Asegúrate de que jQuery está cargado correctamente en tu sitio
+- Comprueba la consola de desarrollador del navegador para posibles errores JavaScript
 
 ### Los productos relacionados no se muestran
 
-1. Verifica que la opción "Mostrar productos relacionados" esté activada.
-2. Comprueba que tus productos tengan productos relacionados configurados en WooCommerce.
+- Verifica que la opción esté activada en la configuración
+- Comprueba que los productos tengan categorías o etiquetas relacionadas
+- Asegúrate de que haya suficientes productos en tu tienda para crear relaciones
 
-## Soporte
+### Conflictos con otros plugins
 
-Si necesitas ayuda con el plugin, puedes:
+Si experimentas conflictos con otros plugins:
 
-1. Abrir un issue en el [repositorio de GitHub](https://github.com/yosnap/snap-sidebar-cart/issues).
-2. Contactar al desarrollador a través de la página de soporte del plugin.
+1. Desactiva temporalmente otros plugins relacionados con el carrito para identificar el conflicto
+2. Intenta cambiar el orden de carga de los plugins
+3. Contacta con el soporte si los problemas persisten
 
-## Colaboración
+## Actualizaciones
 
-Las contribuciones son bienvenidas. Si deseas mejorar el plugin, sigue estos pasos:
+Para mantener el plugin actualizado:
 
-1. Haz fork del repositorio
-2. Crea una rama para tu funcionalidad (`git checkout -b feature/nueva-funcionalidad`)
-3. Haz commit de tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
-4. Haz push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un Pull Request
+1. Verifica regularmente las notificaciones de actualización en tu panel de WordPress
+2. Antes de actualizar, realiza una copia de seguridad completa de tu sitio
+3. Si has personalizado archivos del plugin, ten en cuenta que podrían ser sobrescritos durante una actualización
+
+## Soporte adicional
+
+Si necesitas ayuda adicional, puedes:
+
+- Consultar la documentación completa en el archivo README.md
+- Revisar o reportar problemas en GitHub: [https://github.com/username/snap-sidebar-cart/issues](https://github.com/username/snap-sidebar-cart/issues)
+- Contactar directamente con el desarrollador para soporte personalizado

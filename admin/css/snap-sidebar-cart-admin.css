@@ -1,0 +1,63 @@
+/**
+ * Estilos de administración para el plugin
+ */
+
+.snap-sidebar-cart-admin-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.snap-sidebar-cart-admin-wrapper form {
+    flex: 2;
+    min-width: 600px;
+    margin-right: 20px;
+}
+
+.snap-sidebar-cart-admin-sidebar {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.snap-sidebar-cart-admin-box {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.snap-sidebar-cart-admin-box h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.snap-sidebar-cart-admin-box ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+/* Estilos para los campos de color */
+.wp-picker-container {
+    display: inline-block;
+}
+
+/* Secciones de configuración */
+h2.nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+@media screen and (max-width: 960px) {
+    .snap-sidebar-cart-admin-wrapper form {
+        margin-right: 0;
+        min-width: 100%;
+    }
+    
+    .snap-sidebar-cart-admin-sidebar {
+        min-width: 100%;
+        max-width: 100%;
+        margin-top: 20px;
+    }
+}

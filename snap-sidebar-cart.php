@@ -58,4 +58,37 @@ function run_snap_sidebar_cart() {
         $plugin->run();
     }
 }
+
+// Registrar la activación del plugin
+register_activation_hook(__FILE__, 'snap_sidebar_cart_activate');
+
+// Función de activación
+function snap_sidebar_cart_activate() {
+    // Configuración por defecto al activar
+    $default_options = array(
+        'title' => __('Carrito de compra', 'snap-sidebar-cart'),
+        'container_selector' => 'sidebar-cart-container',
+        'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
+        'show_shipping' => true,
+        'auto_open' => true,
+        'styles' => array(
+            'sidebar_width' => '400px',
+            'sidebar_background' => '#ffffff',
+            'header_background' => '#f8f8f8',
+            'header_text_color' => '#333333',
+            'product_text_color' => '#333333',
+            'button_background' => '#2c6aa0',
+            'button_text_color' => '#ffffff',
+        ),
+        'related_products' => array(
+            'show' => true,
+            'count' => 4,
+            'columns' => 2,
+            'orderby' => 'rand',
+        ),
+    );
+    
+    add_option('snap_sidebar_cart_options', $default_options);
+}
+
 run_snap_sidebar_cart();
