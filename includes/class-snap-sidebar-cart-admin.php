@@ -67,6 +67,18 @@ class Snap_Sidebar_Cart_Admin {
             array($this, 'display_plugin_admin_page')
         );
     }
+    
+    /**
+     * Añade enlaces de acción en la página de plugins
+     *
+     * @since    1.0.0
+     * @param    array    $links    Los enlaces de acción del plugin.
+     */
+    public function add_action_links($links) {
+        $settings_link = '<a href="' . admin_url('options-general.php?page=snap-sidebar-cart') . '">' . __('Ajustes', 'snap-sidebar-cart') . '</a>';
+        array_unshift($links, $settings_link);
+        return $links;
+    }
 
     /**
      * Renderiza la página de administración.

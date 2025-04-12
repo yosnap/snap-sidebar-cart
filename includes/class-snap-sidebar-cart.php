@@ -94,6 +94,9 @@ class Snap_Sidebar_Cart {
         add_action('admin_init', array($plugin_admin, 'register_settings'));
         add_action('admin_enqueue_scripts', array($plugin_admin, 'enqueue_styles'));
         add_action('admin_enqueue_scripts', array($plugin_admin, 'enqueue_scripts'));
+        
+        // Agregar enlace a ajustes en la página de plugins
+        add_filter('plugin_action_links_' . SNAP_SIDEBAR_CART_BASENAME, array($plugin_admin, 'add_action_links'));
     }
 
     /**
