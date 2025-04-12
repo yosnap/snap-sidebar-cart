@@ -59,7 +59,7 @@ class Snap_Sidebar_Cart {
         $default_options = array(
             'title' => __('Carrito de compra', 'snap-sidebar-cart'),
             'container_selector' => 'sidebar-cart-container',
-            'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart',
+            'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
             'show_shipping' => true,
             'styles' => array(
                 'sidebar_width' => '400px',

@@ -6,7 +6,7 @@
  */
 ?>
 
-<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart">
+<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart <?php echo esc_attr($this->options['container_selector']); ?>">
     <div class="snap-sidebar-cart__overlay"></div>
     
     <div class="snap-sidebar-cart__container">

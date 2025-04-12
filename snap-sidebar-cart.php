@@ -28,9 +28,34 @@ define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
 // Cargar archivos principales
 require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart.php';
 
+// Verificar si WooCommerce está activo
+function snap_sidebar_cart_check_woocommerce() {
+    if (!function_exists('is_plugin_active')) {
+        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+    }
+    
+    if (!is_plugin_active('woocommerce/woocommerce.php')) {
+        add_action('admin_notices', 'snap_sidebar_cart_woocommerce_notice');
+        return false;
+    }
+    
+    return true;
+}
+
+// Aviso si WooCommerce no está activo
+function snap_sidebar_cart_woocommerce_notice() {
+    ?>
+    <div class="error">
+        <p><?php _e('Snap Sidebar Cart requiere que WooCommerce esté instalado y activado.', 'snap-sidebar-cart'); ?></p>
+    </div>
+    <?php
+}
+
 // Iniciar el plugin
 function run_snap_sidebar_cart() {
-    $plugin = new Snap_Sidebar_Cart();
-    $plugin->run();
+    if (snap_sidebar_cart_check_woocommerce()) {
+        $plugin = new Snap_Sidebar_Cart();
+        $plugin->run();
+    }
 }
 run_snap_sidebar_cart();

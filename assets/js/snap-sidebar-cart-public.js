@@ -12,10 +12,18 @@
         var $container = $('.snap-sidebar-cart__products');
         var activationSelectors = snap_sidebar_cart_params.activation_selectors;
         
-        // Abrir el carrito
+        // Abrir el carrito - selectors específicos
         $body.on('click', activationSelectors, function(e) {
             e.preventDefault();
             openSidebar();
+            console.log('Activator clicked:', this);
+        });
+        
+        // Forzar la detección del icono ti-shopping-cart
+        $body.on('click', '.ti-shopping-cart', function(e) {
+            e.preventDefault();
+            openSidebar();
+            console.log('Ti-shopping-cart clicked');
         });
         
         // También abrir cuando se añade un producto al carrito (evento propio de WooCommerce)

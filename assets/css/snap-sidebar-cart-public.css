@@ -22,10 +22,17 @@
     height: 100%;
     z-index: 1000000;
     transition: right 0.3s ease-in-out;
+    width: 400px; /* Valor por defecto, se sobreescribirá con opciones */
+    background-color: #ffffff;
 }
 
 .snap-sidebar-cart.open {
     right: 0;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+}
+
+body.snap-sidebar-cart-open {
+    overflow: hidden;
 }
 
 .snap-sidebar-cart__container {
