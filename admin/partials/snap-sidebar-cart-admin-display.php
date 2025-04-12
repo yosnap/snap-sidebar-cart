@@ -47,7 +47,7 @@
                             <label for="snap_sidebar_cart_options[container_selector]"><?php _e('Selector del contenedor', 'snap-sidebar-cart'); ?></label>
                         </th>
                         <td>
-                            <input type="text" id="snap_sidebar_cart_options[container_selector]" name="snap_sidebar_cart_options[container_selector]" value="<?php echo esc_attr(isset($this->options['container_selector']) ? $this->options['container_selector'] : 'sidebar-cart-container'); ?>" class="regular-text" />
+                            <input type="text" id="snap_sidebar_cart_options[container_selector]" name="snap_sidebar_cart_options[container_selector]" value="<?php echo esc_attr(isset($this->options['container_selector']) ? $this->options['container_selector'] : ''); ?>" class="regular-text" />
                             <p class="description"><?php _e('ID del contenedor donde se mostrará el carrito', 'snap-sidebar-cart'); ?></p>
                         </td>
                     </tr>
@@ -57,7 +57,7 @@
                             <label for="snap_sidebar_cart_options[activation_selectors]"><?php _e('Selectores de activación', 'snap-sidebar-cart'); ?></label>
                         </th>
                         <td>
-                            <input type="text" id="snap_sidebar_cart_options[activation_selectors]" name="snap_sidebar_cart_options[activation_selectors]" value="<?php echo esc_attr(isset($this->options['activation_selectors']) ? $this->options['activation_selectors'] : '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart'); ?>" class="regular-text" />
+                            <input type="text" id="snap_sidebar_cart_options[activation_selectors]" name="snap_sidebar_cart_options[activation_selectors]" value="<?php echo esc_attr(isset($this->options['activation_selectors']) ? $this->options['activation_selectors'] : ''); ?>" class="regular-text" />
                             <p class="description"><?php _e('Selectores CSS (separados por comas) que activarán la apertura del carrito', 'snap-sidebar-cart'); ?></p>
                         </td>
                     </tr>
