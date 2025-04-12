@@ -1,0 +1,171 @@
+<?php
+/**
+ * La funcionalidad específica de administración del plugin.
+ *
+ * @since      1.0.0
+ */
+class Snap_Sidebar_Cart_Admin {
+
+    /**
+     * Las opciones del plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      array    $options    Las opciones del plugin.
+     */
+    private $options;
+
+    /**
+     * Inicializa la clase y establece sus propiedades.
+     *
+     * @since    1.0.0
+     * @param    array    $options    Las opciones del plugin.
+     */
+    public function __construct($options) {
+        $this->options = $options;
+    }
+
+    /**
+     * Registra los estilos para el área de administración.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_styles($hook) {
+        if ('settings_page_snap-sidebar-cart' !== $hook) {
+            return;
+        }
+        
+        wp_enqueue_style('wp-color-picker');
+        wp_enqueue_style('snap-sidebar-cart-admin', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-admin.css', array(), SNAP_SIDEBAR_CART_VERSION, 'all');
+    }
+
+    /**
+     * Registra los scripts para el área de administración.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_scripts($hook) {
+        if ('settings_page_snap-sidebar-cart' !== $hook) {
+            return;
+        }
+        
+        wp_enqueue_script('wp-color-picker');
+        wp_enqueue_script('snap-sidebar-cart-admin', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-admin.js', array('jquery', 'wp-color-picker'), SNAP_SIDEBAR_CART_VERSION, false);
+    }
+
+    /**
+     * Agrega la página de opciones al menú de administración.
+     *
+     * @since    1.0.0
+     */
+    public function add_plugin_admin_menu() {
+        add_options_page(
+            __('Snap Sidebar Cart', 'snap-sidebar-cart'),
+            __('Snap Sidebar Cart', 'snap-sidebar-cart'),
+            'manage_options',
+            'snap-sidebar-cart',
+            array($this, 'display_plugin_admin_page')
+        );
+    }
+
+    /**
+     * Renderiza la página de administración.
+     *
+     * @since    1.0.0
+     */
+    public function display_plugin_admin_page() {
+        include_once SNAP_SIDEBAR_CART_PATH . 'admin/partials/snap-sidebar-cart-admin-display.php';
+    }
+
+    /**
+     * Registra las opciones del plugin.
+     *
+     * @since    1.0.0
+     */
+    public function register_settings() {
+        register_setting(
+            'snap_sidebar_cart_options_group',
+            'snap_sidebar_cart_options',
+            array($this, 'validate_options')
+        );
+    }
+
+    /**
+     * Valida las opciones del plugin.
+     *
+     * @since    1.0.0
+     * @param    array    $input    Array con todas las opciones.
+     */
+    public function validate_options($input) {
+        $new_input = array();
+        
+        // Opciones generales
+        if (isset($input['title'])) {
+            $new_input['title'] = sanitize_text_field($input['title']);
+        }
+        
+        if (isset($input['container_selector'])) {
+            $new_input['container_selector'] = sanitize_text_field($input['container_selector']);
+        }
+        
+        if (isset($input['activation_selectors'])) {
+            $new_input['activation_selectors'] = sanitize_text_field($input['activation_selectors']);
+        }
+        
+        if (isset($input['show_shipping'])) {
+            $new_input['show_shipping'] = (bool) $input['show_shipping'];
+        }
+        
+        // Estilos
+        $new_input['styles'] = array();
+        
+        if (isset($input['styles']['sidebar_width'])) {
+            $new_input['styles']['sidebar_width'] = sanitize_text_field($input['styles']['sidebar_width']);
+        }
+        
+        if (isset($input['styles']['sidebar_background'])) {
+            $new_input['styles']['sidebar_background'] = sanitize_hex_color($input['styles']['sidebar_background']);
+        }
+        
+        if (isset($input['styles']['header_background'])) {
+            $new_input['styles']['header_background'] = sanitize_hex_color($input['styles']['header_background']);
+        }
+        
+        if (isset($input['styles']['header_text_color'])) {
+            $new_input['styles']['header_text_color'] = sanitize_hex_color($input['styles']['header_text_color']);
+        }
+        
+        if (isset($input['styles']['product_text_color'])) {
+            $new_input['styles']['product_text_color'] = sanitize_hex_color($input['styles']['product_text_color']);
+        }
+        
+        if (isset($input['styles']['button_background'])) {
+            $new_input['styles']['button_background'] = sanitize_hex_color($input['styles']['button_background']);
+        }
+        
+        if (isset($input['styles']['button_text_color'])) {
+            $new_input['styles']['button_text_color'] = sanitize_hex_color($input['styles']['button_text_color']);
+        }
+        
+        // Productos relacionados
+        $new_input['related_products'] = array();
+        
+        if (isset($input['related_products']['show'])) {
+            $new_input['related_products']['show'] = (bool) $input['related_products']['show'];
+        }
+        
+        if (isset($input['related_products']['count'])) {
+            $new_input['related_products']['count'] = absint($input['related_products']['count']);
+        }
+        
+        if (isset($input['related_products']['columns'])) {
+            $new_input['related_products']['columns'] = absint($input['related_products']['columns']);
+        }
+        
+        if (isset($input['related_products']['orderby'])) {
+            $new_input['related_products']['orderby'] = sanitize_text_field($input['related_products']['orderby']);
+        }
+        
+        return $new_input;
+    }
+}

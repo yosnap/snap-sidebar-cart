@@ -1,0 +1,25 @@
+/**
+ * Estilos para el área de administración
+ */
+
+.snap-sidebar-cart-settings-section {
+    margin-top: 20px;
+}
+
+.snap-sidebar-cart-settings-section h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.wp-admin .nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+/* Notificación de guardado */
+.notice-success {
+    border-left-color: #46b450;
+}
+
+.snap-color-picker {
+    width: 80px;
+}

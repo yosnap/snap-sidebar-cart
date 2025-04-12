@@ -1,127 +1,153 @@
 <?php
 /**
- * Main plugin class
+ * La clase principal del plugin.
+ *
+ * @since      1.0.0
  */
-
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
-}
-
 class Snap_Sidebar_Cart {
-    /**
-     * Plugin instance
-     */
-    private static $instance = null;
 
     /**
-     * Plugin options
+     * El cargador que es responsable de mantener y registrar todos los hooks del plugin.
+     *
+     * @since    1.0.0
+     * @access   protected
+     * @var      array    $loader    Mantiene y registra todos los hooks para el plugin.
+     */
+    protected $loader;
+
+    /**
+     * Las opciones del plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      array    $options    Las opciones del plugin.
      */
     private $options;
 
     /**
-     * Get plugin instance
+     * Define el nombre y la versión del plugin.
+     * Carga las dependencias e instancia el cargador.
+     *
+     * @since    1.0.0
      */
-    public static function get_instance() {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    /**
-     * Initialize plugin
-     */
-    public function init() {
-        // Load text domain
-        load_plugin_textdomain('snap-sidebar-cart', false, dirname(plugin_basename(__FILE__)) . '/../languages');
-        
-        // Load default options
+    public function __construct() {
+        $this->load_dependencies();
+        $this->define_admin_hooks();
+        $this->define_public_hooks();
         $this->load_options();
-
-        // Include files
-        $this->includes();
-
-        // Register hooks
-        $this->register_hooks();
-        
-        // Log plugin initialization for debugging
-        $this->log('Plugin initialized');
     }
 
     /**
-     * Include required files
+     * Carga las dependencias requeridas para este plugin.
+     *
+     * @since    1.0.0
+     * @access   private
      */
-    private function includes() {
-        require_once SNAP_SIDEBAR_CART_PLUGIN_DIR . 'includes/class-snap-sidebar-cart-admin.php';
-        require_once SNAP_SIDEBAR_CART_PLUGIN_DIR . 'includes/class-snap-sidebar-cart-frontend.php';
+    private function load_dependencies() {
+        require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-admin.php';
+        require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-public.php';
+        require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-ajax.php';
     }
 
     /**
-     * Load plugin options
+     * Carga las opciones del plugin.
+     *
+     * @since    1.0.0
+     * @access   private
      */
     private function load_options() {
-        $defaults = [
-            'cart_title' => __('Carrito de compra', 'snap-sidebar-cart'),
+        $default_options = array(
+            'title' => __('Carrito de compra', 'snap-sidebar-cart'),
             'container_selector' => 'sidebar-cart-container',
-            'activation_selectors' => '.add_to_cart_button',
-            'primary_color' => '#1e9e9e',
-            'secondary_color' => '#ffffff',
-            'cart_width' => '400px',
-            'show_related_products' => true,
-            'related_products_count' => 4,
-            'show_shipping_cost' => true
-        ];
+            'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart',
+            'show_shipping' => true,
+            'styles' => array(
+                'sidebar_width' => '400px',
+                'sidebar_background' => '#ffffff',
+                'header_background' => '#f8f8f8',
+                'header_text_color' => '#333333',
+                'product_text_color' => '#333333',
+                'button_background' => '#2c6aa0',
+                'button_text_color' => '#ffffff',
+            ),
+            'related_products' => array(
+                'show' => true,
+                'count' => 4,
+                'columns' => 2,
+                'orderby' => 'rand',
+            ),
+        );
 
-        $this->options = get_option('snap_sidebar_cart_options', $defaults);
+        $this->options = get_option('snap_sidebar_cart_options', $default_options);
     }
 
     /**
-     * Register plugin hooks
+     * Registra todos los hooks relacionados con la funcionalidad del área de admin.
+     *
+     * @since    1.0.0
+     * @access   private
      */
-    private function register_hooks() {
-        // Initialize admin
-        $admin = new Snap_Sidebar_Cart_Admin($this->options);
-        $admin->init();
-
-        // Initialize frontend
-        $frontend = new Snap_Sidebar_Cart_Frontend($this->options);
-        $frontend->init();
+    private function define_admin_hooks() {
+        $plugin_admin = new Snap_Sidebar_Cart_Admin($this->get_options());
         
-        // Register activation and deactivation hooks
-        register_activation_hook(SNAP_SIDEBAR_CART_PLUGIN_DIR . 'snap-sidebar-cart.php', array($this, 'activate'));
-        register_deactivation_hook(SNAP_SIDEBAR_CART_PLUGIN_DIR . 'snap-sidebar-cart.php', array($this, 'deactivate'));
+        add_action('admin_menu', array($plugin_admin, 'add_plugin_admin_menu'));
+        add_action('admin_init', array($plugin_admin, 'register_settings'));
+        add_action('admin_enqueue_scripts', array($plugin_admin, 'enqueue_styles'));
+        add_action('admin_enqueue_scripts', array($plugin_admin, 'enqueue_scripts'));
     }
 
     /**
-     * Plugin activation
+     * Registra todos los hooks relacionados con la funcionalidad del área pública.
+     *
+     * @since    1.0.0
+     * @access   private
      */
-    public function activate() {
-        $this->log('Plugin activated');
+    private function define_public_hooks() {
+        $plugin_public = new Snap_Sidebar_Cart_Public($this->get_options());
         
-        // Add plugin version to database
-        update_option('snap_sidebar_cart_version', SNAP_SIDEBAR_CART_VERSION);
+        add_action('wp_enqueue_scripts', array($plugin_public, 'enqueue_styles'));
+        add_action('wp_enqueue_scripts', array($plugin_public, 'enqueue_scripts'));
+        add_action('wp_footer', array($plugin_public, 'render_sidebar_cart'));
     }
 
     /**
-     * Plugin deactivation
+     * Ejecuta el cargador para ejecutar todos los hooks con WordPress.
+     *
+     * @since    1.0.0
      */
-    public function deactivate() {
-        $this->log('Plugin deactivated');
+    public function run() {
+        $this->define_ajax_hooks();
     }
 
     /**
-     * Get plugin options
+     * Registra todos los hooks relacionados con la funcionalidad AJAX.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_ajax_hooks() {
+        $plugin_ajax = new Snap_Sidebar_Cart_Ajax($this->get_options());
+        
+        add_action('wp_ajax_snap_sidebar_cart_add', array($plugin_ajax, 'add_to_cart'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_add', array($plugin_ajax, 'add_to_cart'));
+        
+        add_action('wp_ajax_snap_sidebar_cart_remove', array($plugin_ajax, 'remove_from_cart'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_remove', array($plugin_ajax, 'remove_from_cart'));
+        
+        add_action('wp_ajax_snap_sidebar_cart_update', array($plugin_ajax, 'update_cart'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_update', array($plugin_ajax, 'update_cart'));
+        
+        add_action('wp_ajax_snap_sidebar_cart_get_related', array($plugin_ajax, 'get_related_products'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_get_related', array($plugin_ajax, 'get_related_products'));
+    }
+
+    /**
+     * Obtiene las opciones del plugin.
+     *
+     * @since     1.0.0
+     * @return    array    Las opciones del plugin.
      */
     public function get_options() {
         return $this->options;
-    }
-    
-    /**
-     * Simple logging function
-     */
-    private function log($message) {
-        if (defined('WP_DEBUG') && WP_DEBUG === true) {
-            error_log('Snap Sidebar Cart: ' . $message);
-        }
     }
 }

@@ -1,0 +1,30 @@
+/**
+ * Snap Sidebar Cart Frontend Styles
+ */
+
+/* Main container */
+.snap-sidebar-cart-container {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100%;
+    z-index: 999999;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+}
+
+.snap-sidebar-cart-container.active {
+    right: 0;
+}
+
+/* Header */
+.snap-sidebar-cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #1e9e9e;
+    color: #fff;
+}
