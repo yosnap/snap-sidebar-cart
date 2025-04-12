@@ -130,6 +130,10 @@ class Snap_Sidebar_Cart_Admin {
             $new_input['show_shipping'] = (bool) $input['show_shipping'];
         }
         
+        if (isset($input['auto_open'])) {
+            $new_input['auto_open'] = (bool) $input['auto_open'];
+        }
+        
         // Estilos
         $new_input['styles'] = array();
         

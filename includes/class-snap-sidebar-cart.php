@@ -61,6 +61,7 @@ class Snap_Sidebar_Cart {
             'container_selector' => 'sidebar-cart-container',
             'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
             'show_shipping' => true,
+            'auto_open' => true,
             'styles' => array(
                 'sidebar_width' => '400px',
                 'sidebar_background' => '#ffffff',

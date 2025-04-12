@@ -70,6 +70,16 @@
                             <input type="checkbox" id="snap_sidebar_cart_options[show_shipping]" name="snap_sidebar_cart_options[show_shipping]" value="1" <?php checked(1, $this->options['show_shipping']); ?> />
                         </td>
                     </tr>
+                    
+                    <tr>
+                        <th scope="row">
+                            <label for="snap_sidebar_cart_options[auto_open]"><?php _e('Abrir automáticamente al añadir productos', 'snap-sidebar-cart'); ?></label>
+                        </th>
+                        <td>
+                            <input type="checkbox" id="snap_sidebar_cart_options[auto_open]" name="snap_sidebar_cart_options[auto_open]" value="1" <?php checked(1, $this->options['auto_open']); ?> />
+                            <p class="description"><?php _e('Si está habilitado, el carrito lateral se abrirá automáticamente cuando se añada un producto al carrito', 'snap-sidebar-cart'); ?></p>
+                        </td>
+                    </tr>
                 </table>
             </div>
         <?php elseif ($active_tab === 'styles') : ?>

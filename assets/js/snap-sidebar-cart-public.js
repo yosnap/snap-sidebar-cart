@@ -18,9 +18,15 @@
             console.log('Ti-shopping-cart clicked');
         });
         
-        // También abrir cuando se añade un producto al carrito (evento propio de WooCommerce)
+        // Abrir cuando se añade un producto al carrito (evento propio de WooCommerce)
         $body.on('added_to_cart', function(event, fragments, cart_hash, $button) {
-            openSidebar();
+            // Verificar si la apertura automática está habilitada
+            var autoOpen = snap_sidebar_cart_params.auto_open;
+            
+            if (autoOpen) {
+                openSidebar();
+                console.log('Auto-opening sidebar after adding product');
+            }
             
             // Si tenemos el producto ID, obtener los productos relacionados
             if ($button && $button.data('product_id')) {

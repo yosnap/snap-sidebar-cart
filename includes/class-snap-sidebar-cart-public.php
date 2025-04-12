@@ -44,7 +44,8 @@ class Snap_Sidebar_Cart_Public {
      * @since    1.0.0
      */
     public function enqueue_scripts() {
-        wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
+        // Registramos el script
+        wp_register_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
         
         // Localizamos el script para usar AJAX
         wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', array(
@@ -52,7 +53,11 @@ class Snap_Sidebar_Cart_Public {
             'nonce' => wp_create_nonce('snap-sidebar-cart-nonce'),
             'container_selector' => '.' . $this->options['container_selector'],
             'activation_selectors' => $this->options['activation_selectors'],
+            'auto_open' => isset($this->options['auto_open']) ? (bool) $this->options['auto_open'] : true,
         ));
+        
+        // Encolamos el script
+        wp_enqueue_script('snap-sidebar-cart-public');
     }
 
     /**
