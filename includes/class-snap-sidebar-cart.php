@@ -79,7 +79,20 @@ class Snap_Sidebar_Cart {
             ),
         );
 
-        $this->options = get_option('snap_sidebar_cart_options', $default_options);
+        // Obtenemos las opciones guardadas
+        $saved_options = get_option('snap_sidebar_cart_options', array());
+        
+        // Combinamos las opciones por defecto con las guardadas
+        $this->options = wp_parse_args($saved_options, $default_options);
+        
+        // Aseguramos que ciertos valores críticos nunca estén vacíos
+        if (empty($this->options['container_selector'])) {
+            $this->options['container_selector'] = $default_options['container_selector'];
+        }
+        
+        if (empty($this->options['activation_selectors'])) {
+            $this->options['activation_selectors'] = $default_options['activation_selectors'];
+        }
     }
 
     /**

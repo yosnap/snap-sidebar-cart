@@ -112,19 +112,48 @@ class Snap_Sidebar_Cart_Admin {
      */
     public function validate_options($input) {
         // Cargar opciones actuales para mantener valores que no se actualizaron
-        $options = get_option('snap_sidebar_cart_options', array());
+        $default_options = array(
+            'title' => __('Carrito de compra', 'snap-sidebar-cart'),
+            'container_selector' => 'sidebar-cart-container',
+            'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
+            'show_shipping' => true,
+            'auto_open' => true,
+            'styles' => array(
+                'sidebar_width' => '400px',
+                'sidebar_background' => '#ffffff',
+                'header_background' => '#f8f8f8',
+                'header_text_color' => '#333333',
+                'product_text_color' => '#333333',
+                'button_background' => '#2c6aa0',
+                'button_text_color' => '#ffffff',
+            ),
+            'related_products' => array(
+                'show' => true,
+                'count' => 4,
+                'columns' => 2,
+                'orderby' => 'rand',
+            ),
+        );
+        
+        $options = get_option('snap_sidebar_cart_options', $default_options);
         
         // Opciones generales
-        if (isset($input['title'])) {
+        if (isset($input['title']) && !empty($input['title'])) {
             $options['title'] = sanitize_text_field($input['title']);
         }
         
-        if (isset($input['container_selector'])) {
+        if (isset($input['container_selector']) && !empty($input['container_selector'])) {
             $options['container_selector'] = sanitize_text_field($input['container_selector']);
+        } else {
+            // Asegurar que no se pierde el selector del contenedor
+            $options['container_selector'] = $default_options['container_selector'];
         }
         
-        if (isset($input['activation_selectors'])) {
+        if (isset($input['activation_selectors']) && !empty($input['activation_selectors'])) {
             $options['activation_selectors'] = sanitize_text_field($input['activation_selectors']);
+        } else {
+            // Asegurar que no se pierden los selectores de activación
+            $options['activation_selectors'] = $default_options['activation_selectors'];
         }
         
         // Opciones boolean - necesitan manejo especial para checkboxes
