@@ -59,12 +59,14 @@ class Snap_Sidebar_Cart_Admin {
      * @since    1.0.0
      */
     public function add_plugin_admin_menu() {
-        add_options_page(
+        add_menu_page(
             __('Snap Sidebar Cart', 'snap-sidebar-cart'),
-            __('Snap Sidebar Cart', 'snap-sidebar-cart'),
+            __('Sidebar Cart', 'snap-sidebar-cart'),
             'manage_options',
             'snap-sidebar-cart',
-            array($this, 'display_plugin_admin_page')
+            array($this, 'display_plugin_admin_page'),
+            'dashicons-cart',
+            58
         );
     }
     
@@ -75,7 +77,7 @@ class Snap_Sidebar_Cart_Admin {
      * @param    array    $links    Los enlaces de acción del plugin.
      */
     public function add_action_links($links) {
-        $settings_link = '<a href="' . admin_url('options-general.php?page=snap-sidebar-cart') . '">' . __('Ajustes', 'snap-sidebar-cart') . '</a>';
+        $settings_link = '<a href="' . admin_url('admin.php?page=snap-sidebar-cart') . '">' . __('Configuración', 'snap-sidebar-cart') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
     }

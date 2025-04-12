@@ -6,10 +6,15 @@
  */
 ?>
 
-<div class="wrap">
+<div class="wrap snap-sidebar-cart-admin">
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
     
     <?php
+    // Verificar si hay un mensaje de guardado
+    if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Configuración guardada.', 'snap-sidebar-cart') . '</p></div>';
+    }
+    
     $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'general';
     ?>
     
