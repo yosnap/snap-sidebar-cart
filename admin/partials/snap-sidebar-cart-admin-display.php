@@ -67,7 +67,7 @@
                             <label for="snap_sidebar_cart_options[show_shipping]"><?php _e('Mostrar costo de envío', 'snap-sidebar-cart'); ?></label>
                         </th>
                         <td>
-                            <input type="checkbox" id="snap_sidebar_cart_options[show_shipping]" name="snap_sidebar_cart_options[show_shipping]" value="1" <?php checked(1, $this->options['show_shipping']); ?> />
+                            <input type="checkbox" id="snap_sidebar_cart_options[show_shipping]" name="snap_sidebar_cart_options[show_shipping]" value="1" <?php checked(1, isset($this->options['show_shipping']) ? $this->options['show_shipping'] : true); ?> />
                         </td>
                     </tr>
                     
@@ -76,7 +76,7 @@
                             <label for="snap_sidebar_cart_options[auto_open]"><?php _e('Abrir automáticamente al añadir productos', 'snap-sidebar-cart'); ?></label>
                         </th>
                         <td>
-                            <input type="checkbox" id="snap_sidebar_cart_options[auto_open]" name="snap_sidebar_cart_options[auto_open]" value="1" <?php checked(1, $this->options['auto_open']); ?> />
+                            <input type="checkbox" id="snap_sidebar_cart_options[auto_open]" name="snap_sidebar_cart_options[auto_open]" value="1" <?php checked(1, isset($this->options['auto_open']) ? $this->options['auto_open'] : true); ?> />
                             <p class="description"><?php _e('Si está habilitado, el carrito lateral se abrirá automáticamente cuando se añada un producto al carrito', 'snap-sidebar-cart'); ?></p>
                         </td>
                     </tr>
@@ -162,7 +162,7 @@
                             <label for="snap_sidebar_cart_options[related_products][show]"><?php _e('Mostrar productos relacionados', 'snap-sidebar-cart'); ?></label>
                         </th>
                         <td>
-                            <input type="checkbox" id="snap_sidebar_cart_options[related_products][show]" name="snap_sidebar_cart_options[related_products][show]" value="1" <?php checked(1, $this->options['related_products']['show']); ?> />
+                            <input type="checkbox" id="snap_sidebar_cart_options[related_products][show]" name="snap_sidebar_cart_options[related_products][show]" value="1" <?php checked(1, isset($this->options['related_products']['show']) ? $this->options['related_products']['show'] : true); ?> />
                         </td>
                     </tr>
                     
