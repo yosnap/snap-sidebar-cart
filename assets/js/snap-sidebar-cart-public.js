@@ -37,7 +37,12 @@
         });
         
         // Cerrar el carrito
-        $close.on('click', closeSidebar);
+        $body.on('click', '.snap-sidebar-cart__close', function(e) {
+            e.preventDefault();
+            closeSidebar();
+            console.log('Close button clicked');
+        });
+        
         $overlay.on('click', closeSidebar);
         
         // Cerrar con Escape
@@ -150,6 +155,7 @@
             $sidebar.removeClass('open');
             $overlay.hide();
             $body.removeClass('snap-sidebar-cart-open');
+            console.log('Sidebar closed');
         }
         
         // Función para cargar productos relacionados

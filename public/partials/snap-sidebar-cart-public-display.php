@@ -14,7 +14,7 @@
             <h2 class="snap-sidebar-cart__title">
                 <?php echo esc_html($this->options['title']); ?> (<span class="snap-sidebar-cart__count"><?php echo WC()->cart->get_cart_contents_count(); ?></span>)
             </h2>
-            <button class="snap-sidebar-cart__close">×</button>
+            <button type="button" class="snap-sidebar-cart__close" aria-label="Cerrar">×</button>
         </div>
         
         <div class="snap-sidebar-cart__body">
