@@ -8,20 +8,12 @@
         var $body = $('body');
         var $sidebar = $('.snap-sidebar-cart');
         var $overlay = $('.snap-sidebar-cart__overlay');
-        var $close = $('.snap-sidebar-cart__close');
         var $container = $('.snap-sidebar-cart__products');
-        var activationSelectors = snap_sidebar_cart_params.activation_selectors;
         
-        // Abrir el carrito - selectors específicos
-        $body.on('click', activationSelectors, function(e) {
-            e.preventDefault();
-            openSidebar();
-            console.log('Activator clicked:', this);
-        });
-        
-        // Forzar la detección del icono ti-shopping-cart
+        // Selector específico para el icono del carrito
         $body.on('click', '.ti-shopping-cart', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             openSidebar();
             console.log('Ti-shopping-cart clicked');
         });
@@ -39,11 +31,18 @@
         // Cerrar el carrito
         $body.on('click', '.snap-sidebar-cart__close', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             closeSidebar();
             console.log('Close button clicked');
         });
         
-        $overlay.on('click', closeSidebar);
+        // Cierre al hacer clic en el overlay
+        $body.on('click', '.snap-sidebar-cart__overlay', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+            console.log('Overlay clicked');
+        });
         
         // Cerrar con Escape
         $(document).on('keyup', function(e) {
@@ -146,14 +145,14 @@
         // Función para abrir el sidebar
         function openSidebar() {
             $sidebar.addClass('open');
-            $overlay.show();
+            $('.snap-sidebar-cart__overlay').css('display', 'block');
             $body.addClass('snap-sidebar-cart-open');
         }
         
         // Función para cerrar el sidebar
         function closeSidebar() {
             $sidebar.removeClass('open');
-            $overlay.hide();
+            $('.snap-sidebar-cart__overlay').css('display', 'none');
             $body.removeClass('snap-sidebar-cart-open');
             console.log('Sidebar closed');
         }

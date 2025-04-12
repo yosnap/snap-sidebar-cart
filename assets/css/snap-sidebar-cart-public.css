@@ -12,13 +12,14 @@
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999999;
     display: none;
+    cursor: pointer;
 }
 
 /* Contenedor principal */
 .snap-sidebar-cart {
     position: fixed;
     top: 0;
-    right: -100%;
+    right: -420px; /* Más ancho que el sidebar para asegurar que esté fuera de la pantalla */
     height: 100%;
     z-index: 1000000;
     transition: right 0.3s ease-in-out;
@@ -29,6 +30,13 @@
 .snap-sidebar-cart.open {
     right: 0;
     box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+}
+
+/* Prevenir que los clics en el sidebar cierren el carrito */
+.snap-sidebar-cart__container {
+    position: relative;
+    z-index: 1000001;
+    background-color: #ffffff;
 }
 
 body.snap-sidebar-cart-open {
