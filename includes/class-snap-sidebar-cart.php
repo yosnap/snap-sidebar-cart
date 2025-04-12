@@ -32,6 +32,9 @@ class Snap_Sidebar_Cart {
      * Initialize plugin
      */
     public function init() {
+        // Load text domain
+        load_plugin_textdomain('snap-sidebar-cart', false, dirname(plugin_basename(__FILE__)) . '/../languages');
+        
         // Load default options
         $this->load_options();
 
@@ -40,6 +43,9 @@ class Snap_Sidebar_Cart {
 
         // Register hooks
         $this->register_hooks();
+        
+        // Log plugin initialization for debugging
+        $this->log('Plugin initialized');
     }
 
     /**
@@ -80,6 +86,27 @@ class Snap_Sidebar_Cart {
         // Initialize frontend
         $frontend = new Snap_Sidebar_Cart_Frontend($this->options);
         $frontend->init();
+        
+        // Register activation and deactivation hooks
+        register_activation_hook(SNAP_SIDEBAR_CART_PLUGIN_DIR . 'snap-sidebar-cart.php', array($this, 'activate'));
+        register_deactivation_hook(SNAP_SIDEBAR_CART_PLUGIN_DIR . 'snap-sidebar-cart.php', array($this, 'deactivate'));
+    }
+
+    /**
+     * Plugin activation
+     */
+    public function activate() {
+        $this->log('Plugin activated');
+        
+        // Add plugin version to database
+        update_option('snap_sidebar_cart_version', SNAP_SIDEBAR_CART_VERSION);
+    }
+
+    /**
+     * Plugin deactivation
+     */
+    public function deactivate() {
+        $this->log('Plugin deactivated');
     }
 
     /**
@@ -87,5 +114,14 @@ class Snap_Sidebar_Cart {
      */
     public function get_options() {
         return $this->options;
+    }
+    
+    /**
+     * Simple logging function
+     */
+    private function log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            error_log('Snap Sidebar Cart: ' . $message);
+        }
     }
 }
