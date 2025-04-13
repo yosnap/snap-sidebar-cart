@@ -216,6 +216,9 @@
 
     // Volver a vincular los eventos a los nuevos elementos del DOM
     bindQuantityEvents();
+    
+    // Verificar límites de stock
+    checkStockLimits();
 
     // Actualizar botones según el estado del carrito
     if (data.cart_count > 0) {
@@ -342,17 +345,40 @@
       e.preventDefault();
       e.stopPropagation();
       var $button = $(this);
+      
+      // Si el botón está deshabilitado, no hacer nada
+      if ($button.hasClass('disabled') || $button.attr('disabled')) {
+          console.log("Botón de incremento deshabilitado - Stock máximo alcanzado");
+          return;
+      }
+      
       var $quantityWrapper = $button.closest(".quantity.buttoned-input");
       var $input = $quantityWrapper.find("input.cart-item__quantity-input");
       var cartItemKey = $quantityWrapper.data("key") || $input.data("key");
       var $product = $button.closest(".snap-sidebar-cart__product");
-
+      
+      // Verificar límite de stock
+      var maxQty = parseInt($quantityWrapper.data("max-qty"), 10);
+      var currentVal = parseInt($input.val(), 10);
+      
       if (!cartItemKey && $product.length) {
         cartItemKey = $product.data("key");
       }
-
-      var currentVal = parseInt($input.val(), 10);
+      
+      // Verificar si va a exceder el stock disponible
+      if (!isNaN(maxQty) && currentVal >= maxQty) {
+          console.log("Stock máximo alcanzado:", maxQty);
+          // Deshabilitar el botón
+          $button.addClass('disabled').attr('disabled', 'disabled');
+          return;
+      }
+      
       var newVal = currentVal + 1;
+      
+      // Si el nuevo valor alcanza el máximo, deshabilitar el botón
+      if (!isNaN(maxQty) && newVal >= maxQty) {
+          $button.addClass('disabled').attr('disabled', 'disabled');
+      }
 
       console.log(
         "Evento directo - Aumentar cantidad:",
@@ -360,7 +386,9 @@
         "de",
         currentVal,
         "a",
-        newVal
+        newVal,
+        "- Stock máximo:",
+        maxQty || "No definido"
       );
 
       if (!cartItemKey) {
@@ -974,17 +1002,40 @@
       e.preventDefault();
       e.stopPropagation();
       var $button = $(this);
+      
+      // Si el botón está deshabilitado, no hacer nada
+      if ($button.hasClass('disabled') || $button.attr('disabled')) {
+          console.log("Botón de incremento deshabilitado - Stock máximo alcanzado");
+          return;
+      }
+      
       var $quantityWrapper = $button.closest(".quantity.buttoned-input");
       var $input = $quantityWrapper.find("input.cart-item__quantity-input");
       var cartItemKey = $quantityWrapper.data("key") || $input.data("key");
       var $product = $button.closest(".snap-sidebar-cart__product");
-
+      
+      // Verificar límite de stock
+      var maxQty = parseInt($quantityWrapper.data("max-qty"), 10);
+      var currentVal = parseInt($input.val(), 10);
+      
       if (!cartItemKey && $product.length) {
         cartItemKey = $product.data("key");
       }
-
-      var currentVal = parseInt($input.val(), 10);
+      
+      // Verificar si va a exceder el stock disponible
+      if (!isNaN(maxQty) && currentVal >= maxQty) {
+          console.log("Stock máximo alcanzado:", maxQty);
+          // Deshabilitar el botón
+          $button.addClass('disabled').attr('disabled', 'disabled');
+          return;
+      }
+      
       var newVal = currentVal + 1;
+      
+      // Si el nuevo valor alcanza el máximo, deshabilitar el botón
+      if (!isNaN(maxQty) && newVal >= maxQty) {
+          $button.addClass('disabled').attr('disabled', 'disabled');
+      }
 
       console.log(
         "Aumentar cantidad:",
@@ -992,7 +1043,9 @@
         "de",
         currentVal,
         "a",
-        newVal
+        newVal,
+        "- Stock máximo:",
+        maxQty || "No definido"
       );
 
       if (!cartItemKey) {
@@ -1077,74 +1130,8 @@
       $input.data("initial-value", newVal);
     });
 
-    // Eliminar producto directamente usando el botón X
-    $(document).on("click", ".snap-sidebar-cart__remove-product", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      console.log("Botón eliminar producto clickeado");
-
-      var $button = $(this);
-      var $product = $button.closest(
-        ".snap-sidebar-cart__product, li.snap-sidebar-cart__product"
-      );
-      var cartItemKey = $product.data("key");
-
-      // Si no se encuentra la clave, buscar en otras posibles ubicaciones
-      if (!cartItemKey) {
-        var $quantityInput = $product.find(
-          ".cart-item__quantity-input, input[name^='updates']"
-        );
-        if ($quantityInput.length) {
-          cartItemKey = $quantityInput.data("key");
-        }
-      }
-
-      console.log("Eliminar producto con clave:", cartItemKey);
-
-      // Si no tenemos una clave válida, no podemos continuar
-      if (!cartItemKey) {
-        console.error(
-          "Error: No se pudo encontrar la clave del producto para eliminar"
-        );
-        return;
-      }
-
-      // Añadir clase para animación de eliminación
-      $product.addClass("removing");
-
-      // Mostrar loader
-      $product.find(".snap-sidebar-cart__product-loader").show();
-
-      // Enviar solicitud AJAX para eliminar el producto
-      $.ajax({
-        type: "POST",
-        url: snap_sidebar_cart_params.ajax_url,
-        data: {
-          action: "snap_sidebar_cart_remove",
-          nonce: snap_sidebar_cart_params.nonce,
-          cart_item_key: cartItemKey,
-        },
-        success: function (response) {
-          console.log("Respuesta al eliminar:", response);
-          if (response.success) {
-            updateCartContent(response.data);
-          } else {
-            console.error(
-              "Error al eliminar producto:",
-              response.data?.message || "Error desconocido"
-            );
-            $product.find(".snap-sidebar-cart__product-loader").hide();
-            $product.removeClass("removing");
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error("Error AJAX al eliminar producto:", error);
-          $product.find(".snap-sidebar-cart__product-loader").hide();
-          $product.removeClass("removing");
-        },
-      });
-    });
+    // El código para eliminar productos ha sido removido
+    // Los productos ahora deben ser eliminados reduciendo la cantidad a 0
 
     // Inicializar slider cuando el DOM esté listo
     function initSliders() {
@@ -1215,9 +1202,38 @@
       });
     }
 
+    // Función para verificar límites de stock y deshabilitar botones si es necesario
+    function checkStockLimits() {
+      console.log("Verificando límites de stock para todos los productos");
+      
+      // Recorrer cada contenedor de cantidad
+      $(".quantity.buttoned-input").each(function() {
+        var $wrapper = $(this);
+        var maxQty = parseInt($wrapper.data("max-qty"), 10);
+        
+        // Solo si hay un máximo definido
+        if (!isNaN(maxQty)) {
+          var $input = $wrapper.find("input.cart-item__quantity-input");
+          var currentVal = parseInt($input.val(), 10);
+          var $increaseBtn = $wrapper.find(".notabutton.quantity-up");
+          
+          // Si la cantidad actual ha alcanzado o superado el máximo
+          if (currentVal >= maxQty) {
+            // Deshabilitar el botón de incremento
+            $increaseBtn.addClass('disabled').attr('disabled', 'disabled');
+            console.log("Botón deshabilitado para producto con stock máximo:", maxQty, "cantidad actual:", currentVal);
+          } else {
+            // Habilitar el botón de incremento
+            $increaseBtn.removeClass('disabled').removeAttr('disabled');
+          }
+        }
+      });
+    }
+    
     // Ejecutar después de que el DOM esté listo
     initSliders();
     bindQuantityEvents();
+    checkStockLimits(); // Verificar stock inicial
 
     // Ejecutar también cuando cambie el tamaño de la ventana
     $(window).on("resize", function () {

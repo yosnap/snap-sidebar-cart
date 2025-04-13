@@ -98,13 +98,6 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                     <?php printf(__('Entrega en 1-%d días hábiles', 'snap-sidebar-cart'), $shipping_days); ?>
                 </div>
             </div>
-            
-            <button type="button" class="snap-sidebar-cart__remove-product" 
-                    data-key="<?php echo esc_attr($cart_item_key); ?>" 
-                    data-product-id="<?php echo esc_attr($product_id); ?>"
-                    aria-label="<?php esc_attr_e('Eliminar este producto', 'snap-sidebar-cart'); ?>">
-                &times;
-            </button>
         </div>
 
         <div class="snap-sidebar-cart__product-footer">
