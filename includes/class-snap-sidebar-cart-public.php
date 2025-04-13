@@ -46,7 +46,7 @@ class Snap_Sidebar_Cart_Public {
     /**
      * Registrar los scripts y estilos para el área pública.
      *
-     * @since    1.0.0
+     * @since    1.0.14
      */
     public function enqueue_scripts() {
         // Incluir scripts sólo si WooCommerce está activo
@@ -54,7 +54,17 @@ class Snap_Sidebar_Cart_Public {
             return;
         }
         
+        // Script principal del carrito
         wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
+        
+        // Script para manejar la última unidad (soluciona problema de visualización)
+        wp_enqueue_script('snap-sidebar-cart-last-unit-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/last-unit-handler.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
+        
+        // Script para gestionar límites de stock y el botón eliminar
+        wp_enqueue_script('snap-sidebar-cart-stock-and-remove', SNAP_SIDEBAR_CART_URL . 'assets/js/stock-and-remove-handler.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
+        
+        // Script mejorado con alertas visuales para solucionar el problema del botón eliminar
+        wp_enqueue_script('snap-sidebar-cart-remove-button-fix-enhanced', SNAP_SIDEBAR_CART_URL . 'assets/js/remove-button-fix-enhanced.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
         
         // Opciones para el script
         $script_options = array(

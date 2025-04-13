@@ -1,5 +1,93 @@
 # Registro de cambios
 
+## 1.0.16 - 2025-04-13
+### Mejoras
+- Implementado correctamente el cambio de imagen en hover para productos relacionados
+- Añadidos estilos CSS avanzados para el efecto hover con transición suave
+- Mejorada la implementación de eliminación de productos cuando la cantidad llega a 0
+- Optimizado el preloader con nuevas opciones visuales y mejor rendimiento
+- Actualizadas las opciones de estilo para mayor personalización del carrito
+- Reorganizada la estructura de CSS para mejor mantenimiento y rendimiento
+- Añadida animación de fade in cuando se añaden nuevos productos al carrito
+
+### Correcciones
+- Solucionado definitivamente el problema del botón "eliminar" que solo mostraba alertas
+- Eliminado el código de depuración (onclick con alert) del botón eliminar
+- Corregido el comportamiento del slider de productos relacionados
+- Mejorada la carga de scripts para evitar conflictos
+
+## 1.0.15 - 2025-04-13
+### Correcciones
+- Implementada versión de depuración extrema con alertas visuales para el botón eliminar
+- Rediseñado el botón eliminar para hacerlo más visible y reconocible
+- Añadido manejador de eventos inline (onclick) para confirmar la interacción
+- Agregada información de depuración visible en el DOM para diagnóstico
+- Añadidos botones de emergencia para garantizar la funcionalidad
+
+## 1.0.14 - 2025-04-13
+### Correcciones
+- Solucionado definitivamente el problema del botón eliminar con un manejador de eventos especializado
+- Implementado sistema de depuración detallada para monitorear eventos del botón eliminar
+- Añadido atributo data-key directamente al botón eliminar para facilitar su funcionamiento
+- Mejorado el aspecto visual del botón eliminar para hacerlo más visible y clicable
+- Implementada estrategia de múltiples capas para garantizar la detección de la clave del producto
+
+## 1.0.13 - 2025-04-13
+### Correcciones
+- Implementado sistema para deshabilitar el botón "+" cuando se alcanza el stock máximo disponible
+- Corregido el problema del botón "X" que no funcionaba para eliminar productos
+- Agregada información visual sobre el límite de stock en el input de cantidad
+- Mejorada la integración con WooCommerce para el control de inventario
+- Actualizada la gestión de eventos para mejor compatibilidad con todos los navegadores
+
+## 1.0.12 - 2025-04-13
+### Correcciones
+- Solucionado definitivamente el problema del sidebar que no se muestra al agregar la última unidad disponible
+- Implementado un mecanismo de respaldo JavaScript para garantizar la apertura del sidebar
+- Corregido el orden inconsistente de productos entre actualizaciones
+- Reescrita la lógica de ordenación para usar posiciones basadas en IDs de productos
+- Añadido sistema de timestamps fijo por producto para mantener consistencia en el ordenamiento
+- Optimizadas las operaciones AJAX para mantener el estado del carrito en todo momento
+
+## 1.0.11 - 2025-04-13
+### Correcciones
+- Solucionado el problema de mostrar el sidebar cuando se agrega la última unidad disponible de un producto
+- Corregido el orden inconsistente de productos en el carrito
+- Implementado sistema de timestamps mejorado para evitar colisiones en la ordenación
+- Añadida verificación del nivel de stock para detectar cuando se agrega la última unidad
+- Mejorada la consistencia en la presentación del carrito con ordenamiento estable
+
+## 1.0.10 - 2025-04-13
+### Correcciones
+- Solucionado el problema de cantidades incorrectas al eliminar productos duplicados
+- Mejorada la lógica de detección de duplicados para mayor precisión
+- Añadidos registros detallados de las cantidades antes y después de actualizar
+- Optimizado el algoritmo para prevenir la suma erronea de cantidades
+- Mejorada la identificación precisa de productos con variaciones
+
+## 1.0.9 - 2025-04-13
+### Correcciones
+- Corregido el problema persistente de productos duplicados en el carrito
+- Implementada detección y eliminación automática de productos duplicados
+- Mejorada la lógica de timestamps para asegurar el correcto ordenamiento de productos
+- Optimizados los métodos AJAX para trabajar en sincronización con los filtros de WooCommerce
+- Añadidos registros detallados para monitorización y depuración
+
+## 1.0.8 - 2025-04-13
+### Correcciones
+- Solucionado definitivamente el problema de duplicación de productos en el carrito
+- Revertido el enfoque anterior y mejorado con una implementación más directa para manejar productos idénticos
+- Optimizado el código para trabajar más eficientemente con el sistema de carrito de WooCommerce
+- Depuración mejorada con información detallada en logs para facilitar el seguimiento
+
+## 1.0.7 - 2025-04-13
+### Correcciones
+- Solucionado el problema crítico que causaba la creación de entradas duplicadas al agregar el mismo producto al carrito varias veces
+- Implementado un sistema robusto de claves únicas para productos y variaciones para prevenir duplicados
+- Mejorada la lógica de actualización de cantidad para productos existentes en el carrito
+- Preservada la funcionalidad de ordenación configurable (productos nuevos al principio o al final)
+- Refinado el sistema de timestamps para el correcto ordenamiento de productos
+
 ## 1.0.6 - 2025-04-13
 ### Nuevas características
 - Añadida nueva sección de configuración para animaciones en el panel de administración

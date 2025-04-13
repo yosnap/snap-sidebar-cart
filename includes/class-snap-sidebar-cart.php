@@ -135,30 +135,47 @@ class Snap_Sidebar_Cart {
     /**
      * Añade un timestamp al producto cuando se agrega al carrito.
      * Esto permite ordenar los productos por la fecha/hora de adición.
+     * También gestiona la agrupación de productos idénticos actualizando la cantidad.
      *
-     * @since    1.0.7
+     * @since    1.0.8
      * @param    array    $cart_item_data    Los datos actuales del artículo del carrito.
      * @param    int      $product_id        ID del producto.
      * @param    int      $variation_id      ID de variación (si aplica).
-     * @return   array                       Los datos del artículo con el timestamp añadido.
+     * @return   array|false                 Los datos del artículo con el timestamp añadido o false para prevenir adición.
      */
     public function add_timestamp_to_cart_item($cart_item_data, $product_id, $variation_id) {
+        // Obtener la instancia actual del carrito de WooCommerce
+        $cart = WC()->cart;
+        if (!$cart) {
+            error_log('Error en add_timestamp_to_cart_item: WC()->cart no está disponible');
+            return $cart_item_data; // Fallback seguro
+        }
+        
         // Verificar si este producto ya existe en el carrito
-        $cart = WC()->cart->get_cart();
         $product_in_cart = false;
-        $cart_item_key = '';
+        $existing_cart_item_key = '';
         
-        // Crear un identificador único para este producto + variación
-        $product_variation_id = $product_id . '-' . ($variation_id > 0 ? $variation_id : '0');
-        
-        foreach ($cart as $key => $item) {
-            $cart_product_variation_id = $item['product_id'] . '-' . ($item['variation_id'] > 0 ? $item['variation_id'] : '0');
-            
-            // Comprobamos si es el mismo producto y la misma variación
-            if ($cart_product_variation_id === $product_variation_id) {
-                $product_in_cart = true;
-                $cart_item_key = $key;
-                break;
+        // Buscar si el producto ya existe comparando exactamente producto y variación
+        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+            // Comparamos por ID de producto y variación (o ambas son 0)
+            if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
+                // Verificar también atributos de variación si los hay
+                $variation_match = true;
+                if (!empty($cart_item['variation']) && isset($_REQUEST['variation'])) {
+                    $requested_variation = $_REQUEST['variation'];
+                    foreach ($requested_variation as $attribute => $value) {
+                        if (!isset($cart_item['variation'][$attribute]) || $cart_item['variation'][$attribute] !== $value) {
+                            $variation_match = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($variation_match) {
+                    $product_in_cart = true;
+                    $existing_cart_item_key = $cart_item_key;
+                    break;
+                }
             }
         }
         
@@ -166,43 +183,49 @@ class Snap_Sidebar_Cart {
         $product = wc_get_product($product_id);
         $product_name = $product ? $product->get_name() : 'Producto desconocido';
         $timestamp = time();
-        error_log('Añadido timestamp al producto ID ' . $product_id . ' (' . $product_name . '): ' . $timestamp . ' - Ya en carrito: ' . ($product_in_cart ? 'Sí' : 'No'));
         
-        // Si el producto ya está en el carrito, hay dos opciones:
-        // 1. Retornar un array vacío para que WooCommerce maneje la lógica de actualización
-        // 2. Llamar directamente a la función de WooCommerce para actualizar la cantidad
-        if ($product_in_cart && !empty($cart_item_key)) {
-            // Opción 1: Dejar que WooCommerce actualice la cantidad automáticamente
-            // Para esto NO agregamos datos personalizados que forzarían a crear un nuevo elemento
+        error_log('Proceso para producto ID ' . $product_id . ' (' . $product_name . '): Timestamp=' . $timestamp . ', Ya en carrito: ' . ($product_in_cart ? 'Sí (clave:' . $existing_cart_item_key . ')' : 'No'));
+        
+        // Si el producto ya está en el carrito y tenemos su clave
+        if ($product_in_cart && !empty($existing_cart_item_key)) {
+            // Obtener la cantidad actual y la nueva cantidad a añadir
+            $cart_items = $cart->get_cart();
+            $current_quantity = $cart_items[$existing_cart_item_key]['quantity'];
+            $quantity_to_add = isset($_REQUEST['quantity']) ? absint($_REQUEST['quantity']) : 1;
+            $new_quantity = $current_quantity + $quantity_to_add;
             
-            // Opción 2: Actualizar manualmente la cantidad (descomentar si se prefiere)
-            /*
-            // Obtenemos la cantidad actual
-            $current_quantity = $cart[$cart_item_key]['quantity'];
-            // Actualizamos el carrito con una unidad más
-            WC()->cart->set_quantity($cart_item_key, $current_quantity + 1, true);
-            // Retornamos FALSE para evitar que se añada un nuevo elemento al carrito
+            error_log('Actualizando cantidad del producto existente de ' . $current_quantity . ' a ' . $new_quantity);
+            
+            // Actualizar la cantidad del producto existente
+            $cart->set_quantity($existing_cart_item_key, $new_quantity, true);
+            
+            // Actualizar el timestamp para mantener el producto en la posición correcta según configuración
+            // Esto es importante para preservar la ordenación por nuevos/antiguos
+            $cart_items = $cart->get_cart();
+            if (isset($cart_items[$existing_cart_item_key])) {
+                $cart_items[$existing_cart_item_key]['time_added'] = $timestamp;
+                $cart->set_cart_contents($cart_items);
+                error_log('Timestamp actualizado para el producto existente: ' . $timestamp);
+            }
+            
+            // Verificar después de la actualización para confirmar la cantidad correcta
+            $cart_items = $cart->get_cart();
+            if (isset($cart_items[$existing_cart_item_key])) {
+                $updated_quantity = $cart_items[$existing_cart_item_key]['quantity'];
+                error_log('Cantidad después de actualizar: ' . $updated_quantity . ' (esperada: ' . $new_quantity . ')');
+            }
+            
+            // IMPORTANTE: Retornar false para que WooCommerce no añada un nuevo item al carrito
             return false;
-            */
-            
-            // Agregamos solo el timestamp regular pero sin datos personalizados
-            $cart_item_data['time_added'] = $timestamp;
-            return $cart_item_data;
         } else {
-            // Es un nuevo producto, agregamos todos los datos necesarios
-            // Asegurarse de que cart_item_data sea un array
+            // Es un nuevo producto, agregamos los datos necesarios
             if (!is_array($cart_item_data)) {
                 $cart_item_data = array();
             }
             
-            // Agregar el timestamp actual a los datos del artículo
+            // Agregar el timestamp al ítem para ordenar después
             $cart_item_data['time_added'] = $timestamp;
-            
-            // Generar datos personalizados para productos nuevos
-            if (!isset($cart_item_data['custom_data'])) {
-                $cart_item_data['custom_data'] = array();
-            }
-            $cart_item_data['custom_data']['time_added'] = $timestamp;
+            error_log('Nuevo producto añadido con timestamp: ' . $timestamp);
             
             return $cart_item_data;
         }

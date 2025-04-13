@@ -28,7 +28,7 @@ class Snap_Sidebar_Cart_Ajax {
     /**
      * Agrega un producto al carrito vía AJAX.
      *
-     * @since    1.0.0
+     * @since    1.0.11
      */
     public function add_to_cart() {
         check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
@@ -42,30 +42,106 @@ class Snap_Sidebar_Cart_Ajax {
         $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
         $variation = isset($_POST['variation']) ? $_POST['variation'] : array();
         
-        // DEBUG: Verificar configuración antes de añadir al carrito
-        error_log('==== INICIO add_to_cart() ====');
-        error_log('Producto a añadir ID: ' . $product_id);
+        // DEBUG: Información detallada sobre la operación
+        error_log('==== INICIO add_to_cart() AJAX ====');
+        error_log('Producto a añadir ID: ' . $product_id . ', Cantidad: ' . $quantity);
+        error_log('Variación ID: ' . $variation_id . ', Atributos: ' . json_encode($variation));
         error_log('Configuración de posición de nuevos productos: ' . (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'No definido'));
         
         // Verificar que el producto existe
         $product = wc_get_product($product_id);
         if (!$product) {
+            error_log('Error: Producto no encontrado');
             wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
         }
         
-        error_log('Nombre del producto a añadir: ' . $product->get_name());
+        // Verificar stock antes de proceder
+        $stock_quantity = $product->get_stock_quantity();
+        error_log('Stock disponible del producto: ' . ($stock_quantity !== null ? $stock_quantity : 'Ilimitado'));
         
-        // Agregar al carrito
-        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
+        // Comprobar la cantidad actual en el carrito de este producto
+        $cart = WC()->cart;
+        $existing_item_key = null;
+        $needs_quantity_update = false;
+        $current_qty_in_cart = 0;
         
-        error_log('Clave asignada al producto: ' . ($cart_item_key ? $cart_item_key : 'Error - No se añadió'));
-        error_log('==== FIN add_to_cart() ====');
-        
-        if ($cart_item_key) {
-            $this->get_cart_contents($cart_item_key);
-        } else {
-            wp_send_json_error(array('message' => __('Error al añadir al carrito', 'snap-sidebar-cart')));
+        // Buscar si ya existe una entrada idéntica en el carrito
+        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+            if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
+                // Para productos con variaciones, verificar si los atributos coinciden
+                $attributes_match = true;
+                if (!empty($variation)) {
+                    foreach ($variation as $attr_name => $attr_value) {
+                        if (!isset($cart_item['variation'][$attr_name]) || $cart_item['variation'][$attr_name] !== $attr_value) {
+                            $attributes_match = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($attributes_match) {
+                    $existing_item_key = $cart_item_key;
+                    $needs_quantity_update = true;
+                    $current_qty_in_cart = $cart_item['quantity'];
+                    error_log('Producto encontrado en carrito: Clave=' . $existing_item_key . ', Cantidad actual=' . $current_qty_in_cart);
+                    break;
+                }
+            }
         }
+        
+        // Si el producto ya existe, actualizamos su cantidad manualmente
+        if ($needs_quantity_update && $existing_item_key) {
+            $new_qty = $current_qty_in_cart + $quantity;
+            
+            error_log('Actualizando cantidad del producto existente de ' . $current_qty_in_cart . ' a ' . $new_qty);
+            
+            // Verificar si esta es la última unidad disponible
+            $is_last_available = false;
+            if ($stock_quantity !== null && $new_qty >= $stock_quantity) {
+                $is_last_available = true;
+                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+            }
+            
+            // Actualizamos la cantidad
+            $cart->set_quantity($existing_item_key, $new_qty, true);
+            
+            // Actualizar timestamp para mantener el orden correcto 
+            // (usamos valor absoluto para asegurar que los timestamps sean únicos)
+            $cart_items = $cart->get_cart();
+            if (isset($cart_items[$existing_item_key])) {
+                $timestamp = time() + abs(crc32($existing_item_key)); // Usar hash de clave para asegurar valor único
+                $cart_items[$existing_item_key]['time_added'] = $timestamp;
+                $cart->set_cart_contents($cart_items);
+                error_log('Timestamp actualizado: ' . $timestamp);
+            }
+            
+            $cart_item_key = $existing_item_key;
+        } else {
+            // Es un producto nuevo, lo añadimos normalmente
+            error_log('Añadiendo nuevo producto al carrito');
+            $cart_item_key = $cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
+            
+            // Verificar si esta es la última unidad disponible
+            if ($stock_quantity !== null && $quantity >= $stock_quantity) {
+                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+                $is_last_available = true;
+            }
+        }
+        
+        // Verificar el resultado y registrar información
+        if ($cart_item_key) {
+            error_log('Operación exitosa: clave del producto ' . $cart_item_key);
+        } else {
+            error_log('No se pudo obtener una clave para el producto');
+        }
+        
+        error_log('==== FIN add_to_cart() AJAX ====');
+        
+        // Forzar el recálculo de totales
+        $cart->calculate_totals();
+        
+        // Devolver el contenido actualizado del carrito
+        $this->get_cart_contents($cart_item_key);
         
         wp_die();
     }
@@ -504,27 +580,91 @@ class Snap_Sidebar_Cart_Ajax {
     /**
      * Obtiene el contenido del carrito y lo envía como respuesta JSON.
      *
-     * @since    1.0.0
+     * @since    1.0.9
      * @param    string    $new_item_key    Clave del nuevo item añadido (opcional).
      */
     private function get_cart_contents($new_item_key = '') {
         // Asegurarse de que los totales estén calculados
         WC()->cart->calculate_totals();
         
+        // Obtener elementos del carrito y contadores
         $cart_items = WC()->cart->get_cart();
         $cart_count = WC()->cart->get_cart_contents_count();
         $subtotal = WC()->cart->get_subtotal() + WC()->cart->get_subtotal_tax();
         $shipping_total = WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax();
         
-        // Obtener preferencia de posición para nuevos productos (valor por defecto 'top')
-        // Este valor debería coincidir con lo que el usuario ha configurado en el panel de administración
+        // Obtener preferencia de posición para nuevos productos
         $new_product_position = isset($this->options['new_product_position']) 
             ? $this->options['new_product_position'] 
             : 'top';
             
-        error_log('Posición configurada para nuevos productos: ' . $new_product_position);
-        error_log('Total de productos en el carrito antes de ordenar: ' . count($cart_items));
-
+        error_log('get_cart_contents - Posición configurada: ' . $new_product_position . ', Total productos: ' . count($cart_items));
+        
+        // Verificar si hay productos duplicados (NO DEBERÍA HABER)
+        $product_counts = array();
+        foreach ($cart_items as $key => $item) {
+            $product_id = $item['product_id'];
+            $variation_id = $item['variation_id'];
+            
+            // Crear un identificador único basado en producto y variación
+            // Para las variaciones, también incluir los atributos específicos
+            $variation_string = '';
+            if (!empty($item['variation']) && is_array($item['variation'])) {
+                // Ordenar los atributos para consistencia
+                ksort($item['variation']);
+                foreach ($item['variation'] as $attr => $value) {
+                    $variation_string .= $attr . '=' . $value . ';';
+                }
+            }
+            
+            $identifier = $product_id . '-' . $variation_id . '-' . $variation_string;
+            
+            if (!isset($product_counts[$identifier])) {
+                $product_counts[$identifier] = ['count' => 0, 'keys' => [], 'name' => isset($item['data']) ? $item['data']->get_name() : 'Producto'];
+            }
+            
+            $product_counts[$identifier]['count']++;
+            $product_counts[$identifier]['keys'][] = $key;
+            $product_counts[$identifier]['qty'][$key] = $item['quantity'];
+        }
+        
+        // Registrar si se encontraron duplicados exactos (mismo producto y variación)
+        foreach ($product_counts as $identifier => $data) {
+            if ($data['count'] > 1) {
+                error_log('ALERTA: Producto duplicado encontrado: ' . $identifier . ' aparece ' . $data['count'] . ' veces');
+                
+                // Mostrar keys de los duplicados
+                error_log('Claves de los duplicados: ' . implode(', ', $data['keys']));
+                
+                // Para este caso de duplicados exactos, debemos conservar una sola entrada
+                // Pero asegurarnos de que la cantidad sea correcta
+                // Identificamos qué entrada mantener (usaremos la primera por convención)
+                $main_key = $data['keys'][0];
+                
+                // Antes de modificar, registramos las cantidades para depuración
+                $qty_log = "Cantidades originales: ";
+                foreach ($data['keys'] as $k) {
+                    $qty_log .= "{$k}:{$cart_items[$k]['quantity']}, ";
+                }
+                error_log($qty_log);
+                
+                // Si hay duplicados, debemos conservar uno y eliminar los otros
+                // IMPORTANTE: No vamos a sumar las cantidades, ya que WooCommerce ya incrementó la cantidad
+                // cuando el usuario agregó el producto (ver add_timestamp_to_cart_item)
+                
+                for ($i = 1; $i < count($data['keys']); $i++) {
+                    $dup_key = $data['keys'][$i];
+                    
+                    // Eliminar el duplicado sin sumar su cantidad
+                    error_log('Eliminando duplicado con clave: ' . $dup_key . ' con cantidad: ' . $cart_items[$dup_key]['quantity']);
+                    WC()->cart->remove_cart_item($dup_key);
+                }
+                
+                // Recargar los elementos del carrito después de estas modificaciones
+                $cart_items = WC()->cart->get_cart();
+            }
+        }
+        
         // Copia de los items del carrito para ordenar
         $sorted_cart_items = $cart_items;
         
@@ -533,21 +673,56 @@ class Snap_Sidebar_Cart_Ajax {
             $timestamp = isset($item['time_added']) ? $item['time_added'] : 
                         (isset($item['custom_data']['time_added']) ? $item['custom_data']['time_added'] : 0);
             $product_name = isset($item['data']) ? $item['data']->get_name() : 'Producto sin nombre';
-            error_log("Producto en carrito: {$product_name}, Key: {$key}, Timestamp: {$timestamp}");
+            $product_id = $item['product_id'];
+            $variation_id = $item['variation_id'];
+            error_log("Producto en carrito: {$product_name} (ID:{$product_id}, Var:{$variation_id}), Key: {$key}, Timestamp: {$timestamp}");
         }
         
         // Solo ordenar si hay más de un producto
         if (count($sorted_cart_items) > 1) {
-            // Verificar que los productos tengan timestamp y asegurar que todos tengan uno
+            // Para evitar problemas de ordenación inconsistente, asignaremos tiempos fijos
+            // en lugar de aleatorios, basados en el ID del producto
+            $product_position_map = array();
+            $position_counter = 1;
+            
+            // Primero creamos un mapeo de IDs de productos a posiciones
             foreach ($sorted_cart_items as $key => $item) {
-                // Verificar primero en custom_data si existe
-                if (isset($item['custom_data']) && isset($item['custom_data']['time_added'])) {
-                    $sorted_cart_items[$key]['time_added'] = $item['custom_data']['time_added'];
+                $product_id = $item['product_id'];
+                if (!isset($product_position_map[$product_id])) {
+                    $product_position_map[$product_id] = $position_counter++;
                 }
-                // Si aún no tiene timestamp, usar uno por defecto
-                if (!isset($sorted_cart_items[$key]['time_added'])) {
-                    $sorted_cart_items[$key]['time_added'] = time() - 9999 + rand(1, 100); // Timestamp antiguo aleatorio
-                    error_log("Añadiendo timestamp por defecto para: {$key} - " . $sorted_cart_items[$key]['time_added']);
+            }
+            
+            // Ahora asignamos timestamps basados en este mapeo consistente
+            foreach ($sorted_cart_items as $key => $item) {
+                $has_timestamp = false;
+                $product_id = $item['product_id'];
+                
+                // Verificar primero en la raíz del item
+                if (isset($item['time_added'])) {
+                    $has_timestamp = true;
+                }
+                // Verificar en custom_data si existe
+                else if (isset($item['custom_data']) && isset($item['custom_data']['time_added'])) {
+                    $sorted_cart_items[$key]['time_added'] = $item['custom_data']['time_added'];
+                    $has_timestamp = true;
+                }
+                
+                // Si aún no tiene timestamp, o si este producto está duplicado, asignar uno basado en la posición fija
+                if (!$has_timestamp || $key === $new_item_key) {
+                    // Si es el item recién añadido, ponerle el timestamp actual más un valor alto
+                    if ($key === $new_item_key) {
+                        // Usar timestamp actual + 10000 para asegurar que esté en la parte superior
+                        $sorted_cart_items[$key]['time_added'] = time() + 10000;
+                        error_log("Asignando timestamp ACTUAL + PRIORIDAD al nuevo producto: {$key}");
+                    } else {
+                        // Para productos existentes, asignar un timestamp basado en la posición fija del producto
+                        // Esto asegura que el orden sea consistente entre recargas
+                        $base_timestamp = time() - 20000; // Base antigua
+                        $position_value = isset($product_position_map[$product_id]) ? $product_position_map[$product_id] * 100 : 0;
+                        $sorted_cart_items[$key]['time_added'] = $base_timestamp + $position_value;
+                        error_log("Asignando timestamp CONSISTENTE para: {$key} basado en ID: {$product_id}");
+                    }
                 }
             }
             
@@ -557,7 +732,15 @@ class Snap_Sidebar_Cart_Ajax {
                 uasort($sorted_cart_items, function($a, $b) {
                     $time_a = isset($a['time_added']) ? $a['time_added'] : 0;
                     $time_b = isset($b['time_added']) ? $b['time_added'] : 0;
-                    return $time_b - $time_a; // Orden descendente
+                    
+                    // Si los timestamps son iguales, usar el ID del producto para mantener consistencia
+                    if ($time_a == $time_b) {
+                        $id_a = $a['product_id'];
+                        $id_b = $b['product_id'];
+                        return $id_a - $id_b; // Orden ascendente por ID como tiebreaker
+                    }
+                    
+                    return $time_b - $time_a; // Orden descendente por timestamp
                 });
                 error_log('Ordenando carrito: DESCENDENTE (más nuevos primero)');
             } else {
@@ -565,7 +748,15 @@ class Snap_Sidebar_Cart_Ajax {
                 uasort($sorted_cart_items, function($a, $b) {
                     $time_a = isset($a['time_added']) ? $a['time_added'] : 0;
                     $time_b = isset($b['time_added']) ? $b['time_added'] : 0;
-                    return $time_a - $time_b; // Orden ascendente
+                    
+                    // Si los timestamps son iguales, usar el ID del producto para mantener consistencia
+                    if ($time_a == $time_b) {
+                        $id_a = $a['product_id'];
+                        $id_b = $b['product_id'];
+                        return $id_a - $id_b; // Orden ascendente por ID como tiebreaker
+                    }
+                    
+                    return $time_a - $time_b; // Orden ascendente por timestamp
                 });
                 error_log('Ordenando carrito: ASCENDENTE (más antiguos primero)');
             }
@@ -575,7 +766,16 @@ class Snap_Sidebar_Cart_Ajax {
             foreach ($sorted_cart_items as $key => $item) {
                 $product_name = isset($item['data']) ? $item['data']->get_name() : 'Producto sin nombre';
                 $timestamp = isset($item['time_added']) ? $item['time_added'] : 0;
-                error_log("  - {$product_name}, Key: {$key}, Timestamp: {$timestamp}");
+                $product_id = $item['product_id'];
+                error_log("  - {$product_name} (ID:{$product_id}), Key: {$key}, Timestamp: {$timestamp}, Cantidad: {$item['quantity']}");
+            }
+            
+            // Registrar el nuevo orden para debug
+            error_log("Orden de productos después de ordenar:");
+            foreach ($sorted_cart_items as $key => $item) {
+                $product_name = isset($item['data']) ? $item['data']->get_name() : 'Producto sin nombre';
+                $timestamp = isset($item['time_added']) ? $item['time_added'] : 0;
+                error_log("  - {$product_name}, Key: {$key}, Timestamp: {$timestamp}, Cantidad: {$item['quantity']}");
             }
         }
         

@@ -56,9 +56,18 @@ $color = $related_product->get_attribute('color') ? $related_product->get_attrib
     <?php endif; ?>
     
     <div class="snap-sidebar-cart__related-product-image">
-        <a href="<?php echo esc_url($product_permalink); ?>">
-            <?php echo $thumbnail; ?>
-            <?php echo $gallery_html; ?>
+        <a href="<?php echo esc_url($product_permalink); ?>" class="product-image-container">
+            <div class="primary-image">
+                <?php echo $thumbnail; ?>
+            </div>
+            <?php if (!empty($gallery_images)) : 
+                $hover_image_id = reset($gallery_images);
+                $hover_image_url = wp_get_attachment_image_url($hover_image_id, 'woocommerce_thumbnail');
+                if ($hover_image_url) : ?>
+                <div class="hover-image">
+                    <img src="<?php echo esc_url($hover_image_url); ?>" alt="<?php echo esc_attr($product_name); ?> - Imagen alternativa">
+                </div>
+            <?php endif; endif; ?>
         </a>
     </div>
 
