@@ -1,29 +1,19 @@
 # Snap Sidebar Cart para WooCommerce
 
-Un plugin de WordPress que añade un carrito lateral (sidebar) interactivo y personalizable para WooCommerce, con productos relacionados y animaciones.
+Un plugin para WordPress que proporciona un carrito lateral (sidebar) personalizable para WooCommerce con animaciones, productos relacionados y más.
 
-## Características principales
+## Características Principales
 
-- **Carrito lateral interactivo**: Se muestra cuando los usuarios agregan productos al carrito o hacen clic en selectores específicos.
-- **Múltiples tipos de productos relacionados**:
-  - Productos relacionados definidos por el usuario
-  - Productos de la misma categoría
-  - Productos más vendidos
-  - Accesorios
-- **Animaciones suaves**: Efectos de fade-in cuando se agregan productos y preloader durante las actualizaciones.
-- **Personalización completa**: Configuración de colores, anchos, y estilos desde el panel de administración.
-- **Experiencia mejorada**: Los productos se eliminan automáticamente cuando la cantidad llega a 0.
-- **Efecto hover en productos relacionados**: Muestra imágenes alternativas de la galería al pasar el cursor.
-- **Información detallada**: Muestra el precio del envío y el subtotal con IVA incluido.
-- **Sistema de pestañas**: Permite navegar entre diferentes tipos de productos recomendados.
-- **Diseño moderno**: Interfaz limpia y atractiva basada en tendencias actuales de diseño web.
-
-## Instalación
-
-1. Descarga el plugin y descomprímelo.
-2. Sube la carpeta `snap-sidebar-cart` a la carpeta `/wp-content/plugins/` de tu sitio WordPress.
-3. Activa el plugin a través del menú 'Plugins' en WordPress.
-4. Configura las opciones del plugin en Ajustes > Carrito Lateral.
+- **Carrito lateral** que se muestra al agregar productos o hacer click en selectores configurados
+- **Listado de productos** con cantidades ajustables y opción de eliminar
+- **Animaciones personalizables** para agregar/eliminar productos y actualizar cantidades
+- **Slider de productos relacionados** con múltiples opciones
+- **Mostrar imágenes de galería** en hover de productos relacionados
+- **Preloader personalizable** que aparece al actualizar o eliminar productos
+- **Estilos totalmente configurables** desde el panel de administración
+- **Eliminación automática** de productos cuando la cantidad llega a 0
+- **Detalle de precios** con precio de envío y subtotal (IVA incluido)
+- **Múltiples opciones de visualización** para nuevos productos
 
 ## Requisitos
 
@@ -31,105 +21,81 @@ Un plugin de WordPress que añade un carrito lateral (sidebar) interactivo y per
 - WooCommerce 4.0 o superior
 - PHP 7.3 o superior
 
+## Instalación
+
+1. Sube la carpeta `snap-sidebar-cart` a tu directorio `/wp-content/plugins/`
+2. Activa el plugin a través del menú 'Plugins' en WordPress
+3. Ve a Ajustes > Carrito Lateral para configurar el plugin
+
 ## Configuración
 
-### Opciones generales
+### Ajustes Básicos
 
-- **Título del carrito**: Personaliza el título que se muestra en la parte superior del carrito lateral.
-- **Selectores de activación**: Define qué elementos HTML, al hacer clic, activarán la apertura del carrito lateral.
-- **Apertura automática**: Configura si el carrito debe abrirse automáticamente cuando se añade un producto.
+- **Título del carrito**: Personaliza el título que se muestra en la parte superior del carrito
+- **ID del contenedor**: ID HTML para el contenedor del carrito lateral (sin el símbolo #)
+- **Selectores de activación**: Selectores CSS separados por comas que, al hacer clic, abrirán el carrito lateral
+- **Mostrar información de envío**: Activa/desactiva la información de costes de envío en el pie del carrito
+- **Abrir automáticamente**: Abre automáticamente el carrito lateral cuando se añade un producto
 
-### Personalización de estilos
+### Apariencia Visual
 
-- **Ancho del carrito**: Define el ancho del carrito lateral.
-- **Colores**: Personaliza los colores de fondo, textos, encabezados y botones.
+- **Ancho del carrito lateral**: Define el ancho del carrito (px, em, rem, %)
+- **Color de fondo del carrito**: Color de fondo principal del carrito
+- **Color de fondo del encabezado**: Color de fondo de la sección superior del carrito
+- **Color del texto del encabezado**: Color del texto en la sección superior del carrito
+- **Color del texto de productos**: Color del texto para la lista de productos
+- **Color de fondo de botones**: Color de fondo para los botones principales
+- **Color del texto de botones**: Color del texto para los botones principales
 
-### Productos relacionados
+### Configuración del Preloader
 
-- **Mostrar productos relacionados**: Activa o desactiva la sección de productos relacionados.
-- **Número de productos**: Define cuántos productos relacionados se mostrarán.
-- **Columnas**: Configura el número de columnas para mostrar los productos relacionados.
-- **Orden**: Selecciona cómo ordenar los productos relacionados (aleatorio, fecha, precio, popularidad, valoración).
+- **Tipo de preloader**: Elige entre círculo, cuadrado, puntos o espiral
+- **Tamaño del preloader**: Define el tamaño del preloader en px, em o rem
+- **Color principal**: Color principal para el preloader
+- **Color secundario**: Color secundario para algunos tipos de preloader
+- **Posición del preloader**: Posición del preloader en el contenedor del producto
 
-## Sistema de productos relacionados
+### Configuración de Animaciones
 
-El plugin ofrece un avanzado sistema de productos relacionados con 4 tipos diferentes:
+- **Duración de la animación**: Tiempo en milisegundos para las animaciones
+- **Delay de actualización de cantidad**: Tiempo de espera antes de mostrar la animación de actualización
+- **Posición de nuevos productos**: Define si los nuevos productos aparecen al inicio o al final del listado
 
-1. **Productos relacionados**: Muestra productos definidos manualmente como relacionados o upsells, o calcula automáticamente productos similares basados en categorías y etiquetas.
+### Productos Relacionados
 
-2. **Misma categoría**: Muestra productos que pertenecen a la misma categoría que el producto añadido al carrito.
+- **Mostrar productos relacionados**: Activa/desactiva la sección de productos relacionados
+- **Número de productos relacionados**: Número máximo de productos a mostrar
+- **Columnas de productos relacionados**: Número de columnas para la visualización
+- **Ordenar productos relacionados por**: Criterio de ordenación (aleatorio, fecha, precio, etc.)
+- **Pestañas de productos relacionados**: Tipos de productos relacionados a mostrar
+- **Etiqueta personalizada**: Etiqueta para la pestaña de productos relacionados personalizada
+- **Código personalizado para queries**: Código PHP para personalizar la consulta de productos
 
-3. **Más vendidos**: Muestra los productos más populares de la tienda basados en el número de ventas.
+## Comportamiento con Variaciones
 
-4. **Accesorios**: Muestra productos marcados como accesorios o complementos, ideales para aumentar el valor medio del pedido.
+- Para productos con variaciones, el sidebar **no se muestra** cuando el usuario hace clic en el botón "Seleccionar opciones", dirigiéndolo a la página del producto para elegir las variaciones.
+- Cuando se agrega un producto con variación directamente al carrito, se muestra con las opciones seleccionadas.
 
-Estos productos se cargan dinámicamente mediante AJAX y se muestran en un slider navegable, con un elegante efecto hover que muestra imágenes alternativas del producto.
+## Funcionalidades Especiales
 
-## Desarrollo y personalización
+- **Posición de nuevos productos**: Los nuevos productos se pueden añadir al inicio o final del listado según la configuración.
+- **Animación de actualización de cantidad**: Muestra una animación visual al actualizar la cantidad de un producto.
+- **Efecto hover en productos relacionados**: Muestra una imagen alternativa de la galería al pasar el ratón sobre un producto relacionado.
+- **Eliminación con animación**: Los productos se eliminan con una animación de desvanecimiento cuando la cantidad llega a 0.
 
-### Estructura de archivos
+## Cambios importantes
 
-```
-snap-sidebar-cart/
-├── admin/                 # Archivos para el área de administración
-│   ├── css/               # Estilos CSS para la administración
-│   ├── js/                # Scripts JS para la administración
-│   └── partials/          # Plantillas para vistas de administración
-├── assets/                # Recursos principales
-│   ├── css/               # Estilos CSS para el frontend
-│   └── js/                # Scripts JS para el frontend
-├── includes/              # Clases principales del plugin
-├── languages/             # Archivos de traducción
-├── public/                # Archivos públicos para el frontend
-│   └── partials/          # Plantillas para vistas del frontend
-├── README.md              # Documentación principal
-├── CHANGELOG.md           # Registro de cambios
-└── snap-sidebar-cart.php  # Archivo principal del plugin
-```
-
-### Filtros y acciones
-
-Para desarrolladores que quieran extender la funcionalidad, el plugin ofrece varios hooks:
-
-```php
-// Modificar opciones por defecto
-add_filter('snap_sidebar_cart_default_options', 'my_custom_default_options');
-
-// Añadir contenido personalizado al carrito
-add_action('snap_sidebar_cart_before_footer', 'my_custom_cart_content');
-
-// Modificar productos relacionados
-add_filter('snap_sidebar_cart_related_products', 'my_custom_related_products', 10, 2);
-
-// Personalizar tipos de productos relacionados
-add_filter('snap_sidebar_cart_related_types', 'my_custom_related_types');
-```
-
-### Plantillas personalizadas
-
-Puedes sobreescribir las plantillas del plugin copiándolas a tu tema:
-
-1. Crea una carpeta `snap-sidebar-cart` en tu tema
-2. Copia los archivos de `public/partials/` que quieras modificar a esta carpeta
-3. Personaliza los archivos según tus necesidades
-
-## Compatibilidad
-
-- Probado con los principales temas de WooCommerce
-- Compatible con plugins de optimización de caché
-- Diseño responsive que se adapta a dispositivos móviles
-
-## Soporte
-
-Para soporte, preguntas o sugerencias, por favor contacta a través de:
-
-- GitHub: [Reportar un problema](https://github.com/username/snap-sidebar-cart/issues)
-- Email: soporte@ejemplo.com
+### Versión 1.0.6
+- Añadida configuración de animaciones con opciones personalizables
+- Implementado sistema inteligente para manejar productos con variaciones
+- Agregada función para mostrar imagen de galería en hover para productos relacionados
+- Mejorada la animación al actualizar cantidades con delay configurable
+- Añadida opción para elegir donde se agregan los nuevos productos (inicio/final)
 
 ## Licencia
 
 Este plugin está licenciado bajo GPL v2 o posterior.
 
-## Créditos
+## Soporte
 
-Desarrollado por Paulo para Brass Market.
+Para soporte o consultas, por favor contacta a través de [correo electrónico] o [sitio web].

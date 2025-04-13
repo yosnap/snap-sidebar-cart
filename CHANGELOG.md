@@ -1,48 +1,80 @@
-# Changelog
+# Registro de cambios
 
-Todos los cambios notables en este proyecto serán documentados en este archivo.
+## 1.0.6 - 2025-04-13
+### Nuevas características
+- Añadida nueva sección de configuración para animaciones en el panel de administración
+- Implementada opción para configurar el tiempo de duración de las animaciones (200ms-1000ms)
+- Agregada configuración para el delay en la animación de actualización de cantidad
+- Nueva opción para elegir si los productos nuevos se añaden al principio o al final del listado
+- Mejorado el soporte para productos con variaciones para evitar mostrar el sidebar cuando se navega al detalle
+- Implementado sistema para mostrar imagen de la galería al hacer hover en productos relacionados
 
-El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
-y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [1.1.0] - 2025-04-12
-
-### Añadido
-- Nuevo diseño moderno para el carrito lateral basado en interfaces de e-commerce premium
-- Sistema de pestañas para productos relacionados con cuatro categorías: relacionados, misma categoría, más vendidos y accesorios
-- Slider mejorado para productos relacionados con botones de navegación
-- Visualización de descuentos con porcentajes para productos con precios rebajados
-- Indicador "Last Chance" para productos con inventario bajo
-- Información de tiempo estimado de entrega para cada producto
-- Visualización de variantes y colores de producto en el listado del carrito
-
-### Mejorado
-- Estructura del HTML completamente rediseñada para mejorar la accesibilidad y facilitar la personalización
-- Optimización del rendimiento en la carga de productos relacionados mediante AJAX
-- Sistema de animaciones más suave y nativo
-- Mayor compatibilidad con dispositivos móviles
-- Gestión mejorada de productos relacionados con múltiples fuentes de datos
-
-## [1.0.0] - 2025-04-12
-
-### Añadido
-- Versión inicial del plugin
-- Funcionalidad de carrito lateral que se activa con selectores específicos o al añadir productos
-- Integración de productos relacionados en un slider configurable
-- Panel de administración con opciones para personalizar todos los aspectos del carrito
-- Animaciones de carga y transición para mejorar la experiencia de usuario
-- Preloader durante las actualizaciones de productos
-- Efecto hover en productos relacionados que muestra una imagen alternativa de la galería
-- Información de precio de envío y subtotal con IVA incluido en el footer
-- Estilo responsive que se adapta a diferentes tamaños de pantalla
+### Mejoras
+- Optimizadas las animaciones para ser más fluidas y configurables
+- Mejorada la detección de productos ya existentes en el carrito para evitar duplicados
+- Añadidas variables CSS personalizables para facilitar la personalización de animaciones
+- Actualizada la documentación con todas las nuevas características
+- Revisado el código JavaScript para mejor manejo de eventos
 
 ### Correcciones
-- Solución para los errores de "Trying to access array offset on value of type null" en varias partes del plugin
-- Validación mejorada de configuraciones para evitar errores cuando faltan opciones
-- Corrección de interacción con la caché de WooCommerce para asegurar que el conteo de productos se muestre correctamente
+- Solucionado problema con las animaciones que no respetaban la configuración de duración
+- Arreglado el comportamiento en productos con variaciones para dirigir al usuario a la página de detalles
+- Corregida la actualización de cantidad que no mostraba correctamente la animación visual
+- Mejorado el manejo de errores en las peticiones AJAX
 
-### Cambios técnicos importantes
-- Estructura modular para facilitar extensiones y personalizaciones
-- Implementación de ajustes de rendimiento para minimizar el impacto en la velocidad del sitio
-- Separación clara entre la lógica del plugin y la presentación
-- Carga condicional de estilos y scripts solo en páginas de WooCommerce
+## 1.0.5 - 2025-04-12
+### Mejoras
+- Implementada nueva animación al agregar productos al carrito
+- Los productos nuevos siempre aparecen en la primera posición
+- Animación para hacer espacio en la parte superior del listado
+- Espera de 300ms antes de mostrar el producto para una transición más suave
+- Preloader visible durante el proceso de adición de productos
+- Mejora visual en la actualización automática del carrito
+
+## 1.0.4 - 2025-04-12
+### Mejoras
+- El preloader ahora permanece fijo en su posición (no se mueve)
+- Añadidos checkboxes para seleccionar los tipos de consultas de productos relacionados
+- Mejorado el editor de código PHP para la consulta personalizada con resaltado de sintaxis
+- Añadido ejemplo de código en el campo de consulta personalizada
+- Actualizada la URL de documentación del plugin
+
+## 1.0.3 - 2025-04-12
+### Nuevas características
+- Añadida configuración de preloaders personalizable en el panel de administración
+- Se pueden configurar diferentes tipos de preloader: círculo, cuadrado, línea con puntos y espiral
+- Opciones para personalizar el tamaño, colores y posición del preloader
+- El preloader ahora se muestra en el centro del producto por defecto
+
+## 1.0.2 - 2025-04-12
+### Correcciones
+- Completamente reescrita la gestión de eventos para los botones de cantidad
+- Cambiados los elementos <a> por <button> en los controles de cantidad para mejor accesibilidad y comportamiento
+- Añadido un nuevo endpoint AJAX (snap_sidebar_cart_get_content) para actualizar el contenido del carrito en cualquier momento
+- Implementada una función bindQuantityEvents() para asegurar que los eventos se vinculen correctamente después de actualizar el DOM
+- Mejorada la captura de errores y la depuración con mensajes de consola detallados
+- Añadido atributo data-key en múltiples elementos para mejor recuperación de la clave del producto
+- Corregida la actualización automática del sidebar cuando se añade un producto al carrito
+- Implementada una recarga del carrito al iniciar para asegurar sincronización con el servidor
+
+## 1.0.1 - 2025-04-12
+### Correcciones
+- Corregido el problema con los botones de cantidad que no funcionaban correctamente
+- Solucionado el problema con el botón de cerrar el sidebar
+- Arreglada la actualización dinámica del contador de productos en el título
+- Mejorada la detección de eventos de clic para los botones de cantidad
+- Asegurado que WC()->cart->calculate_totals() se ejecute antes de obtener el contenido del carrito
+- Mejorado el manejo de errores para los botones de eliminar producto
+- Optimizado el selector para los botones de cantidad con una definición más específica
+- Cambiado el enlace de los botones de cantidad de "#" a "javascript:void(0);" para prevenir scroll al inicio de página
+
+## 1.0.0 - Lanzamiento inicial - 2025-04-12
+### Características
+- Carrito lateral que se muestra al agregar productos o al hacer clic en selectores específicos
+- Slider configurable para productos relacionados
+- Opciones de configuración de estilos para el listado de productos y el sidebar
+- Eliminación automática de productos cuando la cantidad llega a 0
+- Muestra precio de envío y subtotal con IVA incluido
+- Título que muestra el número de items en el carrito
+- Efectos visuales al agregar/eliminar productos (preloader, fade in)
+- Soporte para mostrar imágenes alternativas en hover para productos relacionados

@@ -42,14 +42,24 @@ class Snap_Sidebar_Cart_Ajax {
         $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
         $variation = isset($_POST['variation']) ? $_POST['variation'] : array();
         
+        // DEBUG: Verificar configuración antes de añadir al carrito
+        error_log('==== INICIO add_to_cart() ====');
+        error_log('Producto a añadir ID: ' . $product_id);
+        error_log('Configuración de posición de nuevos productos: ' . (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'No definido'));
+        
         // Verificar que el producto existe
         $product = wc_get_product($product_id);
         if (!$product) {
             wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
         }
         
+        error_log('Nombre del producto a añadir: ' . $product->get_name());
+        
         // Agregar al carrito
         $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
+        
+        error_log('Clave asignada al producto: ' . ($cart_item_key ? $cart_item_key : 'Error - No se añadió'));
+        error_log('==== FIN add_to_cart() ====');
         
         if ($cart_item_key) {
             $this->get_cart_contents($cart_item_key);
@@ -83,6 +93,7 @@ class Snap_Sidebar_Cart_Ajax {
         $removed = WC()->cart->remove_cart_item($cart_item_key);
         
         if ($removed) {
+            // Enviar la respuesta exitosa con el contenido actualizado del carrito
             $this->get_cart_contents();
         } else {
             wp_send_json_error(array('message' => __('Error al eliminar del carrito', 'snap-sidebar-cart')));
@@ -164,6 +175,9 @@ class Snap_Sidebar_Cart_Ajax {
                 break;
             case 'accessories':
                 $products = $this->get_accessory_products($product);
+                break;
+            case 'custom':
+                $products = $this->get_custom_products($product);
                 break;
             case 'related':
             default:
@@ -396,20 +410,178 @@ class Snap_Sidebar_Cart_Ajax {
     }
 
     /**
+     * Obtiene productos personalizados según el código definido por el usuario.
+     *
+     * @since    1.0.0
+     * @param    WC_Product    $product    El producto base.
+     * @return   array                     Lista de productos personalizados.
+     */
+    private function get_custom_products($product) {
+        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+        $custom_query = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
+        
+        // Si no hay consulta personalizada, devolvemos productos aleatorios como fallback
+        if (empty($custom_query)) {
+            // Filtrar productos que ya están en el carrito
+            $cart_product_ids = array();
+            foreach (WC()->cart->get_cart() as $cart_item) {
+                $cart_product_ids[] = $cart_item['product_id'];
+            }
+            
+            $args = array(
+                'post_type'           => 'product',
+                'post_status'         => 'publish',
+                'posts_per_page'      => $related_limit,
+                'orderby'             => 'rand',
+                'post__not_in'        => $cart_product_ids,
+            );
+            
+            $products = get_posts($args);
+            return array_filter(array_map('wc_get_product', wp_list_pluck($products, 'ID')));
+        }
+        
+        // Variables disponibles para el código personalizado
+        $current_product = $product;
+        $product_id = $product->get_id();
+        $category_ids = wc_get_product_term_ids($product_id, 'product_cat');
+        $tag_ids = wc_get_product_term_ids($product_id, 'product_tag');
+        $limit = $related_limit;
+        
+        // Filtrar productos que ya están en el carrito para uso en código personalizado
+        $cart_product_ids = array();
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            $cart_product_ids[] = $cart_item['product_id'];
+        }
+        
+        // Ejecutar el código personalizado con seguridad
+        try {
+            // Las variables están disponibles para el código personalizado
+            $result = eval($custom_query);
+            
+            // Si el código devuelve una array de IDs de productos
+            if (is_array($result) && !empty($result)) {
+                return array_slice(array_filter(array_map('wc_get_product', $result)), 0, $related_limit);
+            } 
+            // Si el código devuelve una consulta WP_Query
+            elseif ($result instanceof WP_Query) {
+                $products = $result->posts;
+                return array_slice(array_filter(array_map('wc_get_product', wp_list_pluck($products, 'ID'))), 0, $related_limit);
+            }
+            // Si el código devuelve directamente objetos de producto
+            elseif (is_array($result) && !empty($result) && $result[0] instanceof WC_Product) {
+                return array_slice($result, 0, $related_limit);
+            }
+        } catch (Exception $e) {
+            // En caso de error, registrarlo y devolver productos aleatorios
+            error_log('Error en la consulta personalizada del carrito lateral: ' . $e->getMessage());
+        }
+        
+        // Fallback: productos aleatorios
+        $args = array(
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'posts_per_page'      => $related_limit,
+            'orderby'             => 'rand',
+            'post__not_in'        => $cart_product_ids,
+        );
+        
+        $products = get_posts($args);
+        return array_filter(array_map('wc_get_product', wp_list_pluck($products, 'ID')));
+    }
+
+    /**
+     * Obtiene todo el contenido del carrito como respuesta AJAX.
+     * Este método se usa para actualizar el carrito sin tener que enviar una acción específica.
+     *
+     * @since    1.0.0
+     */
+    public function get_cart_content() {
+        // No necesitamos nonce aquí porque solo estamos obteniendo datos públicos
+        $this->get_cart_contents();
+        wp_die();
+    }
+
+    /**
      * Obtiene el contenido del carrito y lo envía como respuesta JSON.
      *
      * @since    1.0.0
      * @param    string    $new_item_key    Clave del nuevo item añadido (opcional).
      */
     private function get_cart_contents($new_item_key = '') {
+        // Asegurarse de que los totales estén calculados
+        WC()->cart->calculate_totals();
+        
         $cart_items = WC()->cart->get_cart();
         $cart_count = WC()->cart->get_cart_contents_count();
         $subtotal = WC()->cart->get_subtotal() + WC()->cart->get_subtotal_tax();
         $shipping_total = WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax();
         
+        // Obtener preferencia de posición para nuevos productos (valor por defecto 'top')
+        // Este valor debería coincidir con lo que el usuario ha configurado en el panel de administración
+        $new_product_position = isset($this->options['new_product_position']) 
+            ? $this->options['new_product_position'] 
+            : 'top';
+            
+        error_log('Posición configurada para nuevos productos: ' . $new_product_position);
+        error_log('Total de productos en el carrito antes de ordenar: ' . count($cart_items));
+
+        // Copia de los items del carrito para ordenar
+        $sorted_cart_items = $cart_items;
+        
+        // Registrar keys y timestamps para debug
+        foreach ($sorted_cart_items as $key => $item) {
+            $timestamp = isset($item['time_added']) ? $item['time_added'] : 
+                        (isset($item['custom_data']['time_added']) ? $item['custom_data']['time_added'] : 0);
+            $product_name = isset($item['data']) ? $item['data']->get_name() : 'Producto sin nombre';
+            error_log("Producto en carrito: {$product_name}, Key: {$key}, Timestamp: {$timestamp}");
+        }
+        
+        // Solo ordenar si hay más de un producto
+        if (count($sorted_cart_items) > 1) {
+            // Verificar que los productos tengan timestamp y asegurar que todos tengan uno
+            foreach ($sorted_cart_items as $key => $item) {
+                // Verificar primero en custom_data si existe
+                if (isset($item['custom_data']) && isset($item['custom_data']['time_added'])) {
+                    $sorted_cart_items[$key]['time_added'] = $item['custom_data']['time_added'];
+                }
+                // Si aún no tiene timestamp, usar uno por defecto
+                if (!isset($sorted_cart_items[$key]['time_added'])) {
+                    $sorted_cart_items[$key]['time_added'] = time() - 9999 + rand(1, 100); // Timestamp antiguo aleatorio
+                    error_log("Añadiendo timestamp por defecto para: {$key} - " . $sorted_cart_items[$key]['time_added']);
+                }
+            }
+            
+            // Ordenar según la configuración
+            if ($new_product_position === 'top') {
+                // Ordenar descendentemente (más nuevos primero)
+                uasort($sorted_cart_items, function($a, $b) {
+                    $time_a = isset($a['time_added']) ? $a['time_added'] : 0;
+                    $time_b = isset($b['time_added']) ? $b['time_added'] : 0;
+                    return $time_b - $time_a; // Orden descendente
+                });
+                error_log('Ordenando carrito: DESCENDENTE (más nuevos primero)');
+            } else {
+                // Ordenar ascendentemente (más antiguos primero)
+                uasort($sorted_cart_items, function($a, $b) {
+                    $time_a = isset($a['time_added']) ? $a['time_added'] : 0;
+                    $time_b = isset($b['time_added']) ? $b['time_added'] : 0;
+                    return $time_a - $time_b; // Orden ascendente
+                });
+                error_log('Ordenando carrito: ASCENDENTE (más antiguos primero)');
+            }
+            
+            // Registrar el nuevo orden para debug
+            error_log("Orden de productos después de ordenar:");
+            foreach ($sorted_cart_items as $key => $item) {
+                $product_name = isset($item['data']) ? $item['data']->get_name() : 'Producto sin nombre';
+                $timestamp = isset($item['time_added']) ? $item['time_added'] : 0;
+                error_log("  - {$product_name}, Key: {$key}, Timestamp: {$timestamp}");
+            }
+        }
+        
         ob_start();
         
-        if (empty($cart_items)) {
+        if (empty($sorted_cart_items)) {
             echo '<div class="snap-sidebar-cart__empty">';
             echo '<p>' . __('Tu carrito está vacío.', 'snap-sidebar-cart') . '</p>';
             echo '<a href="' . esc_url(get_permalink(wc_get_page_id('shop'))) . '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">' . __('Continuar comprando', 'snap-sidebar-cart') . '</a>';
@@ -417,9 +589,15 @@ class Snap_Sidebar_Cart_Ajax {
         } else {
             echo '<ul class="snap-sidebar-cart__products-list">';
             
-            foreach ($cart_items as $cart_item_key => $cart_item) {
+            // Mostrar los productos ordenados
+            foreach ($sorted_cart_items as $cart_item_key => $cart_item) {
                 $product = $cart_item['data'];
-                $is_new_item = ($new_item_key === $cart_item_key);
+                $is_new_item = ($cart_item_key === $new_item_key); // Marcar el nuevo producto
+                
+                if ($is_new_item) {
+                    error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . 
+                        (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
+                }
                 
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }

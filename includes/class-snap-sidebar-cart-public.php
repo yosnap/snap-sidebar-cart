@@ -44,30 +44,46 @@ class Snap_Sidebar_Cart_Public {
     }
 
     /**
-     * Registra los scripts para el área pública.
+     * Registrar los scripts y estilos para el área pública.
      *
      * @since    1.0.0
      */
     public function enqueue_scripts() {
-        // Solo cargar scripts en páginas de WooCommerce
-        if (!is_woocommerce() && !is_cart() && !is_checkout() && !is_product() && !is_shop()) {
+        // Incluir scripts sólo si WooCommerce está activo
+        if (!function_exists('WC')) {
             return;
         }
         
-        // Registramos el script
-        wp_register_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
+        wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
         
-        // Localizamos el script para usar AJAX
-        wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', array(
+        // Opciones para el script
+        $script_options = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('snap-sidebar-cart-nonce'),
-            'container_selector' => esc_attr($this->options['container_selector']),
-            'activation_selectors' => esc_attr($this->options['activation_selectors']),
-            'auto_open' => isset($this->options['auto_open']) ? (bool) $this->options['auto_open'] : true,
-        ));
+            'activation_selectors' => $this->options['activation_selectors'],
+            'auto_open' => isset($this->options['auto_open']) ? $this->options['auto_open'] : false,
+            // Posición para los nuevos productos (top o bottom)
+            'new_product_position' => isset($this->options['new_product_position']) ? 
+                                     $this->options['new_product_position'] : 'top',
+            // Opciones para animaciones
+            'animations' => array(
+                'duration' => isset($this->options['animations']['duration']) ? 
+                             intval($this->options['animations']['duration']) : 300,
+                'quantity_update_delay' => isset($this->options['animations']['quantity_update_delay']) ? 
+                                         intval($this->options['animations']['quantity_update_delay']) : 200,
+                'enabled' => isset($this->options['animations']['enabled']) ? 
+                           (bool)$this->options['animations']['enabled'] : true
+            ),
+            // Opciones para el preloader
+            'preloader' => array(
+                'type' => isset($this->options['preloader']['type']) ? 
+                        $this->options['preloader']['type'] : 'circle',
+                'position' => isset($this->options['preloader']['position']) ? 
+                            $this->options['preloader']['position'] : 'center'
+            )
+        );
         
-        // Encolamos el script
-        wp_enqueue_script('snap-sidebar-cart-public');
+        wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
     }
 
     /**
@@ -85,9 +101,84 @@ class Snap_Sidebar_Cart_Public {
         $columns = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2;
         $column_width = 100 / $columns;
         
+        // Opciones del preloader
+        $preloader = isset($this->options['preloader']) ? $this->options['preloader'] : array();
+        $preloader_type = isset($preloader['type']) ? esc_attr($preloader['type']) : 'circle';
+        $preloader_size = isset($preloader['size']) ? esc_attr($preloader['size']) : '40px';
+        $preloader_color = isset($preloader['color']) ? esc_attr($preloader['color']) : '#3498db';
+        $preloader_color2 = isset($preloader['color2']) ? esc_attr($preloader['color2']) : '#e74c3c';
+        $preloader_position = isset($preloader['position']) ? esc_attr($preloader['position']) : 'center';
+        
+        // Opciones de animaciones
+        $animations = isset($this->options['animations']) ? $this->options['animations'] : array();
+        $animation_duration = isset($animations['duration']) ? intval($animations['duration']) : 300;
+        $quantity_update_delay = isset($animations['quantity_update_delay']) ? intval($animations['quantity_update_delay']) : 200;
+        
         $css = "
+            :root {
+                --animation-duration: " . $animation_duration . "ms;
+                --animation-delay: " . $quantity_update_delay . "ms;
+            }
+            
             #" . esc_attr($this->options['container_selector']) . " {
                 width: " . esc_attr($styles['sidebar_width']) . ";
+            }
+            
+            /* Estilos personalizados para el preloader */
+            .snap-sidebar-cart__loader-spinner {
+                width: " . $preloader_size . ";
+                height: " . $preloader_size . ";
+                position: absolute;
+            }
+            
+            /* Estilos específicos según el tipo de preloader */
+            .snap-sidebar-cart__loader-spinner.preloader-circle {
+                border: 2px solid rgba(0, 0, 0, 0.1);
+                border-top: 2px solid " . $preloader_color . ";
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-square {
+                border: 2px solid rgba(0, 0, 0, 0.1);
+                border-top: 2px solid " . $preloader_color . ";
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-dots span {
+                background-color: " . $preloader_color . ";
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-spinner:before {
+                border-top-color: " . $preloader_color . ";
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+                border-bottom-color: " . $preloader_color2 . ";
+            }
+            
+            /* Posicionamiento del preloader */
+            .snap-sidebar-cart__loader-spinner.preloader-position-center {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-position-top-left {
+                top: 10px;
+                left: 10px;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-position-top-right {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-position-bottom-left {
+                bottom: 10px;
+                left: 10px;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-position-bottom-right {
+                bottom: 10px;
+                right: 10px;
             }
             
             .snap-sidebar-cart {
@@ -118,10 +209,83 @@ class Snap_Sidebar_Cart_Public {
             
             .snap-sidebar-cart__related-product {
                 width: calc(" . $column_width . "% - 20px);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            /* Animaciones para nuevos productos */
+            .snap-sidebar-cart__product.new-item {
+                animation: fadeIn var(--animation-duration) ease-out;
+            }
+            
+            /* Animación para cambio de cantidad */
+            .cart-item__quantity-input.quantity-updated {
+                animation: quantityUpdated var(--animation-duration) ease-out;
+            }
+            
+            /* Animación para productos que se eliminan */
+            .snap-sidebar-cart__product.removing {
+                animation: fadeOut var(--animation-duration) ease-out;
+            }
+            
+            /* Animación para el hover de productos relacionados */
+            .snap-sidebar-cart__related-product .product-gallery-image {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out;
+                z-index: 1;
+            }
+            
+            .snap-sidebar-cart__related-product:hover .product-gallery-image {
+                opacity: 1;
+            }
+            
+            /* Keyframes para las animaciones */
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(20px); }
+            }
+            
+            @keyframes quantityUpdated {
+                0% { background-color: rgba(" . $this->hex2rgb($preloader_color) . ", 0.1); }
+                50% { background-color: rgba(" . $this->hex2rgb($preloader_color) . ", 0.3); }
+                100% { background-color: transparent; }
             }
         ";
         
         return $css;
+    }
+
+    /**
+     * Convierte un color hexadecimal a formato RGB.
+     * 
+     * @since    1.0.6
+     * @param    string    $hex    El color en formato hexadecimal.
+     * @return   string            El color en formato RGB (valores de 0-255).
+     */
+    private function hex2rgb($hex) {
+        $hex = str_replace('#', '', $hex);
+        
+        if(strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1).substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1).substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1).substr($hex, 2, 1));
+        } else {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        }
+        
+        return $r . ',' . $g . ',' . $b;
     }
 
     /**

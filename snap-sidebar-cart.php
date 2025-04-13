@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Snap Sidebar Cart
- * Plugin URI: https://github.com/username/snap-sidebar-cart
- * Description: Un carrito lateral para WooCommerce que muestra productos cuando se agregan al carrito y productos relacionados.
- * Version: 1.0.0
+ * Plugin URI: https://github.com/yosnap/snap-sidebar-cart-wp
+ * Description: Un carrito lateral para WooCommerce que muestra productos cuando se agregan al carrito y productos relacionados con animaciones personalizables.
+ * Version: 1.0.6
  * Author: Paulo
  * Author URI: 
  * Text Domain: snap-sidebar-cart
@@ -20,7 +20,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Definir constantes
-define( 'SNAP_SIDEBAR_CART_VERSION', '1.0.0' );
+define( 'SNAP_SIDEBAR_CART_VERSION', '1.0.6' );
 define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
@@ -85,6 +85,18 @@ function snap_sidebar_cart_activate() {
             'count' => 4,
             'columns' => 2,
             'orderby' => 'rand',
+        ),
+        'preloader' => array(
+            'type' => 'circle',  // Opciones: circle, square, dots, spinner
+            'size' => '40px',     // Tamaño del preloader
+            'color' => '#3498db', // Color principal del preloader
+            'color2' => '#e74c3c', // Color secundario (para algunos tipos)
+            'position' => 'center', // Posición: center, top-left, top-right, bottom-left, bottom-right
+        ),
+        'animations' => array(
+            'duration' => 300,       // Duración de la animación en ms
+            'quantity_update_delay' => 200, // Delay para mostrar cambios de cantidad en ms
+            'new_product_position' => 'top', // Posición de nuevos productos: top, bottom
         ),
     );
     

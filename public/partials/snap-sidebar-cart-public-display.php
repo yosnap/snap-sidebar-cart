@@ -20,9 +20,11 @@ $cart_count = WC()->cart->get_cart_contents_count();
     <div class="snap-sidebar-cart__container">
         <div class="snap-sidebar-cart__header">
             <h2 class="snap-sidebar-cart__title">
-                <?php echo esc_html($this->options['title']); ?> (<?php echo esc_html($cart_count); ?>)
+                <?php echo esc_html($this->options['title']); ?> (<span class="snap-sidebar-cart__count"><?php echo esc_html($cart_count); ?></span>)
             </h2>
-            <button type="button" class="snap-sidebar-cart__close" aria-label="<?php esc_attr_e('Cerrar', 'snap-sidebar-cart'); ?>">×</button>
+            <button type="button" class="snap-sidebar-cart__close" id="snap-sidebar-cart-close" aria-label="<?php esc_attr_e('Cerrar', 'snap-sidebar-cart'); ?>">
+                &times;
+            </button>
         </div>
         
         <div class="snap-sidebar-cart__body">
@@ -61,7 +63,9 @@ $cart_count = WC()->cart->get_cart_contents_count();
                     <div class="snap-sidebar-cart__related-tabs">
                         <?php
                         // Obtener las pestañas activas configuradas en las opciones
-                        $active_tabs = isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : array('related', 'category', 'bestsellers', 'accessories');
+                        $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
+                            explode(',', $this->options['related_products']['active_tabs']) : 
+                            array('related', 'category', 'bestsellers', 'accessories');
                         
                         // Definir las etiquetas por defecto
                         $tab_labels = array(

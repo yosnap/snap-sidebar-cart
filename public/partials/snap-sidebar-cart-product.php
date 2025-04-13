@@ -25,7 +25,7 @@ $has_discount = $sale_price && $regular_price > $sale_price;
 $discount_percentage = $has_discount ? round(($regular_price - $sale_price) / $regular_price * 100) : 0;
 
 // Obtener la imagen del producto
-$thumbnail = $product->get_image(array(80, 80));
+$thumbnail = $product->get_image(array(100, 100));
 
 // Verificar si el producto tiene variación
 $product_variation_data = '';
@@ -43,7 +43,7 @@ $shipping_days = 3; // Por defecto, 3 días - esto podría ser configurable o ca
 $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sidebar-cart__product';
 ?>
 
-<li class="<?php echo esc_attr($item_class); ?>" data-key="<?php echo esc_attr($cart_item_key); ?>">
+<li class="<?php echo esc_attr($item_class); ?>" data-key="<?php echo esc_attr($cart_item_key); ?>" data-product-id="<?php echo esc_attr($product_id); ?>">
     <div class="snap-sidebar-cart__product-image">
         <?php if ($product_permalink) : ?>
             <a href="<?php echo esc_url($product_permalink); ?>">
@@ -78,10 +78,21 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
         </div>
 
         <div class="snap-sidebar-cart__product-footer">
-            <div class="snap-sidebar-cart__product-quantity">
-                <button type="button" class="snap-sidebar-cart__quantity-down">−</button>
-                <input type="number" class="snap-sidebar-cart__quantity-input" value="<?php echo esc_attr($quantity); ?>" min="0" step="1">
-                <button type="button" class="snap-sidebar-cart__quantity-up">+</button>
+            <div class="quantity buttoned-input" data-key="<?php echo esc_attr($cart_item_key); ?>">
+                <button type="button" class="notabutton quantity-down" aria-label="<?php esc_attr_e('Reducir', 'snap-sidebar-cart'); ?>">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                        <title><?php esc_html_e('Menos', 'snap-sidebar-cart'); ?></title>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <input class="cart-item__quantity-input" type="number" size="2" id="updates_<?php echo esc_attr($cart_item_key); ?>" name="updates[]" data-key="<?php echo esc_attr($cart_item_key); ?>" data-initial-value="<?php echo esc_attr($quantity); ?>" data-line="1" value="<?php echo esc_attr($quantity); ?>" min="0" aria-label="<?php esc_attr_e('Cantidad', 'snap-sidebar-cart'); ?>">
+                <button type="button" class="notabutton quantity-up" aria-label="<?php esc_attr_e('Aumentar', 'snap-sidebar-cart'); ?>">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
+                        <title><?php esc_html_e('Más', 'snap-sidebar-cart'); ?></title>
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
             </div>
 
             <div class="snap-sidebar-cart__product-price-container">
@@ -101,6 +112,7 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
         
         <!-- Loader para actualizaciones y eliminaciones -->
         <div class="snap-sidebar-cart__product-loader">
+            <!-- El tipo de preloader se añadirá dinámicamente mediante JS -->
             <div class="snap-sidebar-cart__loader-spinner"></div>
         </div>
     </div>

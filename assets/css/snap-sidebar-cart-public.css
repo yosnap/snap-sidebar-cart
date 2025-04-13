@@ -19,18 +19,22 @@
 .snap-sidebar-cart {
     position: fixed;
     top: 0;
-    right: -420px; /* Más ancho que el sidebar para asegurar que esté fuera de la pantalla */
+    right: 0;
+    /* Cambiamos esto para usar transform */
     height: 100%;
     z-index: 1000000;
     transition: transform 0.3s ease-in-out;
-    width: 400px; /* Valor por defecto, se sobreescribirá con opciones */
+    width: 400px;
+    /* Valor por defecto, se sobreescribirá con opciones */
     background-color: #ffffff;
-    transform: translateX(0);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+    transform: translateX(100%);
+    /* Oculto por defecto, fuera de pantalla */
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .snap-sidebar-cart.open {
-    transform: translateX(-420px);
+    transform: translateX(0);
+    /* Mostrar completamente el carrito */
 }
 
 /* Prevenir que los clics en el sidebar cierren el carrito */
@@ -81,7 +85,7 @@ body.snap-sidebar-cart-open {
 }
 
 .snap-sidebar-cart__close:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 50%;
 }
 
@@ -123,15 +127,15 @@ body.snap-sidebar-cart-open {
 }
 
 .snap-sidebar-cart__product-image {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     margin-right: 15px;
     flex-shrink: 0;
 }
 
 .snap-sidebar-cart__product-image img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     border-radius: 0;
     object-fit: cover;
@@ -203,39 +207,44 @@ body.snap-sidebar-cart-open {
     align-items: center;
 }
 
-.snap-sidebar-cart__product-quantity {
-    display: flex;
+/* Estilos para los controles de cantidad */
+.quantity.buttoned-input {
+    display: inline-flex;
     align-items: center;
-    border: 1px solid #ebebeb;
+    border: 1px solid rgb(214, 214, 214);
     border-radius: 3px;
-    overflow: hidden;
+    background: #fff;
+    color: #5c5c5c;
 }
 
-.snap-sidebar-cart__quantity-down,
-.snap-sidebar-cart__quantity-up {
-    width: 25px;
-    height: 25px;
-    background: #f8f8f8;
+.notabutton {
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    color: inherit;
     font-size: 16px;
-    line-height: 1;
-    transition: background-color 0.2s;
-    border: none;
-    color: #333;
-    font-weight: bold;
+    padding: 0 3px;
+    padding-inline-start: 8px;
+    height: 2.1em;
+    text-decoration: none;
 }
 
-.snap-sidebar-cart__quantity-down:hover,
-.snap-sidebar-cart__quantity-up:hover {
-    background: #ebebeb;
+.buttoned-input input {
+    background: transparent;
+    border: none !important;
+    width: 2em !important;
+    height: 2.1em;
+    padding: 0 !important;
+    text-align: center;
 }
 
-.snap-sidebar-cart__quantity-input {
-    width: 30px;
-    height: 25px;
+.notabutton.quantity-up {
+    padding-inline-start: 3px;
+    padding-inline-end: 8px;
+}
+
+.cart-item__quantity-input {
+    width: 2em;
+    height: 2.1em;
     text-align: center;
     border: none;
     padding: 0;
@@ -246,10 +255,27 @@ body.snap-sidebar-cart-open {
     background: transparent;
 }
 
-.snap-sidebar-cart__quantity-input::-webkit-outer-spin-button,
-.snap-sidebar-cart__quantity-input::-webkit-inner-spin-button {
+.cart-item__quantity-input::-webkit-outer-spin-button,
+.cart-item__quantity-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+.feather-minus,
+.feather-plus {
+    width: 18px;
+    height: 18px;
+}
+
+/* Sobreescribir los estilos anteriores para mantener la nueva estructura */
+.snap-sidebar-cart__product-quantity {
+    border: none;
+}
+
+.snap-sidebar-cart__quantity-down,
+.snap-sidebar-cart__quantity-up {
+    display: none;
+    /* Ocultamos los botones antiguos */
 }
 
 .snap-sidebar-cart__product-price-container {
@@ -293,18 +319,127 @@ body.snap-sidebar-cart-open {
     display: none;
 }
 
+/* Posición fija para el loader */
 .snap-sidebar-cart__loader-spinner {
-    width: 24px;
-    height: 24px;
+    position: absolute;
+}
+
+/* Preloader tipo circle (default) */
+.snap-sidebar-cart__loader-spinner.preloader-circle {
+    border-radius: 50%;
     border: 2px solid #f3f3f3;
     border-top: 2px solid #3498db;
-    border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
+/* Preloader tipo square */
+.snap-sidebar-cart__loader-spinner.preloader-square {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    animation: spin 1s linear infinite;
+}
+
+/* Preloader tipo dots */
+.snap-sidebar-cart__loader-spinner.preloader-dots {
+    display: flex;
+    justify-content: space-between;
+    width: 60px;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #3498db;
+    animation: dots 1.4s infinite ease-in-out both;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* Preloader tipo spinner */
+.snap-sidebar-cart__loader-spinner.preloader-spinner {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    position: relative;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner:before,
+.snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner:before {
+    border-top-color: #3498db;
+    animation: spin 1s linear infinite;
+}
+
+snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+    border-bottom-color: #e74c3c;
+    animation: spin 1.5s linear infinite reverse;
+}
+
+/* Posiciones del preloader - todas con position fixed */
+.preloader-position-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.preloader-position-top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.preloader-position-top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.preloader-position-bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.preloader-position-bottom-right {
+    bottom: 10px;
+    right: 10px;
+}
+
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dots {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
 }
 
 /* Footer del carrito */
@@ -394,12 +529,15 @@ body.snap-sidebar-cart-open {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     /* Ocultar scrollbar para Chrome, Safari y Opera */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE y Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE y Edge */
 }
 
 .snap-sidebar-cart__related-tabs::-webkit-scrollbar {
-    display: none; /* Chrome, Safari y Opera */
+    display: none;
+    /* Chrome, Safari y Opera */
 }
 
 .snap-sidebar-cart__related-tab {
@@ -484,7 +622,7 @@ body.snap-sidebar-cart-open {
     color: #333;
     cursor: pointer;
     z-index: 1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .snap-sidebar-cart__slider-prev {
@@ -507,7 +645,7 @@ body.snap-sidebar-cart-open {
 }
 
 .snap-sidebar-cart__related-product:hover {
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
@@ -530,7 +668,8 @@ body.snap-sidebar-cart-open {
     margin-bottom: 10px;
     overflow: hidden;
     height: 0;
-    padding-bottom: 100%; /* Proporción cuadrada */
+    padding-bottom: 100%;
+    /* Proporción cuadrada */
 }
 
 .snap-sidebar-cart__related-product-image img {
@@ -640,10 +779,40 @@ body.snap-sidebar-cart-open {
     height: 15px;
     margin-top: -7.5px;
     margin-left: -7.5px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     border-top: 2px solid #333;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+}
+
+/* Animación del placeholder para nuevos productos */
+@keyframes makeSpace {
+    from {
+        max-height: 0;
+        opacity: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        border-bottom-width: 0;
+    }
+
+    to {
+        max-height: 150px;
+        opacity: 1;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        border-bottom-width: 1px;
+    }
+}
+
+.snap-sidebar-cart__product.placeholder-animation {
+    animation: makeSpace 0.3s ease-out forwards;
+    overflow: hidden;
+    height: 150px;
+    background-color: rgba(248, 248, 248, 0.5);
+    position: relative;
 }
 
 /* Animación de entrada de productos */
@@ -652,6 +821,7 @@ body.snap-sidebar-cart-open {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -668,12 +838,68 @@ body.snap-sidebar-cart-open {
         width: 100% !important;
         right: -100%;
     }
-    
+
     .snap-sidebar-cart.open {
         transform: translateX(-100%);
     }
-    
+
     .snap-sidebar-cart__related-product {
         width: calc(100% - 20px);
+    }
+
+    .snap-sidebar-cart__product-image {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* Variables globales CSS para animaciones */
+:root {
+    --animation-duration: 300ms;
+    --animation-delay: 200ms;
+    --highlight-color: rgba(76, 175, 80, 0.2);
+    /* Color verde claro para resaltar */
+}
+
+/* Estilos para la animación de actualización de cantidad */
+.cart-item__quantity-input.quantity-updated {
+    animation: quantityPulse var(--animation-duration) ease-in-out;
+    background-color: var(--highlight-color);
+    border-radius: 3px;
+}
+
+@keyframes quantityPulse {
+    0% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+
+    50% {
+        background-color: var(--highlight-color);
+        transform: scale(1.2);
+    }
+
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+/* Animación para resaltar todo el producto cuando se actualiza */
+.snap-sidebar-cart__product.product-updated {
+    animation: productHighlight var(--animation-duration) ease-in-out;
+}
+
+@keyframes productHighlight {
+    0% {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: var(--highlight-color);
+    }
+
+    100% {
+        background-color: transparent;
     }
 }

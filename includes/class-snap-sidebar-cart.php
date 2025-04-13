@@ -50,9 +50,10 @@ class Snap_Sidebar_Cart {
         $default_options = array(
             'title' => __('Carrito de compra', 'snap-sidebar-cart'),
             'container_selector' => 'sidebar-cart-container',
-            'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
+            'activation_selectors' => '.add_to_cart_button:not(.product_type_variable), .ti-shopping-cart, i.ti-shopping-cart',
             'show_shipping' => true,
             'auto_open' => true,
+            'new_product_position' => 'top', // Controla si los productos nuevos se agregan al inicio ('top') o al final ('bottom')
             'styles' => array(
                 'sidebar_width' => '400px',
                 'sidebar_background' => '#ffffff',
@@ -126,6 +127,85 @@ class Snap_Sidebar_Cart {
         add_action('wp_enqueue_scripts', array($plugin_public, 'enqueue_styles'));
         add_action('wp_enqueue_scripts', array($plugin_public, 'enqueue_scripts'));
         add_action('wp_footer', array($plugin_public, 'render_sidebar_cart'));
+        
+        // Añadir timestamp a los productos cuando se agregan al carrito
+        add_filter('woocommerce_add_cart_item_data', array($this, 'add_timestamp_to_cart_item'), 10, 3);
+    }
+    
+    /**
+     * Añade un timestamp al producto cuando se agrega al carrito.
+     * Esto permite ordenar los productos por la fecha/hora de adición.
+     *
+     * @since    1.0.7
+     * @param    array    $cart_item_data    Los datos actuales del artículo del carrito.
+     * @param    int      $product_id        ID del producto.
+     * @param    int      $variation_id      ID de variación (si aplica).
+     * @return   array                       Los datos del artículo con el timestamp añadido.
+     */
+    public function add_timestamp_to_cart_item($cart_item_data, $product_id, $variation_id) {
+        // Verificar si este producto ya existe en el carrito
+        $cart = WC()->cart->get_cart();
+        $product_in_cart = false;
+        $cart_item_key = '';
+        
+        // Crear un identificador único para este producto + variación
+        $product_variation_id = $product_id . '-' . ($variation_id > 0 ? $variation_id : '0');
+        
+        foreach ($cart as $key => $item) {
+            $cart_product_variation_id = $item['product_id'] . '-' . ($item['variation_id'] > 0 ? $item['variation_id'] : '0');
+            
+            // Comprobamos si es el mismo producto y la misma variación
+            if ($cart_product_variation_id === $product_variation_id) {
+                $product_in_cart = true;
+                $cart_item_key = $key;
+                break;
+            }
+        }
+        
+        // Log para debug con información adicional
+        $product = wc_get_product($product_id);
+        $product_name = $product ? $product->get_name() : 'Producto desconocido';
+        $timestamp = time();
+        error_log('Añadido timestamp al producto ID ' . $product_id . ' (' . $product_name . '): ' . $timestamp . ' - Ya en carrito: ' . ($product_in_cart ? 'Sí' : 'No'));
+        
+        // Si el producto ya está en el carrito, hay dos opciones:
+        // 1. Retornar un array vacío para que WooCommerce maneje la lógica de actualización
+        // 2. Llamar directamente a la función de WooCommerce para actualizar la cantidad
+        if ($product_in_cart && !empty($cart_item_key)) {
+            // Opción 1: Dejar que WooCommerce actualice la cantidad automáticamente
+            // Para esto NO agregamos datos personalizados que forzarían a crear un nuevo elemento
+            
+            // Opción 2: Actualizar manualmente la cantidad (descomentar si se prefiere)
+            /*
+            // Obtenemos la cantidad actual
+            $current_quantity = $cart[$cart_item_key]['quantity'];
+            // Actualizamos el carrito con una unidad más
+            WC()->cart->set_quantity($cart_item_key, $current_quantity + 1, true);
+            // Retornamos FALSE para evitar que se añada un nuevo elemento al carrito
+            return false;
+            */
+            
+            // Agregamos solo el timestamp regular pero sin datos personalizados
+            $cart_item_data['time_added'] = $timestamp;
+            return $cart_item_data;
+        } else {
+            // Es un nuevo producto, agregamos todos los datos necesarios
+            // Asegurarse de que cart_item_data sea un array
+            if (!is_array($cart_item_data)) {
+                $cart_item_data = array();
+            }
+            
+            // Agregar el timestamp actual a los datos del artículo
+            $cart_item_data['time_added'] = $timestamp;
+            
+            // Generar datos personalizados para productos nuevos
+            if (!isset($cart_item_data['custom_data'])) {
+                $cart_item_data['custom_data'] = array();
+            }
+            $cart_item_data['custom_data']['time_added'] = $timestamp;
+            
+            return $cart_item_data;
+        }
     }
 
     /**
@@ -157,6 +237,9 @@ class Snap_Sidebar_Cart {
         
         add_action('wp_ajax_snap_sidebar_cart_get_related', array($plugin_ajax, 'get_related_products'));
         add_action('wp_ajax_nopriv_snap_sidebar_cart_get_related', array($plugin_ajax, 'get_related_products'));
+        
+        add_action('wp_ajax_snap_sidebar_cart_get_content', array($plugin_ajax, 'get_cart_content'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_get_content', array($plugin_ajax, 'get_cart_content'));
     }
 
     /**

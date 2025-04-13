@@ -25,13 +25,16 @@ $thumbnail = $related_product->get_image();
 
 // Obtener imágenes de galería para el efecto hover
 $gallery_images = $related_product->get_gallery_image_ids();
-$hover_image = '';
+$gallery_html = '';
 
 if (!empty($gallery_images)) {
+    // Usamos la primera imagen de la galería como imagen de hover
     $hover_image_id = reset($gallery_images);
     $hover_image_src = wp_get_attachment_image_src($hover_image_id, 'woocommerce_thumbnail');
     if ($hover_image_src) {
-        $hover_image = '<img src="' . esc_url($hover_image_src[0]) . '" class="snap-sidebar-cart__related-product-hover-image" alt="' . esc_attr($product_name) . '">';
+        $gallery_html = '<div class="product-gallery-image">' .
+            '<img src="' . esc_url($hover_image_src[0]) . '" alt="' . esc_attr($product_name) . ' Gallery">' .
+            '</div>';
     }
 }
 
@@ -55,7 +58,7 @@ $color = $related_product->get_attribute('color') ? $related_product->get_attrib
     <div class="snap-sidebar-cart__related-product-image">
         <a href="<?php echo esc_url($product_permalink); ?>">
             <?php echo $thumbnail; ?>
-            <?php echo $hover_image; ?>
+            <?php echo $gallery_html; ?>
         </a>
     </div>
 
