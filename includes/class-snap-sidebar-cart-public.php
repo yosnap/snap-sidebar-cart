@@ -115,14 +115,26 @@ class Snap_Sidebar_Cart_Public {
         $animation_duration = isset($animations['duration']) ? intval($animations['duration']) : 300;
         $quantity_update_delay = isset($animations['quantity_update_delay']) ? intval($animations['quantity_update_delay']) : 200;
         
+        // Forzar ancho del sidebar a 540px para pruebas
+        $sidebar_width = isset($styles['sidebar_width']) ? $styles['sidebar_width'] : '540px';
+        if (empty($sidebar_width) || $sidebar_width === '400px') {
+            $sidebar_width = '540px';
+        }
+        
         $css = "
             :root {
                 --animation-duration: " . $animation_duration . "ms;
                 --animation-delay: " . $quantity_update_delay . "ms;
+                --sidebar-width: " . $sidebar_width . ";
             }
             
             #" . esc_attr($this->options['container_selector']) . " {
-                width: " . esc_attr($styles['sidebar_width']) . ";
+                width: " . $sidebar_width . ";
+            }
+            
+            .snap-sidebar-cart__container {
+                width: " . $sidebar_width . " !important;
+                max-width: 100%;
             }
             
             /* Estilos personalizados para el preloader */
@@ -183,7 +195,7 @@ class Snap_Sidebar_Cart_Public {
             }
             
             .snap-sidebar-cart {
-                width: " . esc_attr($styles['sidebar_width']) . ";
+                width: " . $sidebar_width . " !important;
                 background-color: " . esc_attr($styles['sidebar_background']) . ";
             }
             
@@ -212,6 +224,37 @@ class Snap_Sidebar_Cart_Public {
                 width: calc(" . $column_width . "% - 20px);
                 position: relative;
                 overflow: hidden;
+            }
+            
+            /* Corregir estilos de inputs */
+            .quantity.buttoned-input {
+                display: flex;
+                align-items: center;
+                border: none;
+                overflow: hidden;
+            }
+            
+            .cart-item__quantity-input {
+                width: 30px;
+                text-align: center;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 2px 0;
+                font-size: 14px;
+                -moz-appearance: textfield;
+                background: transparent !important;
+            }
+            
+            .cart-item__quantity-input:focus {
+                outline: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            
+            .cart-item__quantity-input::-webkit-outer-spin-button,
+            .cart-item__quantity-input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
             }
             
             /* Animaciones para nuevos productos */

@@ -55,7 +55,7 @@ class Snap_Sidebar_Cart {
             'auto_open' => true,
             'new_product_position' => 'top', // Controla si los productos nuevos se agregan al inicio ('top') o al final ('bottom')
             'styles' => array(
-                'sidebar_width' => '400px',
+                'sidebar_width' => '540px',
                 'sidebar_background' => '#ffffff',
                 'header_background' => '#f8f8f8',
                 'header_text_color' => '#333333',
