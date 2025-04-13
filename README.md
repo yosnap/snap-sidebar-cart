@@ -89,6 +89,12 @@ Un plugin para WordPress que proporciona un carrito lateral (sidebar) personaliz
 
 ## Cambios importantes
 
+### Versión 1.0.18
+- Actualizado el ancho por defecto del sidebar a 540px para una mejor visualización
+- Mejorada la interfaz de usuario con campos de cantidad más pequeños y sin bordes
+- Eliminado completamente el botón de eliminar productos para una experiencia más limpia
+- Solucionados problemas con estilos que no respetaban la configuración guardada
+
 ### Versión 1.0.17
 - Implementada función para bloquear el botón de incremento cuando se alcanza el stock máximo
 - Solucionado problema de productos duplicados mediante la consolidación automática

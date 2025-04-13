@@ -1,5 +1,17 @@
 # Registro de cambios
 
+## 1.0.18 - 2025-04-13
+### Mejoras
+- Actualizado el ancho por defecto del sidebar a 540px para una mejor visualización
+- Rediseñados los campos de cantidad para tener un tamaño más pequeño y sin bordes
+- Eliminados estilos innecesarios para una apariencia más limpia
+
+### Correcciones
+- Solucionado problema con los estilos del sidebar que no respetaban la configuración guardada
+- Eliminado completamente el botón de eliminar productos del template y CSS
+- Corregido el problema con los campos de cantidad que tenían bordes no deseados
+- Mejorada la prioridad de los estilos para garantizar que se apliquen correctamente
+
 ## 1.0.17 - 2025-04-13
 ### Nuevas características
 - Añadida función para bloquear el botón de incremento de cantidad cuando se alcanza el límite de stock del producto
