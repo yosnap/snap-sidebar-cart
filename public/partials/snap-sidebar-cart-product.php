@@ -100,11 +100,10 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
             </div>
             
             <button type="button" class="snap-sidebar-cart__remove-product" 
-                    style="background-color: #dd3333; color: white; font-size: 16px; padding: 2px 8px; border-radius: 5px; border: none; cursor: pointer;" 
                     data-key="<?php echo esc_attr($cart_item_key); ?>" 
                     data-product-id="<?php echo esc_attr($product_id); ?>"
                     aria-label="<?php esc_attr_e('Eliminar este producto', 'snap-sidebar-cart'); ?>">
-                ELIMINAR
+                &times;
             </button>
         </div>
 

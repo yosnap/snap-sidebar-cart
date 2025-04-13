@@ -63,8 +63,8 @@ class Snap_Sidebar_Cart_Public {
         // Script para gestionar límites de stock y el botón eliminar
         wp_enqueue_script('snap-sidebar-cart-stock-and-remove', SNAP_SIDEBAR_CART_URL . 'assets/js/stock-and-remove-handler.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
         
-        // Script mejorado con alertas visuales para solucionar el problema del botón eliminar
-        wp_enqueue_script('snap-sidebar-cart-remove-button-fix-enhanced', SNAP_SIDEBAR_CART_URL . 'assets/js/remove-button-fix-enhanced.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
+        // Script simple para el botón eliminar
+        wp_enqueue_script('snap-sidebar-cart-remove-button-fix-simple', SNAP_SIDEBAR_CART_URL . 'assets/js/remove-button-fix-simple.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
         
         // Opciones para el script
         $script_options = array(
