@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## 1.0.17 - 2025-04-13
+### Correcciones
+- Implementada solución definitiva para el botón eliminar con JavaScript nativo
+- Añadido manejador de eventos a nivel de DOM para garantizar la funcionalidad
+- Mejorado el estilo del botón eliminar para ser más discreto y efectivo
+- Separados los estilos en un archivo CSS específico para mejor mantenimiento
+- Optimizado el código para asegurar compatibilidad con todos los navegadores
+
 ## 1.0.16 - 2025-04-13
 ### Mejoras
 - Implementado correctamente el cambio de imagen en hover para productos relacionados

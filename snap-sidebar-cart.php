@@ -3,7 +3,7 @@
  * Plugin Name: Snap Sidebar Cart
  * Plugin URI: https://github.com/yosnap/snap-sidebar-cart-wp
  * Description: Un carrito lateral para WooCommerce que muestra productos cuando se agregan al carrito y productos relacionados con animaciones personalizables.
- * Version: 1.0.16
+ * Version: 1.0.17
  * Author: Paulo
  * Author URI: 
  * Text Domain: snap-sidebar-cart
@@ -20,7 +20,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Definir constantes
-define( 'SNAP_SIDEBAR_CART_VERSION', '1.0.16' );
+define( 'SNAP_SIDEBAR_CART_VERSION', '1.0.17' );
 define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );

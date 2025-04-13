@@ -38,6 +38,9 @@ class Snap_Sidebar_Cart_Public {
         
         wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), SNAP_SIDEBAR_CART_VERSION, 'all');
         
+        // Estilos específicos para el botón de eliminar
+        wp_enqueue_style('snap-sidebar-cart-remove-button', SNAP_SIDEBAR_CART_URL . 'assets/css/remove-button.css', array('snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, 'all');
+        
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
         wp_add_inline_style('snap-sidebar-cart-public', $custom_css);
@@ -63,8 +66,8 @@ class Snap_Sidebar_Cart_Public {
         // Script para gestionar límites de stock y el botón eliminar
         wp_enqueue_script('snap-sidebar-cart-stock-and-remove', SNAP_SIDEBAR_CART_URL . 'assets/js/stock-and-remove-handler.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
         
-        // Script simple para el botón eliminar
-        wp_enqueue_script('snap-sidebar-cart-remove-button-fix-simple', SNAP_SIDEBAR_CART_URL . 'assets/js/remove-button-fix-simple.js', array('jquery', 'snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
+        // Método directo para el botón eliminar (enfoque sin jQuery)
+        wp_enqueue_script('snap-sidebar-cart-direct-remove-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/direct-remove-button-fix.js', array('snap-sidebar-cart-public'), SNAP_SIDEBAR_CART_VERSION, true);
         
         // Opciones para el script
         $script_options = array(
