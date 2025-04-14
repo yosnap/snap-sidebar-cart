@@ -37,12 +37,17 @@ class Snap_Sidebar_Cart_Public {
         // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
+        // Registrar y cargar el CSS principal
         wp_deregister_style('snap-sidebar-cart-public');
         wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
         
+        // Registrar y cargar el CSS de arreglo del slider con prioridad más alta
+        wp_deregister_style('snap-sidebar-cart-slider-fix');
+        wp_enqueue_style('snap-sidebar-cart-slider-fix', SNAP_SIDEBAR_CART_URL . 'assets/css/slider-fix.css', array('snap-sidebar-cart-public'), $version, 'all');
+        
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
-        wp_add_inline_style('snap-sidebar-cart-public', $custom_css);
+        wp_add_inline_style('snap-sidebar-cart-slider-fix', $custom_css);
     }
 
     /**
@@ -64,9 +69,13 @@ class Snap_Sidebar_Cart_Public {
         wp_deregister_script('snap-sidebar-cart-ajax-handler');
         wp_deregister_script('snap-sidebar-cart-direct-fix');
         wp_deregister_script('snap-sidebar-cart-buttons-fix');
+        wp_deregister_script('snap-sidebar-cart-slider-nav-fix');
         
         // Cargar el script principal directamente - simplificamos para asegurar que se cargue correctamente
         wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), $version, true);
+        
+        // Cargar el fix para la navegación del slider después del script principal
+        wp_enqueue_script('snap-sidebar-cart-slider-nav-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/slider-nav-fix.js', array('jquery', 'snap-sidebar-cart-public'), $version, true);
         
         // No cargamos los scripts de depuración en producción
         
