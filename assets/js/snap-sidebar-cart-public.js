@@ -335,7 +335,7 @@
           $targetContainer.html(response.data.html);
           console.log("Productos relacionados cargados correctamente");
 
-          // Verificar si hay pocos productos para ocultar navegación
+          // Verificar si hay pocos productos para ocultar/mostrar navegación
           var $items = $targetContainer.children(".snap-sidebar-cart__related-product");
           var childrenCount = $items.length;
           var containerWidth = $targetContainer.width();
@@ -357,10 +357,18 @@
                 .parent()
                 .find(".snap-sidebar-cart__slider-nav")
                 .show();
+              
+              // Inicializar estado de navegación
+              updateSliderNavigation($targetContainer);
             }
             
             // Configurar hover para mostrar imágenes de galería
             setupProductGalleryHover();
+            
+            // Configurar evento de scroll para actualizar botones de navegación
+            $targetContainer.on('scroll', function() {
+              updateSliderNavigation($(this));
+            });
           } else {
             console.log("No se encontraron productos para mostrar (respuesta HTML vacía)");
             $targetContainer.html(
@@ -1021,13 +1029,23 @@
       e.stopPropagation();
       console.log("Botón prev del slider clickeado");
       var $track = $(this).siblings(".snap-sidebar-cart__slider-track");
-      var scrollAmount = $track.width() * 0.8;
+      
+      // Calcular el ancho de un elemento del slider para el desplazamiento
+      var $item = $track.find(".snap-sidebar-cart__related-product").first();
+      var itemWidth = $item.outerWidth(true);
+      
+      // Si no hay productos o no podemos calcular el ancho, usar un valor fijo
+      var scrollAmount = itemWidth ? itemWidth * 2 : $track.width() * 0.5;
+      
       console.log("Desplazando slider: " + scrollAmount + "px a la izquierda");
-      $track.animate(
+      $track.stop().animate(
         {
           scrollLeft: $track.scrollLeft() - scrollAmount,
         },
-        300
+        300,
+        function() {
+          updateSliderNavigation($track);
+        }
       );
     });
 
@@ -1036,15 +1054,47 @@
       e.stopPropagation();
       console.log("Botón next del slider clickeado");
       var $track = $(this).siblings(".snap-sidebar-cart__slider-track");
-      var scrollAmount = $track.width() * 0.8;
+      
+      // Calcular el ancho de un elemento del slider para el desplazamiento
+      var $item = $track.find(".snap-sidebar-cart__related-product").first();
+      var itemWidth = $item.outerWidth(true);
+      
+      // Si no hay productos o no podemos calcular el ancho, usar un valor fijo
+      var scrollAmount = itemWidth ? itemWidth * 2 : $track.width() * 0.5;
+      
       console.log("Desplazando slider: " + scrollAmount + "px a la derecha");
-      $track.animate(
+      $track.stop().animate(
         {
           scrollLeft: $track.scrollLeft() + scrollAmount,
         },
-        300
+        300,
+        function() {
+          updateSliderNavigation($track);
+        }
       );
     });
+    
+    // Función para actualizar la visibilidad de los botones de navegación
+    function updateSliderNavigation($track) {
+      var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
+      var currentScrollLeft = $track.scrollLeft();
+      
+      var $prevButton = $track.siblings(".snap-sidebar-cart__slider-prev");
+      var $nextButton = $track.siblings(".snap-sidebar-cart__slider-next");
+      
+      // Mostrar u ocultar botones según la posición del scroll
+      if (currentScrollLeft <= 0) {
+        $prevButton.addClass('disabled').css('opacity', '0.5');
+      } else {
+        $prevButton.removeClass('disabled').css('opacity', '1');
+      }
+      
+      if (currentScrollLeft >= maxScrollLeft - 5) { // 5px de margen para evitar problemas de redondeo
+        $nextButton.addClass('disabled').css('opacity', '0.5');
+      } else {
+        $nextButton.removeClass('disabled').css('opacity', '1');
+      }
+    }
 
     // Añadir productos relacionados al carrito
     $(document).on("click", ".snap-sidebar-cart__add-related-product", function (e) {

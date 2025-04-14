@@ -93,6 +93,34 @@ $color = $related_product->get_attribute('color') ? $related_product->get_attrib
                     <?php echo esc_html($color); ?>
                 </div>
             <?php endif; ?>
+
+            <?php if (!empty($product_price)) : ?>
+                <div class="snap-sidebar-cart__related-product-price-container">
+                    <?php if ($has_discount) : ?>
+                        <span class="snap-sidebar-cart__related-product-regular-price"><?php echo wc_price($regular_price); ?></span>
+                        <span class="snap-sidebar-cart__related-product-discount">-<?php echo $discount_percentage; ?>%</span>
+                    <?php endif; ?>
+                    <span class="snap-sidebar-cart__related-product-price"><?php echo $product_price; ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php 
+            // Mostrar calificación/estrellas del producto si está disponible
+            $average_rating = $related_product->get_average_rating();
+            $review_count = $related_product->get_review_count();
+            
+            if ($average_rating > 0) : ?>
+                <div class="snap-sidebar-cart__related-product-ratings">
+                    <div class="star-rating" title="<?php echo sprintf(__('Calificación de %s de 5', 'snap-sidebar-cart'), $average_rating); ?>">
+                        <span style="width:<?php echo esc_attr(($average_rating / 5) * 100); ?>%">
+                            <strong class="rating"><?php echo esc_html($average_rating); ?></strong> <?php _e('de 5', 'snap-sidebar-cart'); ?>
+                        </span>
+                    </div>
+                    <?php if ($review_count > 0) : ?>
+                        <span class="review-count"><?php echo esc_html($review_count); ?> <?php echo _n('reseña', 'reseñas', $review_count, 'snap-sidebar-cart'); ?></span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </a>
 </div>
