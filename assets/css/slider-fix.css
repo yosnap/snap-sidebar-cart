@@ -3,26 +3,93 @@
  * Este archivo sobrescribe los estilos para forzar el diseño correcto
  */
 
-/* RESET de estilos del cuerpo del carrito para scroll correcto */
+/* Estructura de contenedor completa para garantizar scroll unificado */
+.snap-sidebar-cart {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.snap-sidebar-cart__container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Cabecera fija */
+.snap-sidebar-cart__header {
+    flex: 0 0 auto !important;
+}
+
+/* Cuerpo con scroll */
 .snap-sidebar-cart__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Contenido de productos no fijo */
+.snap-sidebar-cart__products,
+.snap-sidebar-cart__related-section {
+    flex: 0 0 auto !important;
 }
 
 .snap-sidebar-cart__products {
-    flex: 0 auto;
-    padding: 15px 0;
-    -webkit-overflow-scrolling: touch;
+    padding: 15px 0 !important;
 }
 
 /* RESET de estilos para la sección de productos relacionados */
 .snap-sidebar-cart__related-section {
     padding: 0 !important;
     border-top: 1px solid #e5e5e5 !important;
-    margin-top: auto !important;
+    margin-top: 0 !important; /* Cambiamos de auto a 0 para que no empuje hacia abajo */
     position: relative !important;
+}
+
+/* Aseguramos que el footer permanezca fijo en la parte inferior */
+.snap-sidebar-cart__footer {
+    flex: 0 0 auto !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: var(--sidebar-background) !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+    z-index: 100 !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+    border-top: 1px solid var(--border-color, #e5e5e5) !important;
+    margin-top: auto !important;
+}
+
+/* Ajuste específico para contenedores verticales */
+.snap-sidebar-cart__container {
+    min-height: 0 !important; /* Permite que los elementos flexibles se contraigan correctamente */
+}
+
+/* Garantizar que el footer sea visible siempre en la parte inferior */
+.snap-sidebar-cart__container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+.snap-sidebar-cart__body {
+    overflow-y: auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important; /* Necesario para que funcione el scroll en Firefox */
+}
+
+/* Evitar que el contenido se oculte detrás del footer */
+.snap-sidebar-cart__products,
+.snap-sidebar-cart__related-section {
+    margin-bottom: 0 !important;
+    padding-bottom: 10px !important;
 }
 
 .snap-sidebar-cart__related-title {
@@ -93,11 +160,13 @@
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    overflow: visible !important;
 }
 
 .snap-sidebar-cart__slider-track {
     display: flex !important;
     overflow-x: auto !important;
+    overflow-y: visible !important;
     scroll-behavior: smooth !important;
     padding: 10px 0 !important;
     scrollbar-width: none !important;
