@@ -31,14 +31,13 @@ class Snap_Sidebar_Cart_Public {
      * @since    1.0.0
      */
     public function enqueue_styles() {
-        // Solo cargar estilos en páginas de WooCommerce
-        if (!is_woocommerce() && !is_cart() && !is_checkout() && !is_product() && !is_shop()) {
-            return;
-        }
+        // Cargar estilos en todas las páginas donde podría aparecer el carrito
+        // Eliminamos las restricciones para asegurar que los estilos se carguen siempre
         
-        // Añadir timestamp para forzar recarga y evitar caché
+        // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
+        wp_deregister_style('snap-sidebar-cart-public');
         wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
         
         // Estilos personalizados desde las opciones
@@ -57,71 +56,36 @@ class Snap_Sidebar_Cart_Public {
             return;
         }
         
-        // Añadir timestamp para forzar recarga y evitar caché
+        // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
-        // Registrar y cargar módulos individuales
-        wp_register_script('snap-sidebar-cart-close-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/close-events-handler.js', array('jquery'), $version, true);
-        wp_register_script('snap-sidebar-cart-quantity-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/quantity-handler.js', array('jquery'), $version, true);
-        wp_register_script('snap-sidebar-cart-related-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/related-products-handler.js', array('jquery'), $version, true);
-        wp_register_script('snap-sidebar-cart-ui-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/ui-handler.js', array('jquery'), $version, true);
+        // Asegurarse de que todos los scripts estén desregistrados antes de volver a cargarlos
+        wp_deregister_script('snap-sidebar-cart-public');
+        wp_deregister_script('snap-sidebar-cart-ajax-handler');
+        wp_deregister_script('snap-sidebar-cart-direct-fix');
+        wp_deregister_script('snap-sidebar-cart-buttons-fix');
         
-        // Solución AJAX para actualizar el carrito sin recargar la página
-        wp_enqueue_script('snap-sidebar-cart-ajax-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/ajax-update-handler.js', array('jquery'), $version, true);
-        
-        // Mantener el fix directo para el botón de cerrar que sabemos que funciona
-        wp_enqueue_script('snap-sidebar-cart-direct-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/direct-close-fix.js', array('jquery'), $version, true);
-        
-        // Añadir fix directo para los botones de cantidad
-        wp_enqueue_script('snap-sidebar-cart-buttons-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/buttons-direct-fix.js', array('jquery'), $version, true);
-        
-        // Cargar el script principal que coordina todos los módulos
-        wp_enqueue_script('snap-sidebar-cart-main', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-main.js', array(
-            'jquery',
-            'snap-sidebar-cart-close-handler',
-            'snap-sidebar-cart-quantity-handler',
-            'snap-sidebar-cart-related-handler',
-            'snap-sidebar-cart-ui-handler'
-        ), $version, true);
+        // Cargar el script principal directamente - simplificamos para asegurar que se cargue correctamente
+        wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), $version, true);
         
         // No cargamos los scripts de depuración en producción
         
-        // Opciones para el script
+        // Opciones para el script - simplificamos para asegurarnos que funcione correctamente
         $script_options = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('snap-sidebar-cart-nonce'),
             'activation_selectors' => $this->options['activation_selectors'],
             'auto_open' => isset($this->options['auto_open']) ? $this->options['auto_open'] : false,
-            // Posición para los nuevos productos (top o bottom)
-            'new_product_position' => isset($this->options['new_product_position']) ? 
-                                     $this->options['new_product_position'] : 'top',
-            // Opciones para animaciones
-            'animations' => array(
-                'duration' => isset($this->options['animations']['duration']) ? 
-                             intval($this->options['animations']['duration']) : 300,
-                'quantity_update_delay' => isset($this->options['animations']['quantity_update_delay']) ? 
-                                         intval($this->options['animations']['quantity_update_delay']) : 200,
-                'enabled' => isset($this->options['animations']['enabled']) ? 
-                           (bool)$this->options['animations']['enabled'] : true
-            ),
-            // Opciones para el preloader
+            'new_product_position' => 'top',
             'preloader' => array(
-                'type' => isset($this->options['preloader']['type']) ? 
-                        $this->options['preloader']['type'] : 'circle',
-                'position' => isset($this->options['preloader']['position']) ? 
-                            $this->options['preloader']['position'] : 'center'
+                'type' => 'circle',
+                'position' => 'center'
             ),
-            // Estilos para usar en JavaScript
-            'styles' => isset($this->options['styles']) ? $this->options['styles'] : array(
-                'sidebar_width' => '540px'
-            ),
-            // Versión para seguimiento
-            'version' => SNAP_SIDEBAR_CART_VERSION,
-            // Debug
+            // Forzar debug a true
             'debug' => true
         );
         
-        wp_localize_script('snap-sidebar-cart-main', 'snap_sidebar_cart_params', $script_options);
+        wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
     }
 
     /**
