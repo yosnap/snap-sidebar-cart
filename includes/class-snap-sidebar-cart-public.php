@@ -47,7 +47,9 @@ class Snap_Sidebar_Cart_Public {
         
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
-        wp_add_inline_style('snap-sidebar-cart-slider-fix', $custom_css);
+        $preloader_css = $this->generate_preloader_css();
+        
+        wp_add_inline_style('snap-sidebar-cart-slider-fix', $custom_css . $preloader_css);
     }
 
     /**
@@ -77,18 +79,31 @@ class Snap_Sidebar_Cart_Public {
         // Cargar el fix para la navegación del slider después del script principal
         wp_enqueue_script('snap-sidebar-cart-slider-nav-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/slider-nav-fix.js', array('jquery', 'snap-sidebar-cart-public'), $version, true);
         
+        // Cargar el fix para el preloader
+        wp_enqueue_script('snap-sidebar-cart-preloader-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/preloader-fix.js', array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-slider-nav-fix'), $version, true);
+        
         // No cargamos los scripts de depuración en producción
         
-        // Opciones para el script - simplificamos para asegurarnos que funcione correctamente
+        // Opciones para el script con todos los parámetros necesarios
         $script_options = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('snap-sidebar-cart-nonce'),
             'activation_selectors' => $this->options['activation_selectors'],
             'auto_open' => isset($this->options['auto_open']) ? $this->options['auto_open'] : false,
-            'new_product_position' => 'top',
+            'new_product_position' => isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'top',
+            // Opciones de preloader
             'preloader' => array(
-                'type' => 'circle',
-                'position' => 'center'
+                'type' => isset($this->options['preloader']['type']) ? $this->options['preloader']['type'] : 'circle',
+                'position' => isset($this->options['preloader']['position']) ? $this->options['preloader']['position'] : 'center',
+                'size' => isset($this->options['preloader']['size']) ? $this->options['preloader']['size'] : '40px',
+                'color' => isset($this->options['preloader']['color']) ? $this->options['preloader']['color'] : '#3498db',
+                'color2' => isset($this->options['preloader']['color2']) ? $this->options['preloader']['color2'] : '#e74c3c'
+            ),
+            // Opciones para animaciones
+            'animations' => array(
+                'duration' => isset($this->options['animations']['duration']) ? intval($this->options['animations']['duration']) : 300,
+                'quantity_update_delay' => isset($this->options['animations']['quantity_update_delay']) ? intval($this->options['animations']['quantity_update_delay']) : 200,
+                'enabled' => isset($this->options['animations']['enabled']) ? (bool)$this->options['animations']['enabled'] : true
             ),
             // Forzar debug a true
             'debug' => true
@@ -322,6 +337,61 @@ class Snap_Sidebar_Cart_Public {
                 0% { background-color: rgba(" . $this->hex2rgb($preloader_color) . ", 0.1); }
                 50% { background-color: rgba(" . $this->hex2rgb($preloader_color) . ", 0.3); }
                 100% { background-color: transparent; }
+            }
+        ";
+        
+        return $css;
+    }
+
+    /**
+     * Genera los estilos CSS específicos para el preloader.
+     *
+     * @since    1.1.2
+     * @return   string    CSS personalizado para el preloader.
+     */
+    private function generate_preloader_css() {
+        // Opciones del preloader
+        $preloader = isset($this->options['preloader']) ? $this->options['preloader'] : array();
+        $preloader_type = isset($preloader['type']) ? esc_attr($preloader['type']) : 'circle';
+        $preloader_size = isset($preloader['size']) ? esc_attr($preloader['size']) : '40px';
+        $preloader_color = isset($preloader['color']) ? esc_attr($preloader['color']) : '#3498db';
+        $preloader_color2 = isset($preloader['color2']) ? esc_attr($preloader['color2']) : '#e74c3c';
+        $preloader_position = isset($preloader['position']) ? esc_attr($preloader['position']) : 'center';
+        
+        // CSS para el preloader
+        $css = "
+            :root {
+                --preloader-size: {$preloader_size};
+                --preloader-color: {$preloader_color};
+                --preloader-color2: {$preloader_color2};
+            }
+            
+            /* Preloader personalizado */
+            .snap-sidebar-cart__loader-spinner {
+                width: {$preloader_size} !important;
+                height: {$preloader_size} !important;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-circle {
+                border: 2px solid rgba(0, 0, 0, 0.1) !important;
+                border-top: 2px solid {$preloader_color} !important;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-square {
+                border: 2px solid rgba(0, 0, 0, 0.1) !important;
+                border-top: 2px solid {$preloader_color} !important;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-dots span {
+                background-color: {$preloader_color} !important;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-spinner:before {
+                border-top-color: {$preloader_color} !important;
+            }
+            
+            .snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+                border-bottom-color: {$preloader_color2} !important;
             }
         ";
         

@@ -8,12 +8,11 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden !important;
+    overflow-y: auto !important;
 }
 
 .snap-sidebar-cart__products {
-    flex: 1;
-    overflow-y: auto !important;
+    flex: 0 auto;
     padding: 15px 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -23,6 +22,7 @@
     padding: 0 !important;
     border-top: 1px solid #e5e5e5 !important;
     margin-top: auto !important;
+    position: relative !important;
 }
 
 .snap-sidebar-cart__related-title {
@@ -91,13 +91,13 @@
 .snap-sidebar-cart__slider {
     position: relative !important;
     margin: 0 !important;
-    padding: 0 30px !important;
+    padding: 0 !important;
     width: 100% !important;
 }
 
 .snap-sidebar-cart__slider-track {
     display: flex !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
     scroll-behavior: smooth !important;
     padding: 10px 0 !important;
     scrollbar-width: none !important;
@@ -112,10 +112,8 @@
 /* Navegación del slider */
 .snap-sidebar-cart__slider-nav {
     position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 24px !important;
-    height: 24px !important;
+    width: 20px !important;
+    height: 20px !important;
     background-color: #fff !important;
     border: 1px solid #eee !important;
     border-radius: 50% !important;
@@ -124,7 +122,7 @@
     justify-content: center !important;
     cursor: pointer !important;
     z-index: 50 !important;
-    font-size: 16px !important;
+    font-size: 14px !important;
     line-height: 1 !important;
     color: #333 !important;
     transition: all 0.2s !important;
@@ -135,14 +133,15 @@
     background-color: #f5f5f5 !important;
 }
 
+/* Ubicar flechas en la parte superior derecha */
 .snap-sidebar-cart__slider-prev {
-    left: 5px !important;
-    top: 45% !important;
+    right: 45px !important;
+    top: 15px !important;
 }
 
 .snap-sidebar-cart__slider-next {
-    right: 5px !important;
-    top: 45% !important;
+    right: 15px !important;
+    top: 15px !important;
 }
 
 /* Productos del slider */
@@ -275,4 +274,127 @@
     font-size: 12px !important;
     font-weight: 600 !important;
     color: #333 !important;
+}
+
+/* Control de cantidad - Uniformar tamaños */
+.quantity.buttoned-input {
+    display: flex !important;
+    align-items: center !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    width: 80px !important; /* Ancho fijo */
+    height: 30px !important; /* Altura fija */
+}
+
+.notabutton {
+    background: none !important;
+    border: none !important;
+    padding: 5px 8px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s !important;
+    width: 24px !important; /* Ancho fijo */
+    height: 100% !important;
+}
+
+.notabutton:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.cart-item__quantity-input {
+    width: 32px !important; /* Ancho fijo */
+    text-align: center !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
+    font-size: 14px !important;
+    -moz-appearance: textfield !important;
+    background: transparent !important;
+    height: 100% !important;
+    min-height: 28px !important;
+}
+
+.cart-item__quantity-input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.cart-item__quantity-input::-webkit-outer-spin-button,
+.cart-item__quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Preloader personalizado */
+.snap-sidebar-cart__product-loader {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    z-index: 10 !important;
+}
+
+.snap-sidebar-cart__loader-spinner {
+    width: var(--preloader-size, 40px) !important;
+    height: var(--preloader-size, 40px) !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-circle {
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    border-top: 2px solid var(--preloader-color, #3498db) !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-square {
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    border-top: 2px solid var(--preloader-color, #3498db) !important;
+    animation: spin 1s linear infinite !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span {
+    background-color: var(--preloader-color, #3498db) !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-center {
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-top-left {
+    top: 10px !important;
+    left: 10px !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-top-right {
+    top: 10px !important;
+    right: 10px !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-bottom-left {
+    bottom: 10px !important;
+    left: 10px !important;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-bottom-right {
+    bottom: 10px !important;
+    right: 10px !important;
+}
+
+/* Fix para tabs de queries */
+.snap-sidebar-cart__related-tabs {
+    display: flex !important;
+    padding: 0 15px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+.snap-sidebar-cart__related-tab {
+    cursor: pointer !important;
+    user-select: none !important;
 }
