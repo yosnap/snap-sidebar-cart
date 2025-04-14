@@ -50,58 +50,49 @@ $color = $related_product->get_attribute('color') ? $related_product->get_attrib
 
 <div class="snap-sidebar-cart__related-product">
     <?php if ($is_last_chance) : ?>
-        <div class="snap-sidebar-cart__product-badge">
+        <div class="snap-sidebar-cart__product-badge last-chance">
             <?php _e('Last Chance', 'snap-sidebar-cart'); ?>
         </div>
     <?php endif; ?>
     
-    <div class="snap-sidebar-cart__related-product-image">
-        <a href="<?php echo esc_url($product_permalink); ?>" class="product-image-container">
+    <a href="<?php echo esc_url($product_permalink); ?>" class="product-card-link">
+        <div class="snap-sidebar-cart__related-product-image">
             <div class="primary-image">
                 <?php echo $thumbnail; ?>
             </div>
-            <?php if (!empty($gallery_images)) : 
-                $hover_image_id = reset($gallery_images);
-                $hover_image_url = wp_get_attachment_image_url($hover_image_id, 'woocommerce_thumbnail');
-                if ($hover_image_url) : ?>
-                <div class="hover-image">
-                    <img src="<?php echo esc_url($hover_image_url); ?>" alt="<?php echo esc_attr($product_name); ?> - Imagen alternativa">
+            <?php 
+            // Mostrar la primera imagen de la galería para el efecto hover
+            if (!empty($gallery_images)) : 
+                $image_id = reset($gallery_images);
+                $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+                if ($image_url) : 
+                    $image_alt = get_post_meta($image_id, '_wp_attachment_image_alt', true);
+                    $image_alt = $image_alt ? $image_alt : sprintf('%s - %s', 
+                        esc_attr($product_name), 
+                        __('Imagen alternativa', 'snap-sidebar-cart')
+                    );
+                    ?>
+                    <div class="product-gallery-image hover-image">
+                        <img src="<?php echo esc_url($image_url); ?>" 
+                            alt="<?php echo esc_attr($image_alt); ?>"
+                            loading="lazy">
+                    </div>
+                    <?php
+                endif;
+            endif;
+            ?>
+        </div>
+
+        <div class="snap-sidebar-cart__related-product-details">
+            <h4 class="snap-sidebar-cart__related-product-title">
+                <?php echo esc_html($product_name); ?>
+            </h4>
+            
+            <?php if ($color) : ?>
+                <div class="snap-sidebar-cart__related-product-variant">
+                    <?php echo esc_html($color); ?>
                 </div>
-            <?php endif; endif; ?>
-        </a>
-    </div>
-
-    <div class="snap-sidebar-cart__related-product-details">
-        <h4 class="snap-sidebar-cart__related-product-title">
-            <a href="<?php echo esc_url($product_permalink); ?>"><?php echo esc_html($product_name); ?></a>
-        </h4>
-        
-        <?php if ($color) : ?>
-            <div class="snap-sidebar-cart__related-product-color">
-                <?php echo esc_html($color); ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="snap-sidebar-cart__related-product-shipping">
-            <?php printf(__('Entrega en 1-%d días hábiles', 'snap-sidebar-cart'), $shipping_days); ?>
-        </div>
-    
-        <div class="snap-sidebar-cart__related-product-price-container">
-            <?php if ($has_discount) : ?>
-                <span class="snap-sidebar-cart__related-product-regular-price">
-                    <?php echo wc_price($regular_price); ?>
-                </span>
-                <span class="snap-sidebar-cart__related-product-discount">
-                    <?php echo sprintf('-%d%%', $discount_percentage); ?>
-                </span>
             <?php endif; ?>
-            <span class="snap-sidebar-cart__related-product-price">
-                <?php echo $product_price; ?>
-            </span>
         </div>
-    </div>
-
-    <button type="button" class="snap-sidebar-cart__add-related-product" data-product-id="<?php echo esc_attr($product_id); ?>">
-        <?php _e('Añadir al carrito', 'snap-sidebar-cart'); ?>
-    </button>
+    </a>
 </div>

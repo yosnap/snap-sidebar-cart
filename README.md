@@ -1,110 +1,72 @@
 # Snap Sidebar Cart para WooCommerce
 
-Un plugin para WordPress que proporciona un carrito lateral (sidebar) personalizable para WooCommerce con animaciones, productos relacionados y más.
+Un carrito lateral elegante y funcional para WooCommerce con animaciones personalizables, slider de productos relacionados y muchas otras características.
 
-## Características Principales
+## Versión 1.1.0
 
-- **Carrito lateral** que se muestra al agregar productos o hacer click en selectores configurados
-- **Listado de productos** con cantidades ajustables y actualización automática
-- **Control inteligente de stock**: bloqueo del botón de incremento cuando se alcanza el stock máximo
-- **Consolidación automática** de productos idénticos, sumando cantidades en lugar de duplicar
-- **Animaciones personalizables** para agregar/eliminar productos y actualizar cantidades
-- **Slider de productos relacionados** con múltiples opciones
-- **Mostrar imágenes de galería** en hover de productos relacionados
-- **Preloader personalizable** que aparece al actualizar o eliminar productos
-- **Estilos totalmente configurables** desde el panel de administración
-- **Eliminación automática** de productos cuando la cantidad llega a 0
-- **Detalle de precios** con precio de envío y subtotal (IVA incluido)
-- **Múltiples opciones de visualización** para nuevos productos
+## Características
 
-## Requisitos
+- Sidebar que se muestra cuando los usuarios agregan productos al carrito
+- Se abre al hacer clic en selectores configurables (botones de "Añadir al carrito", iconos de carrito, etc.)
+- Cierre mediante botón X, clic fuera del sidebar o tecla ESC
+- Slider de productos relacionados configurable
+- Opción para configurar los estilos del listado de productos y del sidebar
+- Los productos se eliminan automáticamente cuando la cantidad llega a 0
+- Muestra el precio del envío y el subtotal con IVA incluido
+- Título del carrito con contador de productos
+- Animación de inserción de nuevos productos con preloader
+- Gestión inteligente de cantidades (suma productos existentes en lugar de duplicarlos)
+- Bloqueo de botón de incremento cuando se alcanza el límite de stock
+- Efecto hover en el slider de productos relacionados que muestra imágenes alternativas
+- El sidebar solo se abre con productos simples, no con los que tienen variaciones
 
-- WordPress 5.0 o superior
-- WooCommerce 4.0 o superior
-- PHP 7.3 o superior
+## Actualizaciones recientes (v1.1.0)
+
+- **Arquitectura modular mejorada**: Código JavaScript reorganizado en módulos separados para mejor mantenimiento.
+- **Múltiples imágenes en hover**: Ahora los productos relacionados muestran las imágenes de la galería al pasar el ratón.
+- **Animaciones más fluidas**: Transiciones mejoradas para añadir/eliminar productos y actualizar cantidades.
+- **Control de stock avanzado**: El botón de incremento ahora se bloquea automáticamente cuando se alcanza el límite de stock disponible, mostrando una notificación visual.
+- **Animación de actualización de cantidad mejorada**: Cuando se agrega un producto que ya existe en el carrito, la cantidad parpadea con un color destacado para indicar el cambio.
+- **Cierre mejorado del sidebar**: Se ha mejorado la detección de clic fuera del sidebar y el cierre con la tecla ESC.
+- **Preloader personalizable**: Ahora se pueden configurar diferentes estilos y posiciones para el preloader.
+- **Mejor rendimiento**: Optimización general del código para un rendimiento más rápido.
+- **Compatibilidad actualizada**: Verificada compatibilidad con WooCommerce 8.5.
 
 ## Instalación
 
-1. Sube la carpeta `snap-sidebar-cart` a tu directorio `/wp-content/plugins/`
-2. Activa el plugin a través del menú 'Plugins' en WordPress
-3. Ve a Ajustes > Carrito Lateral para configurar el plugin
+1. Sube el plugin a la carpeta `/wp-content/plugins/` de tu instalación de WordPress.
+2. Activa el plugin a través del menú 'Plugins' en WordPress.
+3. Configura las opciones en el menú 'Snap Sidebar Cart' en la administración de WordPress.
 
 ## Configuración
 
-### Ajustes Básicos
+### Opciones generales
+- **Título del carrito**: Personaliza el título que se muestra en la parte superior del sidebar.
+- **Selector de contenedor**: ID del contenedor HTML del sidebar.
+- **Selectores de activación**: Selectores CSS para los elementos que abrirán el sidebar al hacer clic.
+- **Mostrar precio de envío**: Activa/desactiva la visualización del precio de envío.
+- **Apertura automática**: Define si el sidebar se abre automáticamente al añadir un producto al carrito.
 
-- **Título del carrito**: Personaliza el título que se muestra en la parte superior del carrito
-- **ID del contenedor**: ID HTML para el contenedor del carrito lateral (sin el símbolo #)
-- **Selectores de activación**: Selectores CSS separados por comas que, al hacer clic, abrirán el carrito lateral
-- **Mostrar información de envío**: Activa/desactiva la información de costes de envío en el pie del carrito
-- **Abrir automáticamente**: Abre automáticamente el carrito lateral cuando se añade un producto
+### Productos relacionados
+- **Mostrar productos relacionados**: Activa/desactiva la sección de productos relacionados.
+- **Número de productos**: Cantidad de productos relacionados a mostrar.
+- **Columnas**: Número de columnas en el slider.
+- **Ordenar por**: Criterio de ordenación de los productos relacionados.
 
-### Apariencia Visual
+### Estilos
+- **Ancho del sidebar**: Define el ancho del sidebar.
+- **Color de fondo del sidebar**: Color de fondo principal.
+- **Color de fondo del encabezado**: Color de fondo para el encabezado.
+- **Color de texto del encabezado**: Color para el texto del encabezado.
+- **Color de texto de productos**: Color para el texto de los productos.
+- **Color de fondo de botones**: Color de fondo para los botones principales.
+- **Color de texto de botones**: Color para el texto de los botones.
 
-- **Ancho del carrito lateral**: Define el ancho del carrito (px, em, rem, %)
-- **Color de fondo del carrito**: Color de fondo principal del carrito
-- **Color de fondo del encabezado**: Color de fondo de la sección superior del carrito
-- **Color del texto del encabezado**: Color del texto en la sección superior del carrito
-- **Color del texto de productos**: Color del texto para la lista de productos
-- **Color de fondo de botones**: Color de fondo para los botones principales
-- **Color del texto de botones**: Color del texto para los botones principales
-
-### Configuración del Preloader
-
-- **Tipo de preloader**: Elige entre círculo, cuadrado, puntos o espiral
-- **Tamaño del preloader**: Define el tamaño del preloader en px, em o rem
-- **Color principal**: Color principal para el preloader
-- **Color secundario**: Color secundario para algunos tipos de preloader
-- **Posición del preloader**: Posición del preloader en el contenedor del producto
-
-### Configuración de Animaciones
-
-- **Duración de la animación**: Tiempo en milisegundos para las animaciones
-- **Delay de actualización de cantidad**: Tiempo de espera antes de mostrar la animación de actualización
-- **Posición de nuevos productos**: Define si los nuevos productos aparecen al inicio o al final del listado
-
-### Productos Relacionados
-
-- **Mostrar productos relacionados**: Activa/desactiva la sección de productos relacionados
-- **Número de productos relacionados**: Número máximo de productos a mostrar
-- **Columnas de productos relacionados**: Número de columnas para la visualización
-- **Ordenar productos relacionados por**: Criterio de ordenación (aleatorio, fecha, precio, etc.)
-- **Pestañas de productos relacionados**: Tipos de productos relacionados a mostrar
-- **Etiqueta personalizada**: Etiqueta para la pestaña de productos relacionados personalizada
-- **Código personalizado para queries**: Código PHP para personalizar la consulta de productos
-
-## Comportamiento con Variaciones
-
-- Para productos con variaciones, el sidebar **no se muestra** cuando el usuario hace clic en el botón "Seleccionar opciones", dirigiéndolo a la página del producto para elegir las variaciones.
-- Cuando se agrega un producto con variación directamente al carrito, se muestra con las opciones seleccionadas.
-
-## Funcionalidades Especiales
-
-- **Control inteligente de stock**: El botón de incremento de cantidad se deshabilita automáticamente cuando se alcanza el máximo de stock disponible.
-- **Consolidación de productos**: Los productos idénticos se suman automáticamente en lugar de mostrarse como entradas separadas.
-- **Posición de nuevos productos**: Los nuevos productos se pueden añadir al inicio o final del listado según la configuración.
-- **Animación de actualización de cantidad**: Muestra una animación visual al actualizar la cantidad de un producto.
-- **Efecto hover en productos relacionados**: Muestra una imagen alternativa de la galería al pasar el ratón sobre un producto relacionado.
-- **Eliminación con animación**: Los productos se eliminan con una animación de desvanecimiento cuando la cantidad llega a 0.
-
-## Cambios importantes
-
-### Versión 1.0.18
-- Actualizado el ancho por defecto del sidebar a 540px para una mejor visualización
-- Mejorada la interfaz de usuario con campos de cantidad más pequeños y sin bordes
-- Eliminado completamente el botón de eliminar productos para una experiencia más limpia
-- Solucionados problemas con estilos que no respetaban la configuración guardada
-
-### Versión 1.0.17
-- Implementada función para bloquear el botón de incremento cuando se alcanza el stock máximo
-- Solucionado problema de productos duplicados mediante la consolidación automática
-- Optimizada la detección de stock disponible para productos en el carrito
-- Mejorada la gestión de eventos para botones y manejo de cantidades
-
-## Licencia
-
-Este plugin está licenciado bajo GPL v2 o posterior.
+### Animaciones
+- **Duración de la animación**: Tiempo en milisegundos para las animaciones.
+- **Retraso en actualización de cantidad**: Tiempo de espera antes de mostrar cambios de cantidad.
+- **Posición de nuevos productos**: Define si los nuevos productos se añaden al inicio o al final de la lista.
 
 ## Soporte
 
-Para soporte o consultas, por favor contacta a través de [correo electrónico] o [sitio web].
+Para soporte técnico, por favor contacta con el desarrollador.

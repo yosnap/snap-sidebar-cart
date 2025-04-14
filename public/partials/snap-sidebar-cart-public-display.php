@@ -14,16 +14,25 @@ if (!function_exists('WC') || !WC()->cart) {
 $cart_count = WC()->cart->get_cart_contents_count();
 ?>
 
+<!-- Overlay fuera del contenedor principal -->
+<div class="snap-sidebar-cart__overlay"></div>
+
 <div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart">
-    <div class="snap-sidebar-cart__overlay"></div>
     
     <div class="snap-sidebar-cart__container">
         <div class="snap-sidebar-cart__header">
             <h2 class="snap-sidebar-cart__title">
-                <?php echo esc_html($this->options['title']); ?> (<span class="snap-sidebar-cart__count"><?php echo esc_html($cart_count); ?></span>)
+                <?php 
+                    // Mostrar el título con el número de elementos en el carrito
+                    echo esc_html($this->options['title']); 
+                    echo ' (<span class="snap-sidebar-cart__count">' . esc_html($cart_count) . '</span>)'; 
+                ?>
             </h2>
             <button type="button" class="snap-sidebar-cart__close" id="snap-sidebar-cart-close" aria-label="<?php esc_attr_e('Cerrar', 'snap-sidebar-cart'); ?>">
-                &times;
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
             </button>
         </div>
         
@@ -58,7 +67,7 @@ $cart_count = WC()->cart->get_cart_contents_count();
             
             <?php if (isset($this->options['related_products']['show']) && $this->options['related_products']['show'] && !empty($cart_items)) : ?>
                 <div class="snap-sidebar-cart__related-section">
-                    <h3 class="snap-sidebar-cart__related-title"><?php _e('Te puede gustar', 'snap-sidebar-cart'); ?></h3>
+                    <h3 class="snap-sidebar-cart__related-title"><?php echo isset($this->options['related_products']['title']) ? esc_html($this->options['related_products']['title']) : _e('Te puede gustar', 'snap-sidebar-cart'); ?></h3>
                     
                     <div class="snap-sidebar-cart__related-tabs">
                         <?php

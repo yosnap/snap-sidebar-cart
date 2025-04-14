@@ -36,7 +36,10 @@ class Snap_Sidebar_Cart_Public {
             return;
         }
         
-        wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), SNAP_SIDEBAR_CART_VERSION, 'all');
+        // Añadir timestamp para forzar recarga y evitar caché
+        $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
+        
+        wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
         
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
@@ -54,8 +57,34 @@ class Snap_Sidebar_Cart_Public {
             return;
         }
         
-        // Script principal del carrito
-        wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), SNAP_SIDEBAR_CART_VERSION, true);
+        // Añadir timestamp para forzar recarga y evitar caché
+        $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
+        
+        // Registrar y cargar módulos individuales
+        wp_register_script('snap-sidebar-cart-close-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/close-events-handler.js', array('jquery'), $version, true);
+        wp_register_script('snap-sidebar-cart-quantity-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/quantity-handler.js', array('jquery'), $version, true);
+        wp_register_script('snap-sidebar-cart-related-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/related-products-handler.js', array('jquery'), $version, true);
+        wp_register_script('snap-sidebar-cart-ui-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/ui-handler.js', array('jquery'), $version, true);
+        
+        // Solución AJAX para actualizar el carrito sin recargar la página
+        wp_enqueue_script('snap-sidebar-cart-ajax-handler', SNAP_SIDEBAR_CART_URL . 'assets/js/ajax-update-handler.js', array('jquery'), $version, true);
+        
+        // Mantener el fix directo para el botón de cerrar que sabemos que funciona
+        wp_enqueue_script('snap-sidebar-cart-direct-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/direct-close-fix.js', array('jquery'), $version, true);
+        
+        // Añadir fix directo para los botones de cantidad
+        wp_enqueue_script('snap-sidebar-cart-buttons-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/buttons-direct-fix.js', array('jquery'), $version, true);
+        
+        // Cargar el script principal que coordina todos los módulos
+        wp_enqueue_script('snap-sidebar-cart-main', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-main.js', array(
+            'jquery',
+            'snap-sidebar-cart-close-handler',
+            'snap-sidebar-cart-quantity-handler',
+            'snap-sidebar-cart-related-handler',
+            'snap-sidebar-cart-ui-handler'
+        ), $version, true);
+        
+        // No cargamos los scripts de depuración en producción
         
         // Opciones para el script
         $script_options = array(
@@ -81,10 +110,18 @@ class Snap_Sidebar_Cart_Public {
                         $this->options['preloader']['type'] : 'circle',
                 'position' => isset($this->options['preloader']['position']) ? 
                             $this->options['preloader']['position'] : 'center'
-            )
+            ),
+            // Estilos para usar en JavaScript
+            'styles' => isset($this->options['styles']) ? $this->options['styles'] : array(
+                'sidebar_width' => '540px'
+            ),
+            // Versión para seguimiento
+            'version' => SNAP_SIDEBAR_CART_VERSION,
+            // Debug
+            'debug' => true
         );
         
-        wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
+        wp_localize_script('snap-sidebar-cart-main', 'snap_sidebar_cart_params', $script_options);
     }
 
     /**
@@ -126,6 +163,15 @@ class Snap_Sidebar_Cart_Public {
                 --animation-duration: " . $animation_duration . "ms;
                 --animation-delay: " . $quantity_update_delay . "ms;
                 --sidebar-width: " . $sidebar_width . ";
+                --sidebar-background: " . esc_attr($styles['sidebar_background'] ?? '#ffffff') . ";
+                --header-background: " . esc_attr($styles['header_background'] ?? '#f8f8f8') . ";
+                --header-text-color: " . esc_attr($styles['header_text_color'] ?? '#333333') . ";
+                --product-text-color: " . esc_attr($styles['product_text_color'] ?? '#333333') . ";
+                --button-background: " . esc_attr($styles['button_background'] ?? '#2c6aa0') . ";
+                --button-text-color: " . esc_attr($styles['button_text_color'] ?? '#ffffff') . ";
+                --border-color: #e5e5e5;
+                --remove-color: #e74c3c;
+                --highlight-color: #f1c40f;
             }
             
             #" . esc_attr($this->options['container_selector']) . " {
@@ -196,28 +242,28 @@ class Snap_Sidebar_Cart_Public {
             
             .snap-sidebar-cart {
                 width: " . $sidebar_width . " !important;
-                background-color: " . esc_attr($styles['sidebar_background']) . ";
+                background-color: " . esc_attr($styles['sidebar_background'] ?? '#ffffff') . ";
             }
             
             .snap-sidebar-cart__header {
-                background-color: " . esc_attr($styles['header_background']) . ";
-                color: " . esc_attr($styles['header_text_color']) . ";
+                background-color: " . esc_attr($styles['header_background'] ?? '#f8f8f8') . ";
+                color: " . esc_attr($styles['header_text_color'] ?? '#333333') . ";
             }
             
             .snap-sidebar-cart__title,
             .snap-sidebar-cart__close {
-                color: " . esc_attr($styles['header_text_color']) . ";
+                color: " . esc_attr($styles['header_text_color'] ?? '#333333') . ";
             }
             
             .snap-sidebar-cart__product-name,
             .snap-sidebar-cart__product-price,
             .snap-sidebar-cart__related-product-title {
-                color: " . esc_attr($styles['product_text_color']) . ";
+                color: " . esc_attr($styles['product_text_color'] ?? '#333333') . ";
             }
             
             .snap-sidebar-cart__button--checkout {
-                background-color: " . esc_attr($styles['button_background']) . ";
-                color: " . esc_attr($styles['button_text_color']) . ";
+                background-color: " . esc_attr($styles['button_background'] ?? '#2c6aa0') . ";
+                color: " . esc_attr($styles['button_text_color'] ?? '#ffffff') . ";
             }
             
             .snap-sidebar-cart__related-product {
