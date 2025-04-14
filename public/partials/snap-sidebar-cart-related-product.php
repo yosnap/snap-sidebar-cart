@@ -10,42 +10,78 @@ if (!defined('ABSPATH')) {
     exit; // Salir si se accede directamente
 }
 
-// Información básica del producto
-$product_id = $related_product->get_id();
-$product_permalink = $related_product->get_permalink();
-$product_name = $related_product->get_name();
-$product_price = $related_product->get_price_html();
-$regular_price = $related_product->get_regular_price();
-$sale_price = $related_product->get_sale_price();
-$has_discount = $sale_price && $regular_price > $sale_price;
-$discount_percentage = $has_discount ? round(($regular_price - $sale_price) / $regular_price * 100) : 0;
+// Depuración - Registrar información del producto
+error_log('=== INICIO Renderizando producto relacionado ===');
+error_log('Datos del producto:');
 
-// Obtener la imagen principal del producto
-$thumbnail = $related_product->get_image();
+try {
+    // Información básica del producto
+    $product_id = $related_product->get_id();
+    error_log('ID del producto: ' . $product_id);
+    
+    $product_permalink = $related_product->get_permalink();
+    error_log('URL del producto: ' . $product_permalink);
+    
+    $product_name = $related_product->get_name();
+    error_log('Nombre del producto: ' . $product_name);
+    
+    $product_price = $related_product->get_price_html();
+    error_log('HTML del precio: ' . $product_price);
+    
+    $regular_price = $related_product->get_regular_price();
+    error_log('Precio regular: ' . $regular_price);
+    
+    $sale_price = $related_product->get_sale_price();
+    error_log('Precio de oferta: ' . ($sale_price ? $sale_price : 'No en oferta'));
+    
+    $has_discount = $sale_price && $regular_price > $sale_price;
+    $discount_percentage = $has_discount ? round(($regular_price - $sale_price) / $regular_price * 100) : 0;
+    error_log('¿Tiene descuento?: ' . ($has_discount ? 'Sí (' . $discount_percentage . '%)' : 'No'));
 
-// Obtener imágenes de galería para el efecto hover
-$gallery_images = $related_product->get_gallery_image_ids();
-$gallery_html = '';
+    // Obtener la imagen principal del producto
+    $thumbnail = $related_product->get_image();
+    error_log('¿Tiene imagen?: ' . (!empty($thumbnail) ? 'Sí' : 'No'));
 
-if (!empty($gallery_images)) {
-    // Usamos la primera imagen de la galería como imagen de hover
-    $hover_image_id = reset($gallery_images);
-    $hover_image_src = wp_get_attachment_image_src($hover_image_id, 'woocommerce_thumbnail');
-    if ($hover_image_src) {
-        $gallery_html = '<div class="product-gallery-image">' .
-            '<img src="' . esc_url($hover_image_src[0]) . '" alt="' . esc_attr($product_name) . ' Gallery">' .
-            '</div>';
+    // Obtener imágenes de galería para el efecto hover
+    $gallery_images = $related_product->get_gallery_image_ids();
+    $gallery_html = '';
+    error_log('Imágenes de galería: ' . count($gallery_images));
+
+    if (!empty($gallery_images)) {
+        // Usamos la primera imagen de la galería como imagen de hover
+        $hover_image_id = reset($gallery_images);
+        error_log('ID de la primera imagen de galería: ' . $hover_image_id);
+        
+        $hover_image_src = wp_get_attachment_image_src($hover_image_id, 'woocommerce_thumbnail');
+        if ($hover_image_src) {
+            error_log('URL de la imagen hover: ' . $hover_image_src[0]);
+            $gallery_html = '<div class="product-gallery-image">' .
+                '<img src="' . esc_url($hover_image_src[0]) . '" alt="' . esc_attr($product_name) . ' Gallery">' .
+                '</div>';
+        } else {
+            error_log('No se pudo obtener la URL de la imagen hover');
+        }
     }
+
+    // Información de envío estimado
+    $shipping_days = 3; // Por defecto, 3 días - esto podría ser configurable o calculado dinámicamente
+
+    // Determinar si es "Last Chance" (ejemplo con stock bajo)
+    $stock_quantity = $related_product->get_stock_quantity();
+    error_log('Cantidad en stock: ' . ($stock_quantity !== null ? $stock_quantity : 'No gestionado'));
+    
+    $is_last_chance = $stock_quantity && $stock_quantity <= 5;
+    error_log('¿Es última oportunidad?: ' . ($is_last_chance ? 'Sí' : 'No'));
+
+    // Determinar el color (si está disponible como atributo)
+    $color = $related_product->get_attribute('color') ? $related_product->get_attribute('color') : '';
+    error_log('Color: ' . ($color ? $color : 'No definido'));
+    
+    error_log('Producto relacionado listo para renderizar');
+    
+} catch (Exception $e) {
+    error_log('ERROR al procesar producto relacionado: ' . $e->getMessage());
 }
-
-// Información de envío estimado
-$shipping_days = 3; // Por defecto, 3 días - esto podría ser configurable o calculado dinámicamente
-
-// Determinar si es "Last Chance" (ejemplo con stock bajo)
-$is_last_chance = $related_product->get_stock_quantity() && $related_product->get_stock_quantity() <= 5;
-
-// Determinar el color (si está disponible como atributo)
-$color = $related_product->get_attribute('color') ? $related_product->get_attribute('color') : '';
 ?>
 
 <div class="snap-sidebar-cart__related-product">

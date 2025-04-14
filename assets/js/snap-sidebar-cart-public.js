@@ -297,18 +297,36 @@
 
   // Función para cargar productos relacionados
   function loadRelatedProducts(productId, type) {
+    console.log("=== INICIO loadRelatedProducts ===");
+    console.log("Parámetros recibidos - ProductID:", productId, "Tipo:", type);
+    
     var $targetContainer = $(
       '.snap-sidebar-cart__related-container[data-content="' +
         type +
         '"] .snap-sidebar-cart__slider-track'
     );
 
+    console.log("Buscando contenedor:", '.snap-sidebar-cart__related-container[data-content="' + type + '"] .snap-sidebar-cart__slider-track');
+    console.log("Contenedor encontrado:", $targetContainer.length > 0 ? "Sí" : "No");
+
     if ($targetContainer.length === 0) {
-      console.error("No se encontró el contenedor para productos relacionados de tipo:", type);
+      console.error("ERROR: No se encontró el contenedor para productos relacionados de tipo:", type);
+      
+      // Verificar si existe el contenedor padre
+      var $parentContainer = $('.snap-sidebar-cart__related-container[data-content="' + type + '"]');
+      console.log("Contenedor padre encontrado:", $parentContainer.length > 0 ? "Sí" : "No");
+      
+      // Listar todos los contenedores disponibles para debug
+      console.log("Contenedores disponibles:");
+      $('.snap-sidebar-cart__related-container').each(function() {
+        console.log("- Contenedor:", $(this).attr('data-content'));
+      });
+      
       return;
     }
 
     // Mostrar un preloader mientras se cargan los productos
+    console.log("Mostrando preloader en el contenedor");
     $targetContainer.html(
       '<div class="snap-sidebar-cart__loading-products">' +
       '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
@@ -316,7 +334,9 @@
       '</div>'
     );
 
-    console.log("Solicitando productos relacionados de tipo [" + type + "] para producto ID:", productId);
+    console.log("Preparando solicitud AJAX para productos relacionados - Tipo:", type, "ProductID:", productId);
+    console.log("URL de AJAX:", snap_sidebar_cart_params.ajax_url);
+    console.log("Nonce válido:", snap_sidebar_cart_params.nonce ? "Sí" : "No");
 
     $.ajax({
       type: "POST",
@@ -328,31 +348,39 @@
         type: type,
       },
       success: function (response) {
-        console.log("Respuesta obtenida para productos relacionados:", response);
+        console.log("=== AJAX SUCCESS ===");
+        console.log("Respuesta recibida:", response);
+        console.log("¿Respuesta exitosa?", response.success ? "Sí" : "No");
+        console.log("¿Contiene HTML?", response.data && response.data.html ? "Sí" : "No");
+        console.log("Longitud HTML:", response.data && response.data.html ? response.data.html.length : 0);
         
         if (response.success && response.data.html && response.data.html.trim() !== '') {
+          console.log("Actualizando HTML del contenedor con los productos recibidos");
           // Actualizar contenido con los productos obtenidos
           $targetContainer.html(response.data.html);
-          console.log("Productos relacionados cargados correctamente");
 
           // Verificar si hay pocos productos para ocultar/mostrar navegación
           var $items = $targetContainer.children(".snap-sidebar-cart__related-product");
           var childrenCount = $items.length;
           var containerWidth = $targetContainer.width();
           
+          console.log("Productos recibidos:", childrenCount);
+          console.log("Ancho del contenedor:", containerWidth + "px");
+          
           // Solo si hay productos
           if (childrenCount > 0) {
             var itemWidth = $items.first().outerWidth(true);
-            console.log("Productos:", childrenCount, "Ancho container:", containerWidth, "Ancho item:", itemWidth);
+            console.log("Ancho de cada item:", itemWidth + "px");
+            console.log("Ancho total requerido:", (childrenCount * itemWidth) + "px");
 
             if (childrenCount * itemWidth <= containerWidth) {
-              console.log("Pocos productos, ocultando navegación");
+              console.log("Espacio suficiente para todos los productos - Ocultando controles de navegación");
               $targetContainer
                 .parent()
                 .find(".snap-sidebar-cart__slider-nav")
                 .hide();
             } else {
-              console.log("Suficientes productos, mostrando navegación");
+              console.log("No hay suficiente espacio para todos los productos - Mostrando controles de navegación");
               $targetContainer
                 .parent()
                 .find(".snap-sidebar-cart__slider-nav")
@@ -363,14 +391,16 @@
             }
             
             // Configurar hover para mostrar imágenes de galería
+            console.log("Configurando efecto hover para imágenes de galería");
             setupProductGalleryHover();
             
             // Configurar evento de scroll para actualizar botones de navegación
+            console.log("Configurando evento de scroll para actualizar navegación");
             $targetContainer.on('scroll', function() {
               updateSliderNavigation($(this));
             });
           } else {
-            console.log("No se encontraron productos para mostrar (respuesta HTML vacía)");
+            console.log("No se encontraron productos en el HTML recibido a pesar de tener contenido");
             $targetContainer.html(
               '<div class="snap-sidebar-cart__no-products">No se encontraron productos.</div>'
             );
@@ -380,38 +410,62 @@
               .hide();
           }
         } else {
-          console.log("No se recibieron productos o respuesta vacía");
+          console.log("Respuesta vacía o sin éxito. Intentando con producto alternativo");
+          
+          if (response.data && response.data.message) {
+            console.log("Mensaje de error:", response.data.message);
+          }
           
           // Intentar con un producto diferente si este falla
           tryAlternativeProduct(productId, type, $targetContainer);
         }
       },
       error: function (xhr, status, error) {
+        console.error("=== AJAX ERROR ===");
         console.error("Error en la petición AJAX:", error);
+        console.error("Estado:", status);
+        console.error("Respuesta:", xhr.responseText);
         
         // Intentar con un producto diferente si este falla
+        console.log("Intentando con un producto alternativo debido al error");
         tryAlternativeProduct(productId, type, $targetContainer);
       },
+      complete: function() {
+        console.log("=== FIN loadRelatedProducts ===");
+      }
     });
   }
   
   // Función para intentar cargar con un producto alternativo si el primero falla
   function tryAlternativeProduct(excludeProductId, type, $targetContainer) {
+    console.log("=== INICIO tryAlternativeProduct ===");
     console.log("Intentando cargar productos con un producto alternativo");
+    console.log("Producto excluido ID:", excludeProductId);
+    console.log("Tipo de productos a cargar:", type);
     
     // Obtener otro producto del carrito que no sea el que ya falló
     var alternativeProductId = null;
+    var productsInCart = [];
     
+    console.log("Buscando productos alternativos en el carrito...");
     $(".snap-sidebar-cart__product").each(function() {
       var pid = $(this).data('product-id');
-      if (pid && pid != excludeProductId) {
+      if (pid) {
+        productsInCart.push(pid);
+        console.log("Producto encontrado en carrito:", pid, "Nombre:", $(this).find('.snap-sidebar-cart__product-title').text().trim());
+      }
+      
+      if (pid && pid != excludeProductId && !alternativeProductId) {
         alternativeProductId = pid;
-        return false; // Romper el bucle
+        console.log("Seleccionado como alternativa:", pid);
       }
     });
     
+    console.log("Total productos en carrito:", productsInCart.length);
+    console.log("Producto alternativo seleccionado ID:", alternativeProductId || "Ninguno disponible");
+    
     if (alternativeProductId) {
-      console.log("Intentando con producto alternativo ID:", alternativeProductId);
+      console.log("Preparando solicitud AJAX con producto alternativo ID:", alternativeProductId);
       
       $.ajax({
         type: "POST",
@@ -423,52 +477,82 @@
           type: type,
         },
         success: function (response) {
+          console.log("=== AJAX Alternativo SUCCESS ===");
+          console.log("Respuesta recibida:", response);
+          console.log("¿Respuesta exitosa?", response.success ? "Sí" : "No");
+          console.log("¿Contiene HTML?", response.data && response.data.html ? "Sí" : "No");
+          console.log("Longitud HTML:", response.data && response.data.html ? response.data.html.length : 0);
+          
           if (response.success && response.data.html && response.data.html.trim() !== '') {
             // Actualizar contenido con los productos obtenidos del producto alternativo
+            console.log("Actualizando HTML del contenedor con productos alternativos");
             $targetContainer.html(response.data.html);
-            console.log("Productos cargados exitosamente con producto alternativo");
             
             // Configurar navegación y hover
             var $items = $targetContainer.children(".snap-sidebar-cart__related-product");
             var childrenCount = $items.length;
             
+            console.log("Productos alternativos recibidos:", childrenCount);
+            
             if (childrenCount > 0) {
+              console.log("Configurando navegación para productos alternativos");
               var containerWidth = $targetContainer.width();
               var itemWidth = $items.first().outerWidth(true);
               
+              console.log("Ancho de contenedor:", containerWidth, "Ancho de item:", itemWidth);
+              console.log("Ancho total requerido:", childrenCount * itemWidth);
+              
               if (childrenCount * itemWidth <= containerWidth) {
+                console.log("Ocultando navegación, productos caben en contenedor");
                 $targetContainer.parent().find(".snap-sidebar-cart__slider-nav").hide();
               } else {
+                console.log("Mostrando navegación, productos no caben en contenedor");
                 $targetContainer.parent().find(".snap-sidebar-cart__slider-nav").show();
               }
               
+              console.log("Configurando hover para imágenes de galería (alternativo)");
               setupProductGalleryHover();
             } else {
+              console.log("No se encontraron productos en la respuesta alternativa");
               showNoProductsMessage();
             }
           } else {
+            console.log("Respuesta alternativa vacía o sin éxito");
+            if (response.data && response.data.message) {
+              console.log("Mensaje de error:", response.data.message);
+            }
             showNoProductsMessage();
           }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+          console.error("=== AJAX Alternativo ERROR ===");
+          console.error("Error en la petición AJAX alternativa:", error);
+          console.error("Estado:", status);
+          console.error("Respuesta:", xhr.responseText);
           showNoProductsMessage();
+        },
+        complete: function() {
+          console.log("=== FIN AJAX Alternativo ===");
         }
       });
     } else {
+      console.log("No hay productos alternativos disponibles en el carrito");
       showNoProductsMessage();
     }
     
     // Función para mostrar mensaje de no productos encontrados
     function showNoProductsMessage() {
-      console.log("No se pudieron cargar productos relacionados");
+      console.log("Mostrando mensaje de no productos encontrados");
       $targetContainer.html(
-        '<div class="snap-sidebar-cart__no-products">No se encontraron productos de la misma categoría.</div>'
+        '<div class="snap-sidebar-cart__no-products">No se encontraron productos relacionados para esta categoría.</div>'
       );
       $targetContainer
         .parent()
         .find(".snap-sidebar-cart__slider-nav")
         .hide();
     }
+    
+    console.log("=== FIN tryAlternativeProduct ===");
   }
   
   // Función para configurar el hover que muestra las imágenes de galería
@@ -966,27 +1050,41 @@
       var $tab = $(this);
       var tabType = $tab.data("tab");
 
+      console.log("=== CAMBIO DE PESTAÑA ===");
       console.log("Cambiando a pestaña:", tabType, "desde pestaña actual:", currentRelatedProductTab);
+      console.log("Tab clickeada:", $tab.text());
+      console.log("Datos del tab:", "data-tab='" + tabType + "'");
 
       if (tabType === currentRelatedProductTab) {
+        console.log("La pestaña seleccionada ya está activa. No se realizará ninguna acción.");
         return; // Ya está activa
       }
 
       // Actualizar UI
+      console.log("Actualizando interfaz de usuario:");
+      console.log("- Quitando clase 'active' de todas las pestañas");
       $(".snap-sidebar-cart__related-tab").removeClass("active");
+      
+      console.log("- Añadiendo clase 'active' a la pestaña seleccionada:", $tab.text());
       $tab.addClass("active");
 
+      console.log("- Quitando clase 'active' de todos los contenedores");
       $(".snap-sidebar-cart__related-container").removeClass("active");
+      
       var $targetContent = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]');
+      console.log("- Buscando contenedor para mostrar:", "[data-content='" + tabType + "']", "¿Encontrado?", $targetContent.length > 0 ? "Sí" : "No");
       $targetContent.addClass("active");
 
       // Actualizar tab activo
+      console.log("Actualizando tab activo de", currentRelatedProductTab, "a", tabType);
       currentRelatedProductTab = tabType;
 
       // Cargar productos si el contenedor está vacío
       var $targetContainer = $targetContent.find(".snap-sidebar-cart__slider-track");
+      console.log("Contenedor de productos:", "¿Encontrado?", $targetContainer.length > 0 ? "Sí" : "No");
 
       // Mostrar un preloader mientras se cargan los productos
+      console.log("Mostrando preloader en el contenedor");
       $targetContainer.html(
         '<div class="snap-sidebar-cart__loading-products">' +
         '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +

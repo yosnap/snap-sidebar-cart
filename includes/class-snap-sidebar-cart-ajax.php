@@ -222,66 +222,146 @@ class Snap_Sidebar_Cart_Ajax {
      * @since    1.0.0
      */
     public function get_related_products() {
-        check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
+        error_log('=== INICIO get_related_products() ===');
         
+        // Verificar nonce
+        $nonce_valid = check_ajax_referer('snap-sidebar-cart-nonce', 'nonce', false);
+        if (!$nonce_valid) {
+            error_log('Error: Nonce inválido');
+            wp_send_json_error(array('message' => __('Error de seguridad: Nonce inválido', 'snap-sidebar-cart')));
+            return;
+        }
+        error_log('Nonce verificado correctamente');
+        
+        // Verificar ID de producto
         if (!isset($_POST['product_id'])) {
+            error_log('Error: No se proporcionó un ID de producto');
             wp_send_json_error(array('message' => __('No se proporcionó un ID de producto', 'snap-sidebar-cart')));
+            return;
         }
         
         $product_id = absint($_POST['product_id']);
+        error_log('Product ID recibido: ' . $product_id);
+        
+        // Obtener el producto
         $product = wc_get_product($product_id);
         
         if (!$product) {
+            error_log('Error: Producto no encontrado para ID: ' . $product_id);
             wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
+            return;
         }
         
+        error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+        
+        // Obtener el tipo de productos relacionados a mostrar
         $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'related';
+        error_log('Tipo de productos relacionados solicitado: ' . $type);
+        
+        // Verificar si el tipo está en las pestañas activas configuradas
+        $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
+            explode(',', $this->options['related_products']['active_tabs']) : 
+            array('related', 'category', 'bestsellers', 'accessories', 'custom');
+        
+        error_log('Pestañas activas configuradas: ' . implode(', ', $active_tabs));
+        
+        if (!in_array($type, $active_tabs)) {
+            error_log('Advertencia: El tipo solicitado "' . $type . '" no está en las pestañas activas. Se usará "related" como fallback.');
+            $type = 'related';
+        }
+        
+        // Obtener los productos según el tipo
+        error_log('Obteniendo productos para el tipo: ' . $type);
         
         switch ($type) {
             case 'category':
+                error_log('Llamando a get_same_category_products()');
                 $products = $this->get_same_category_products($product);
                 break;
             case 'bestsellers':
+                error_log('Llamando a get_bestseller_products()');
                 $products = $this->get_bestseller_products();
                 break;
             case 'accessories':
+                error_log('Llamando a get_accessory_products()');
                 $products = $this->get_accessory_products($product);
                 break;
             case 'custom':
+                error_log('Llamando a get_custom_products()');
                 $products = $this->get_custom_products($product);
                 break;
             case 'related':
             default:
+                error_log('Llamando a get_product_related_products()');
                 $products = $this->get_product_related_products($product);
                 break;
         }
         
+        // Verificar resultado
+        if (is_array($products)) {
+            error_log('Productos encontrados: ' . count($products));
+        } else {
+            error_log('Error: Los productos devueltos no son un array');
+            $products = array();
+        }
+        
         $html = '';
         
-        if ($products) {
+        if (!empty($products)) {
+            error_log('Generando HTML para ' . count($products) . ' productos');
+            
             ob_start();
+            $valid_products = 0;
             
             foreach ($products as $related_product) {
                 if (!$related_product || !$related_product->is_purchasable() || !$related_product->is_in_stock()) {
+                    if (!$related_product) {
+                        error_log('Producto relacionado no válido (objeto nulo)');
+                    } elseif (!$related_product->is_purchasable()) {
+                        error_log('Producto ID ' . $related_product->get_id() . ' no es comprable');
+                    } elseif (!$related_product->is_in_stock()) {
+                        error_log('Producto ID ' . $related_product->get_id() . ' no tiene stock');
+                    }
                     continue;
                 }
                 
+                $valid_products++;
                 $post_object = get_post($related_product->get_id());
                 setup_postdata($GLOBALS['post'] =& $post_object);
                 
-                // Incluir plantilla para cada producto relacionado
-                include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-related-product.php';
+                error_log('Incluyendo plantilla para producto ID: ' . $related_product->get_id() . ' - ' . $related_product->get_name());
+                
+                // Capturar errores al incluir la plantilla
+                try {
+                    // Incluir plantilla para cada producto relacionado
+                    include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-related-product.php';
+                } catch (Exception $e) {
+                    error_log('Error al incluir plantilla para producto: ' . $e->getMessage());
+                }
             }
             
             wp_reset_postdata();
             
             $html = ob_get_clean();
+            $html_length = strlen($html);
+            
+            error_log('HTML generado correctamente: ' . $valid_products . ' productos válidos, longitud del HTML: ' . $html_length . ' bytes');
+            
+            if ($html_length < 10 && $valid_products > 0) {
+                error_log('Advertencia: El HTML generado es muy corto a pesar de tener productos válidos');
+            }
+        } else {
+            error_log('No se encontraron productos para mostrar');
         }
         
+        error_log('Enviando respuesta JSON con HTML (longitud: ' . strlen($html) . ')');
         wp_send_json_success(array(
-            'html' => $html
+            'html' => $html,
+            'count' => count($products),
+            'type' => $type
         ));
         
+        error_log('=== FIN get_related_products() ===');
         wp_die();
     }
 
@@ -331,21 +411,47 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array                     Lista de productos de la misma categoría.
      */
     private function get_same_category_products($product) {
+        error_log('=== INICIO get_same_category_products() ===');
+        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        
+        // Obtener límites y configuración desde las opciones
         $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
         $related_orderby = isset($this->options['related_products']['orderby']) ? esc_attr($this->options['related_products']['orderby']) : 'rand';
         
-        // Registro para depuración
-        error_log('Buscando productos de la misma categoría para producto ID: ' . $product->get_id());
+        error_log('Configuración: Límite=' . $related_limit . ', Ordenar por=' . $related_orderby);
         
         // Obtener categorías del producto
         $product_categories = wc_get_product_term_ids($product->get_id(), 'product_cat');
         
         if (empty($product_categories)) {
-            error_log('No se encontraron categorías para el producto ID: ' . $product->get_id());
-            return array();
+            error_log('ERROR: No se encontraron categorías para el producto ID: ' . $product->get_id());
+            
+            // Intentar obtener las categorías directamente con otra función
+            $terms = get_the_terms($product->get_id(), 'product_cat');
+            
+            if (!empty($terms) && !is_wp_error($terms)) {
+                error_log('Categorías obtenidas con get_the_terms(): ' . count($terms));
+                foreach ($terms as $term) {
+                    $product_categories[] = $term->term_id;
+                    error_log('Categoría: ' . $term->name . ' (ID: ' . $term->term_id . ')');
+                }
+            } else {
+                error_log('No se pudieron obtener categorías con métodos alternativos');
+                return array();
+            }
         }
         
         error_log('Categorías del producto: ' . implode(', ', $product_categories));
+        
+        // Obtener nombres de categorías para log
+        $category_names = array();
+        foreach ($product_categories as $cat_id) {
+            $term = get_term($cat_id, 'product_cat');
+            if ($term && !is_wp_error($term)) {
+                $category_names[$cat_id] = $term->name;
+            }
+        }
+        error_log('Nombres de categorías: ' . json_encode($category_names));
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -354,8 +460,13 @@ class Snap_Sidebar_Cart_Ajax {
         }
         $cart_product_ids[] = $product->get_id(); // Excluir el producto actual
         
-        // Usamos la primera categoría en vez de eliminarla con array_shift
+        error_log('Productos a excluir: ' . implode(', ', $cart_product_ids));
+        
+        // Usamos la primera categoría
         $first_category = reset($product_categories);
+        $first_category_name = isset($category_names[$first_category]) ? $category_names[$first_category] : 'Desconocida';
+        
+        error_log('Usando primera categoría: ' . $first_category . ' (' . $first_category_name . ')');
         
         // Consultar productos de la misma categoría
         $args = array(
@@ -373,25 +484,35 @@ class Snap_Sidebar_Cart_Ajax {
             ),
         );
         
-        error_log('Consulta de productos de misma categoría con categoría ID: ' . $first_category);
+        error_log('Ejecutando consulta para categoría ID: ' . $first_category);
+        error_log('Parámetros de consulta: ' . json_encode($args));
         
         $products = get_posts($args);
         
         if (empty($products)) {
-            error_log('No se encontraron productos en la misma categoría');
+            error_log('No se encontraron productos en la primera categoría');
             
-            // Si no hay productos en la misma categoría, intentar con la siguiente categoría si existe
+            // Si no hay productos en la primera categoría, intentar con la siguiente categoría si existe
             if (count($product_categories) > 1) {
-                error_log('Intentando con otra categoría del producto');
-                $next_category = next($product_categories);
+                next($product_categories); // Avanzar el puntero interno
+                $next_category = current($product_categories);
+                $next_category_name = isset($category_names[$next_category]) ? $category_names[$next_category] : 'Desconocida';
+                
+                error_log('Intentando con segunda categoría: ' . $next_category . ' (' . $next_category_name . ')');
                 
                 $args['tax_query'][0]['terms'] = $next_category;
+                error_log('Nuevos parámetros de consulta: ' . json_encode($args));
+                
                 $products = get_posts($args);
                 
                 if (empty($products)) {
                     error_log('Tampoco se encontraron productos en la segunda categoría');
                 } else {
                     error_log('Se encontraron ' . count($products) . ' productos en la segunda categoría');
+                    // Listar los productos encontrados
+                    foreach ($products as $p) {
+                        error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+                    }
                 }
             }
             
@@ -399,20 +520,45 @@ class Snap_Sidebar_Cart_Ajax {
             if (empty($products)) {
                 error_log('Intentando búsqueda más amplia sin filtrar por categoría');
                 unset($args['tax_query']);
+                error_log('Parámetros de búsqueda amplia: ' . json_encode($args));
+                
                 $products = get_posts($args);
                 
                 if (empty($products)) {
                     error_log('No se encontraron productos en la búsqueda amplia');
                 } else {
                     error_log('Se encontraron ' . count($products) . ' productos en la búsqueda amplia');
+                    // Listar los productos encontrados
+                    foreach ($products as $p) {
+                        error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+                    }
                 }
             }
         } else {
-            error_log('Se encontraron ' . count($products) . ' productos en la categoría');
+            error_log('Se encontraron ' . count($products) . ' productos en la primera categoría');
+            // Listar los productos encontrados
+            foreach ($products as $p) {
+                error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+            }
         }
         
-        $result = array_filter(array_map('wc_get_product', wp_list_pluck($products, 'ID')));
-        error_log('Total de productos válidos encontrados: ' . count($result));
+        // Convertir resultados en objetos de producto
+        $result = array();
+        $product_ids = wp_list_pluck($products, 'ID');
+        
+        error_log('IDs de productos para convertir: ' . implode(', ', $product_ids));
+        
+        foreach ($product_ids as $pid) {
+            $prod = wc_get_product($pid);
+            if ($prod) {
+                $result[] = $prod;
+            } else {
+                error_log('Error al obtener producto WC para ID: ' . $pid);
+            }
+        }
+        
+        error_log('Total de productos válidos convertidos: ' . count($result));
+        error_log('=== FIN get_same_category_products() ===');
         
         return $result;
     }
