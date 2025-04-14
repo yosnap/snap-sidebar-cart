@@ -237,7 +237,61 @@ class Snap_Sidebar_Cart {
      * @since    1.0.0
      */
     public function run() {
+        // Purgar cualquier caché antes de ejecutar
+        $this->purge_cache();
+        
+        // Definir hooks AJAX
         $this->define_ajax_hooks();
+    }
+    
+    /**
+     * Intenta purgar cachés conocidos para asegurar que los cambios se apliquen
+     *
+     * @since    1.1.1
+     */
+    private function purge_cache() {
+        // Limpiar cache de WordPress
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
+        }
+        
+        // Limpiar caché del navegador para CSS y JS forzando una URL única
+        add_filter('style_loader_src', array($this, 'add_cache_busting_parameter'), 10, 2);
+        add_filter('script_loader_src', array($this, 'add_cache_busting_parameter'), 10, 2);
+        
+        // Intentar limpiar caché de plugins populares
+        // WP Super Cache
+        if (function_exists('wp_cache_clear_cache')) {
+            wp_cache_clear_cache();
+        }
+        
+        // W3 Total Cache
+        if (function_exists('w3tc_flush_all')) {
+            w3tc_flush_all();
+        }
+        
+        // Autoptimize
+        if (class_exists('autoptimizeCache') && method_exists('autoptimizeCache', 'clearall')) {
+            autoptimizeCache::clearall();
+        }
+        
+        // WP Rocket
+        if (function_exists('rocket_clean_domain')) {
+            rocket_clean_domain();
+        }
+    }
+    
+    /**
+     * Añade un parámetro para evitar la caché en los archivos del plugin
+     *
+     * @since    1.1.1
+     */
+    public function add_cache_busting_parameter($src, $handle) {
+        // Solo modificar URLs de nuestro plugin
+        if (strpos($handle, 'snap-sidebar-cart') !== false || strpos($src, 'snap-sidebar-cart') !== false) {
+            $src = add_query_arg('ver', SNAP_SIDEBAR_CART_VERSION . '.' . time(), $src);
+        }
+        return $src;
     }
 
     /**
