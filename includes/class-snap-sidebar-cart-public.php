@@ -358,40 +358,67 @@ class Snap_Sidebar_Cart_Public {
         $preloader_color2 = isset($preloader['color2']) ? esc_attr($preloader['color2']) : '#e74c3c';
         $preloader_position = isset($preloader['position']) ? esc_attr($preloader['position']) : 'center';
         
-        // CSS para el preloader
+        // CSS para el preloader con mayor especificidad para asegurar que se aplique
         $css = "
+            /* Preloader de Snap Sidebar Cart (Version: " . SNAP_SIDEBAR_CART_VERSION . ") */
             :root {
-                --preloader-size: {$preloader_size};
-                --preloader-color: {$preloader_color};
-                --preloader-color2: {$preloader_color2};
+                --preloader-size: {$preloader_size} !important;
+                --preloader-color: {$preloader_color} !important;
+                --preloader-color2: {$preloader_color2} !important;
             }
             
             /* Preloader personalizado */
-            .snap-sidebar-cart__loader-spinner {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner {
                 width: {$preloader_size} !important;
                 height: {$preloader_size} !important;
             }
             
-            .snap-sidebar-cart__loader-spinner.preloader-circle {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner.preloader-circle,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner.preloader-circle {
                 border: 2px solid rgba(0, 0, 0, 0.1) !important;
                 border-top: 2px solid {$preloader_color} !important;
             }
             
-            .snap-sidebar-cart__loader-spinner.preloader-square {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner.preloader-square,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner.preloader-square {
                 border: 2px solid rgba(0, 0, 0, 0.1) !important;
                 border-top: 2px solid {$preloader_color} !important;
             }
             
-            .snap-sidebar-cart__loader-spinner.preloader-dots span {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner.preloader-dots span,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner.preloader-dots span {
                 background-color: {$preloader_color} !important;
             }
             
-            .snap-sidebar-cart__loader-spinner.preloader-spinner:before {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner.preloader-spinner:before,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner.preloader-spinner:before {
                 border-top-color: {$preloader_color} !important;
             }
             
-            .snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+            html body .snap-sidebar-cart .snap-sidebar-cart__loader-spinner.preloader-spinner:after,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__loader-spinner.preloader-spinner:after {
                 border-bottom-color: {$preloader_color2} !important;
+            }
+            
+            /* Asegurar que el loader de producto esté visible cuando se aplique */
+            html body .snap-sidebar-cart .snap-sidebar-cart__product-loader,
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__product-loader {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(255, 255, 255, 0.8) !important;
+                display: none !important;
+                z-index: 10 !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            
+            html body .snap-sidebar-cart .snap-sidebar-cart__product-loader[style*='display: flex'],
+            html body #" . esc_attr($this->options['container_selector']) . " .snap-sidebar-cart__product-loader[style*='display: flex'] {
+                display: flex !important;
             }
         ";
         

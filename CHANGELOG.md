@@ -2,6 +2,19 @@
 
 Todos los cambios importantes en este proyecto serán documentados en este archivo.
 
+## [1.1.1] - 2025-04-15
+
+### Arreglado
+- Eliminado el efecto blur que afectaba a la visualización de productos en el carrito
+- Corregida la configuración del preloader para que respete correctamente las opciones del admin
+- Mejorada la especificidad CSS para evitar conflictos de estilos
+- Implementada solución para la correcta visualización del preloader en todos los estados
+
+### Cambios
+- Optimizado el sistema de aplicación de estilos para el preloader
+- Mejoradas las transiciones y animaciones de carga de productos
+- Implementada aplicación directa de estilos para mayor compatibilidad entre navegadores
+
 ## [1.1.0] - 2025-04-14
 
 ### Mejoras

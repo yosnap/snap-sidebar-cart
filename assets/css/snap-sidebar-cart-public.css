@@ -324,7 +324,6 @@
     z-index: 10;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(1px);
 }
 
 .snap-sidebar-cart__loader-spinner {
