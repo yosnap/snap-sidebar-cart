@@ -2,14 +2,14 @@
 
 Un carrito lateral elegante y funcional para WooCommerce con animaciones personalizables, slider de productos relacionados y muchas otras características.
 
-## Versión 1.1.0
+## Versión 1.2.0
 
 ## Características
 
 - Sidebar que se muestra cuando los usuarios agregan productos al carrito
 - Se abre al hacer clic en selectores configurables (botones de "Añadir al carrito", iconos de carrito, etc.)
 - Cierre mediante botón X, clic fuera del sidebar o tecla ESC
-- Slider de productos relacionados configurable
+- Slider de productos relacionados basado en Swiper.js con navegación mejorada
 - Opción para configurar los estilos del listado de productos y del sidebar
 - Los productos se eliminan automáticamente cuando la cantidad llega a 0
 - Muestra el precio del envío y el subtotal con IVA incluido
@@ -19,18 +19,17 @@ Un carrito lateral elegante y funcional para WooCommerce con animaciones persona
 - Bloqueo de botón de incremento cuando se alcanza el límite de stock
 - Efecto hover en el slider de productos relacionados que muestra imágenes alternativas
 - El sidebar solo se abre con productos simples, no con los que tienen variaciones
+- Badge "Última oportunidad" totalmente personalizable para productos con stock limitado
 
-## Actualizaciones recientes (v1.1.0)
+## Actualizaciones recientes (v1.2.0)
 
-- **Arquitectura modular mejorada**: Código JavaScript reorganizado en módulos separados para mejor mantenimiento.
-- **Múltiples imágenes en hover**: Ahora los productos relacionados muestran las imágenes de la galería al pasar el ratón.
-- **Animaciones más fluidas**: Transiciones mejoradas para añadir/eliminar productos y actualizar cantidades.
-- **Control de stock avanzado**: El botón de incremento ahora se bloquea automáticamente cuando se alcanza el límite de stock disponible, mostrando una notificación visual.
-- **Animación de actualización de cantidad mejorada**: Cuando se agrega un producto que ya existe en el carrito, la cantidad parpadea con un color destacado para indicar el cambio.
-- **Cierre mejorado del sidebar**: Se ha mejorado la detección de clic fuera del sidebar y el cierre con la tecla ESC.
-- **Preloader personalizable**: Ahora se pueden configurar diferentes estilos y posiciones para el preloader.
-- **Mejor rendimiento**: Optimización general del código para un rendimiento más rápido.
-- **Compatibilidad actualizada**: Verificada compatibilidad con WooCommerce 8.5.
+- **Implementación de Swiper.js**: Ahora los sliders de productos relacionados utilizan Swiper.js para una experiencia más fluida y profesional.
+- **Navegación mejorada en sliders**: Los botones de navegación ahora se posicionan juntos en la parte superior derecha de cada slider.
+- **Badge "Última oportunidad" personalizable**: Nuevas opciones para personalizar el texto, color de fondo y color de texto del badge que se muestra en productos con stock limitado.
+- **Configuración avanzada de slides**: Ahora puedes configurar cuántos slides se desplazan a la vez al hacer clic en los botones de navegación.
+- **Compatibilidad mejorada con temas**: Se ha mejorado la compatibilidad con diversos temas de WordPress para evitar conflictos de estilos.
+- **Rendimiento optimizado**: Carga y renderizado de productos relacionados más rápido y eficiente.
+- **Compatibilidad actualizada**: Verificada compatibilidad con WooCommerce 8.5 y WordPress 6.4.
 
 ## Instalación
 
@@ -52,10 +51,18 @@ Un carrito lateral elegante y funcional para WooCommerce con animaciones persona
 - **Número de productos**: Cantidad de productos relacionados a mostrar.
 - **Columnas**: Número de columnas en el slider.
 - **Ordenar por**: Criterio de ordenación de los productos relacionados.
+- **Número de slides a desplazar**: Cuántos productos se desplazan a la vez en el slider al hacer clic en los botones de navegación.
+- **Mostrar badge de última oportunidad**: Activa/desactiva el badge en productos con stock limitado.
+- **Límite de stock para última oportunidad**: Stock por debajo del cual se muestra el badge.
+- **Título del badge**: Texto personalizable que se muestra en el badge.
+- **Color de fondo del badge**: Color de fondo personalizable.
+- **Color de texto del badge**: Color del texto personalizable.
 
 ### Estilos
 - **Ancho del sidebar**: Define el ancho del sidebar.
-- **Color de fondo del sidebar**: Color de fondo principal.
+- **Color de fondo del listado de productos**: Color de fondo para el área de productos.
+- **Color de fondo de productos relacionados**: Color de fondo para la sección de productos relacionados.
+- **Color de fondo del footer**: Color de fondo para el área inferior del carrito.
 - **Color de fondo del encabezado**: Color de fondo para el encabezado.
 - **Color de texto del encabezado**: Color para el texto del encabezado.
 - **Color de texto de productos**: Color para el texto de los productos.

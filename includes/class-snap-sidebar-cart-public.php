@@ -66,21 +66,117 @@ class Snap_Sidebar_Cart_Public {
         // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
-        // Asegurarse de que todos los scripts estén desregistrados antes de volver a cargarlos
-        wp_deregister_script('snap-sidebar-cart-public');
-        wp_deregister_script('snap-sidebar-cart-ajax-handler');
-        wp_deregister_script('snap-sidebar-cart-direct-fix');
-        wp_deregister_script('snap-sidebar-cart-buttons-fix');
-        wp_deregister_script('snap-sidebar-cart-slider-nav-fix');
+        // Desregistrar completamente todos los scripts para evitar conflictos
+        $scripts_to_deregister = array(
+            'snap-sidebar-cart-public',
+            'snap-sidebar-cart-ajax-handler',
+            'snap-sidebar-cart-direct-fix',
+            'snap-sidebar-cart-buttons-fix',
+            'snap-sidebar-cart-slider-nav-fix',
+            'snap-sidebar-cart-tabs-fix',
+            'snap-sidebar-cart-preloader-fix',
+            'snap-sidebar-cart-combined',
+            'snap-sidebar-cart-immediate-fix'
+        );
         
-        // Cargar el script principal directamente - simplificamos para asegurar que se cargue correctamente
-        wp_enqueue_script('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', array('jquery'), $version, true);
+        foreach ($scripts_to_deregister as $script) {
+            if (wp_script_is($script, 'registered')) {
+                wp_deregister_script($script);
+            }
+        }
         
-        // Cargar el fix para la navegación del slider después del script principal
-        wp_enqueue_script('snap-sidebar-cart-slider-nav-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/slider-nav-fix.js', array('jquery', 'snap-sidebar-cart-public'), $version, true);
+        // Cargar jQuery explícitamente
+        wp_enqueue_script('jquery');
         
-        // Cargar el fix para el preloader
-        wp_enqueue_script('snap-sidebar-cart-preloader-fix', SNAP_SIDEBAR_CART_URL . 'assets/js/preloader-fix.js', array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-slider-nav-fix'), $version, true);
+        // Cargar Swiper.js para los sliders
+        wp_enqueue_style(
+            'swiper-styles', 
+            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css',
+            array(),
+            '10.0.0'
+        );
+        
+        wp_enqueue_script(
+            'swiper-script',
+            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js',
+            array('jquery'),
+            '10.0.0',
+            true
+        );
+        
+        // Cargar el script principal
+        wp_enqueue_script(
+            'snap-sidebar-cart-public', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
+            array('jquery', 'swiper-script'), 
+            $version, 
+            true
+        );
+        
+        // Cargar inicializador de Swiper
+        wp_enqueue_script(
+            'snap-sidebar-cart-swiper-init', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/swiper-init.js', 
+            array('jquery', 'swiper-script', 'snap-sidebar-cart-public'), 
+            $version, 
+            true
+        );
+        
+        // Cargar solución inmediata para tabs y slider
+        wp_enqueue_script(
+            'snap-sidebar-cart-immediate-fix', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/immediate-fix.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-swiper-init'), 
+            $version, 
+            true
+        );
+        
+        // Agregar código inline para asegurar el correcto funcionamiento
+        wp_add_inline_script('snap-sidebar-cart-public', "
+            jQuery(document).ready(function($) {
+                // Aplicar solución directa para las pestañas
+                $(document).on('click', '.snap-sidebar-cart__related-tab', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var tabType = $(this).data('tab');
+                    
+                    // Actualizar UI
+                    $('.snap-sidebar-cart__related-tab').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    $('.snap-sidebar-cart__related-container').removeClass('active');
+                    $('.snap-sidebar-cart__related-container[data-content=\"' + tabType + '\"]').addClass('active');
+                });
+                
+                // Aplicar solución directa para los botones de navegación
+                $(document).on('click', '.snap-sidebar-cart__slider-prev', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
+                    if (!\$track.length) return;
+                    
+                    \$track.animate({
+                        scrollLeft: Math.max(0, \$track.scrollLeft() - \$track.width() * 0.8)
+                    }, 300);
+                });
+                
+                $(document).on('click', '.snap-sidebar-cart__slider-next', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
+                    if (!\$track.length) return;
+                    
+                    var maxScroll = \$track[0].scrollWidth - \$track.width();
+                    
+                    \$track.animate({
+                        scrollLeft: Math.min(maxScroll, \$track.scrollLeft() + \$track.width() * 0.8)
+                    }, 300);
+                });
+            });
+        ");
         
         // No cargamos los scripts de depuración en producción
         
@@ -105,8 +201,26 @@ class Snap_Sidebar_Cart_Public {
                 'quantity_update_delay' => isset($this->options['animations']['quantity_update_delay']) ? intval($this->options['animations']['quantity_update_delay']) : 200,
                 'enabled' => isset($this->options['animations']['enabled']) ? (bool)$this->options['animations']['enabled'] : true
             ),
+            // Opciones para productos relacionados
+            'related' => array(
+                'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2,
+                'show_last_chance' => isset($this->options['related_products']['show_last_chance']) ? (bool)$this->options['related_products']['show_last_chance'] : true,
+                'last_chance_stock_limit' => isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5,
+                'last_chance_title' => isset($this->options['related_products']['last_chance_title']) ? $this->options['related_products']['last_chance_title'] : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
+                'last_chance_bg_color' => isset($this->options['related_products']['last_chance_bg_color']) ? $this->options['related_products']['last_chance_bg_color'] : '#e74c3c',
+                'last_chance_text_color' => isset($this->options['related_products']['last_chance_text_color']) ? $this->options['related_products']['last_chance_text_color'] : '#ffffff'
+            ),
+            // Configuración de Swiper
+            'swiper' => array(
+                'enabled' => true,
+                'slidesPerView' => 'auto',
+                'spaceBetween' => 10,
+                'slidesPerGroup' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
+            ),
             // Forzar debug a true
-            'debug' => true
+            'debug' => true,
+            // Slides a desplazar (redundante pero por compatibilidad)
+            'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
         );
         
         wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
@@ -230,7 +344,18 @@ class Snap_Sidebar_Cart_Public {
             
             .snap-sidebar-cart {
                 width: " . $sidebar_width . " !important;
-                background-color: " . esc_attr($styles['sidebar_background'] ?? '#ffffff') . ";
+            }
+            
+            .snap-sidebar-cart__products {
+                background-color: " . esc_attr($styles['products_background'] ?? '#ffffff') . ";
+            }
+            
+            .snap-sidebar-cart__related-section {
+                background-color: " . esc_attr($styles['related_section_background'] ?? '#f9f9f9') . ";
+            }
+            
+            .snap-sidebar-cart__footer {
+                background-color: " . esc_attr($styles['footer_background'] ?? '#f8f8f8') . ";
             }
             
             .snap-sidebar-cart__header {
@@ -254,10 +379,179 @@ class Snap_Sidebar_Cart_Public {
                 color: " . esc_attr($styles['button_text_color'] ?? '#ffffff') . ";
             }
             
+            /* Estilos para el encabezado de productos relacionados con navegación */
+            .snap-sidebar-cart__related-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .snap-sidebar-cart__related-tabs {
+                display: flex;
+                flex: 1;
+                overflow-x: auto;
+                white-space: nowrap;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+            
+            .snap-sidebar-cart__related-tabs::-webkit-scrollbar {
+                display: none; /* Chrome, Safari and Opera */
+            }
+            
+            .snap-sidebar-cart__related-navigation {
+                display: flex;
+                gap: 5px;
+                margin-left: 10px;
+            }
+            
+            .snap-sidebar-cart__slider-nav {
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                background-color: #f8f8f8;
+                color: #333;
+                font-size: 18px;
+                cursor: pointer;
+                border-radius: 3px;
+                transition: all 0.2s ease;
+            }
+            
+            .snap-sidebar-cart__slider-nav:hover {
+                background-color: var(--button-background);
+                color: var(--button-text-color);
+            }
+            
+            .snap-sidebar-cart__slider-nav.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            
             .snap-sidebar-cart__related-product {
                 width: calc(" . $column_width . "% - 20px);
                 position: relative;
                 overflow: hidden;
+                padding: 10px;
+                margin: 0 10px 10px 0;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                transition: all 0.2s ease-in-out;
+            }
+            
+            .snap-sidebar-cart__related-product:hover {
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            
+            /* Estilos para el badge de última oportunidad */
+            .snap-sidebar-cart__product-badge.last-chance {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: " . esc_attr($this->options['related_products']['last_chance_bg_color'] ?? '#e74c3c') . ";
+                color: " . esc_attr($this->options['related_products']['last_chance_text_color'] ?? '#ffffff') . ";
+                padding: 3px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                border-radius: 3px;
+                z-index: 2;
+            }
+            
+            /* Estilos para Swiper.js */
+            .snap-sidebar-cart__swiper-container {
+                width: 100%;
+                position: relative;
+                overflow: hidden;
+                padding: 5px 0;
+            }
+            
+            .snap-sidebar-cart__slider-track {
+                display: flex;
+            }
+            
+            /* Configuración de los botones de navegación en la parte superior derecha */
+            .snap-sidebar-cart__related-navigation {
+                position: absolute;
+                right: 0;
+                top: 0;
+                display: flex;
+                gap: 5px;
+            }
+            
+            .snap-sidebar-cart__slider-nav.swiper-button-prev,
+            .snap-sidebar-cart__slider-nav.swiper-button-next {
+                position: static;
+                width: 28px;
+                height: 28px;
+                background-color: #f8f8f8;
+                border: 1px solid #e5e5e5;
+                border-radius: 3px;
+                color: #333;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+            }
+            
+            .snap-sidebar-cart__slider-nav.swiper-button-prev:after,
+            .snap-sidebar-cart__slider-nav.swiper-button-next:after {
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .snap-sidebar-cart__slider-nav.swiper-button-disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            
+            /* Espacio para los slides */
+            .swiper-slide {
+                height: auto;
+                padding: 0 5px;
+            }
+            
+            /* Estilos para los precios y descuentos */
+            .snap-sidebar-cart__related-product-price-container {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                margin-top: 8px;
+                font-weight: 500;
+            }
+            
+            .snap-sidebar-cart__related-product-regular-price {
+                text-decoration: line-through;
+                color: #999;
+                margin-right: 8px;
+                font-size: 0.9em;
+            }
+            
+            .snap-sidebar-cart__related-product-price {
+                color: #000;
+                font-weight: bold;
+                margin-right: 8px;
+            }
+            
+            .snap-sidebar-cart__related-product-discount {
+                background-color: #e74c3c;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 0.8em;
+                font-weight: bold;
+            }
+            
+            .snap-sidebar-cart__related-product-title {
+                font-size: 0.95em;
+                font-weight: 500;
+                margin: 10px 0 5px;
+                line-height: 1.3;
+                color: #333;
             }
             
             /* Corregir estilos de inputs */

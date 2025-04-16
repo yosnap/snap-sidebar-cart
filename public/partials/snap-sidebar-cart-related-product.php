@@ -66,11 +66,16 @@ try {
     // Información de envío estimado
     $shipping_days = 3; // Por defecto, 3 días - esto podría ser configurable o calculado dinámicamente
 
-    // Determinar si es "Last Chance" (ejemplo con stock bajo)
+    // Determinar si es "Last Chance" basado en la configuración
     $stock_quantity = $related_product->get_stock_quantity();
-    error_log('Cantidad en stock: ' . ($stock_quantity !== null ? $stock_quantity : 'No gestionado'));
+    $show_last_chance = isset($this->options['related_products']['show_last_chance']) ? $this->options['related_products']['show_last_chance'] : false;
+    $last_chance_limit = isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5;
     
-    $is_last_chance = $stock_quantity && $stock_quantity <= 5;
+    error_log('Cantidad en stock: ' . ($stock_quantity !== null ? $stock_quantity : 'No gestionado'));
+    error_log('Mostrar badge Last Chance: ' . ($show_last_chance ? 'Sí' : 'No'));
+    error_log('Límite para Last Chance: ' . $last_chance_limit);
+    
+    $is_last_chance = $show_last_chance && $stock_quantity !== null && $stock_quantity <= $last_chance_limit;
     error_log('¿Es última oportunidad?: ' . ($is_last_chance ? 'Sí' : 'No'));
 
     // Determinar el color (si está disponible como atributo)
@@ -87,7 +92,12 @@ try {
 <div class="snap-sidebar-cart__related-product">
     <?php if ($is_last_chance) : ?>
         <div class="snap-sidebar-cart__product-badge last-chance">
-            <?php _e('Last Chance', 'snap-sidebar-cart'); ?>
+            <?php 
+            $badge_text = isset($this->options['related_products']['last_chance_title']) ? 
+                esc_html($this->options['related_products']['last_chance_title']) : 
+                esc_html__('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'); 
+            echo $badge_text;
+            ?>
         </div>
     <?php endif; ?>
     
@@ -134,9 +144,11 @@ try {
                 <div class="snap-sidebar-cart__related-product-price-container">
                     <?php if ($has_discount) : ?>
                         <span class="snap-sidebar-cart__related-product-regular-price"><?php echo wc_price($regular_price); ?></span>
+                        <span class="snap-sidebar-cart__related-product-price"><?php echo wc_price($sale_price); ?></span>
                         <span class="snap-sidebar-cart__related-product-discount">-<?php echo $discount_percentage; ?>%</span>
+                    <?php else : ?>
+                        <span class="snap-sidebar-cart__related-product-price"><?php echo $product_price; ?></span>
                     <?php endif; ?>
-                    <span class="snap-sidebar-cart__related-product-price"><?php echo $product_price; ?></span>
                 </div>
             <?php endif; ?>
 

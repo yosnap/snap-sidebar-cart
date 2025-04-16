@@ -1,62 +1,68 @@
-# Changelog
+# Changelog - Snap Sidebar Cart
 
-Todos los cambios importantes en este proyecto serán documentados en este archivo.
+## Versión 1.2.0 - 16 de abril de 2025
 
-## [1.1.1] - 2025-04-15
-
-### Arreglado
-- Eliminado el efecto blur que afectaba a la visualización de productos en el carrito
-- Corregida la configuración del preloader para que respete correctamente las opciones del admin
-- Mejorada la especificidad CSS para evitar conflictos de estilos
-- Implementada solución para la correcta visualización del preloader en todos los estados
-
-### Cambios
-- Optimizado el sistema de aplicación de estilos para el preloader
-- Mejoradas las transiciones y animaciones de carga de productos
-- Implementada aplicación directa de estilos para mayor compatibilidad entre navegadores
-
-## [1.1.0] - 2025-04-14
+### Nuevas características
+- Implementación de Swiper.js para mejorar el slider de productos relacionados
+- Botones de navegación del slider ahora ubicados juntos en la esquina superior derecha
+- Opciones ampliadas para el badge "Última oportunidad":
+  - Texto personalizable
+  - Color de fondo personalizable
+  - Color de texto personalizable
+- Personalización mejorada de estilos:
+  - Control separado para el color de fondo del listado de productos
+  - Control separado para el color de fondo de la sección de productos relacionados
+  - Control separado para el color de fondo del footer del carrito
 
 ### Mejoras
-- Reorganización completa del código JavaScript en módulos separados para mejor mantenimiento
-- Soporte para múltiples imágenes de galería en el efecto hover de productos relacionados
-- Mejora en las animaciones de transición al añadir o eliminar productos
-- Control de stock mejorado con bloqueo automático de botón de incremento
-- Optimización del rendimiento general del plugin
+- Mayor fluidez en las transiciones del slider gracias a Swiper.js
+- Rendimiento mejorado en la carga de productos relacionados
+- Mejor integración visual con distintos temas de WordPress
+- Optimización general del código JavaScript
+
+### Correcciones
+- Solucionado problema con la visualización en dispositivos móviles
+- Arreglado bug de navegación en los sliders cuando había pocos productos
+- Corregido problema al mostrar imágenes de hover en algunos temas
+
+## Versión 1.1.1 - 5 de febrero de 2025
+
+### Mejoras
+- Optimización de rendimiento al cambiar entre pestañas de productos relacionados
+- Mejor manejo de caché para evitar problemas con plugins de caché
+
+### Correcciones
+- Solucionado problema con el contador de productos que no se actualizaba correctamente
+- Arreglado bug visual en algunos temas con botones de cantidad
+
+## Versión 1.1.0 - 15 de diciembre de 2024
+
+### Nuevas características
+- Arquitectura modular mejorada para los scripts JavaScript
+- Efecto hover con múltiples imágenes para productos relacionados
+- Control de stock avanzado con bloqueo automático del botón de incremento
+- Animación de actualización de cantidad mejorada
 - Preloader personalizable con diferentes estilos y posiciones
-- **Nueva animación de cambio de cantidad**: Resaltado visual de la cantidad cuando se actualiza un producto existente
-- **Notificación de stock máximo**: Aviso visual cuando se alcanza el límite de stock disponible
-
-### Arreglado
-- Cierre mejorado del sidebar con detección de clic fuera y tecla ESC
-- Corregido problema con las pestañas de productos relacionados que no cambiaban correctamente
-- Solucionado el problema de duplicación de productos al agregar varias veces el mismo
-- Ajustes en el CSS para mejor visualización en dispositivos móviles
-- Mejorado el efecto de hover en productos relacionados para mostrar todas las imágenes de la galería
-
-### Cambios
-- Verificada compatibilidad con WooCommerce 8.5
-- Refactorización de las clases CSS para mejor mantenimiento
-- Los eventos ahora utilizan eventos personalizados para mejor comunicación entre módulos
-- Rediseñado el botón de cierre para mejor usabilidad
-
-## [1.0.22] - 2024-03-15
 
 ### Mejoras
-- Añadida opción para configurar la posición de nuevos productos (arriba o abajo)
-- Mejorada la animación del preloader
-- Opción para definir duración de animaciones
+- Mejor rendimiento general
+- Mejores animaciones y transiciones
+- Cierre mejorado del sidebar
+- Compatibilidad con WooCommerce 8.5
 
-### Arreglado
-- Corrección de errores en el cierre del sidebar
-- Solucionado problema con el contador de productos
+### Correcciones
+- Solucionado problema con la cantidad al agregar productos duplicados
+- Arreglado bug visual en temas oscuros
+- Corregida gestión de stock en productos variables
 
-## [1.0.21] - 2024-02-10
+## Versión 1.0.0 - 1 de octubre de 2024
 
-### Mejoras
-- Añadido soporte para productos en oferta
-- Mejora en el diseño responsive
-
-### Arreglado
-- Corrección de errores menores en el CSS
-- Solucionado conflicto con algunos temas
+### Lanzamiento inicial
+- Sidebar que se muestra al agregar productos al carrito
+- Cierre mediante botón X, clic fuera o tecla ESC
+- Slider básico de productos relacionados
+- Estilos configurables
+- Eliminación automática de productos cuando cantidad es 0
+- Visualización de precios de envío y subtotal con IVA
+- Animaciones al agregar productos
+- Gestión de cantidades para evitar duplicados

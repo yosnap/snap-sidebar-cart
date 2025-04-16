@@ -185,11 +185,29 @@ class Snap_Sidebar_Cart_Admin {
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo del sidebar
+        // Color de fondo del listado de productos
         add_settings_field(
-            'sidebar_background',
-            __('Color de fondo del carrito', 'snap-sidebar-cart'),
-            array($this, 'sidebar_background_callback'),
+            'products_background',
+            __('Color de fondo del listado de productos', 'snap-sidebar-cart'),
+            array($this, 'products_background_callback'),
+            'snap-sidebar-cart-settings-styles',
+            'snap_sidebar_cart_styles_section'
+        );
+        
+        // Color de fondo de la sección de productos relacionados
+        add_settings_field(
+            'related_section_background',
+            __('Color de fondo de productos relacionados', 'snap-sidebar-cart'),
+            array($this, 'related_section_background_callback'),
+            'snap-sidebar-cart-settings-styles',
+            'snap_sidebar_cart_styles_section'
+        );
+        
+        // Color de fondo del footer
+        add_settings_field(
+            'footer_background',
+            __('Color de fondo del footer', 'snap-sidebar-cart'),
+            array($this, 'footer_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
@@ -370,6 +388,60 @@ class Snap_Sidebar_Cart_Admin {
             'related_orderby',
             __('Ordenar productos relacionados por', 'snap-sidebar-cart'),
             array($this, 'related_orderby_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Número de slides a desplazar
+        add_settings_field(
+            'slides_to_scroll',
+            __('Número de slides a desplazar', 'snap-sidebar-cart'),
+            array($this, 'slides_to_scroll_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Mostrar badge de última oportunidad
+        add_settings_field(
+            'show_last_chance',
+            __('Mostrar badge de última oportunidad', 'snap-sidebar-cart'),
+            array($this, 'show_last_chance_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Límite de stock para última oportunidad
+        add_settings_field(
+            'last_chance_stock_limit',
+            __('Límite de stock para última oportunidad', 'snap-sidebar-cart'),
+            array($this, 'last_chance_stock_limit_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Título del badge de última oportunidad
+        add_settings_field(
+            'last_chance_title',
+            __('Título del badge de última oportunidad', 'snap-sidebar-cart'),
+            array($this, 'last_chance_title_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Color de fondo del badge de última oportunidad
+        add_settings_field(
+            'last_chance_bg_color',
+            __('Color de fondo del badge', 'snap-sidebar-cart'),
+            array($this, 'last_chance_bg_color_callback'),
+            'snap-sidebar-cart-settings-related',
+            'snap_sidebar_cart_related_section'
+        );
+        
+        // Color de texto del badge de última oportunidad
+        add_settings_field(
+            'last_chance_text_color',
+            __('Color de texto del badge', 'snap-sidebar-cart'),
+            array($this, 'last_chance_text_color_callback'),
             'snap-sidebar-cart-settings-related',
             'snap_sidebar_cart_related_section'
         );
@@ -622,13 +694,36 @@ class Snap_Sidebar_Cart_Admin {
     }
 
     /**
-     * Callback para el color de fondo del sidebar.
+     * Callback para el color de fondo del listado de productos.
      *
-     * @since    1.0.0
+     * @since    1.2.0
      */
-    public function sidebar_background_callback() {
-        $value = isset($this->options['styles']['sidebar_background']) ? esc_attr($this->options['styles']['sidebar_background']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][sidebar_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    public function products_background_callback() {
+        $value = isset($this->options['styles']['products_background']) ? esc_attr($this->options['styles']['products_background']) : '#ffffff';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][products_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+        echo '<p class="description">' . __('Color de fondo para el listado de productos.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el color de fondo de la sección de productos relacionados.
+     *
+     * @since    1.2.0
+     */
+    public function related_section_background_callback() {
+        $value = isset($this->options['styles']['related_section_background']) ? esc_attr($this->options['styles']['related_section_background']) : '#f9f9f9';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][related_section_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+        echo '<p class="description">' . __('Color de fondo para la sección de productos relacionados.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el color de fondo del footer.
+     *
+     * @since    1.2.0
+     */
+    public function footer_background_callback() {
+        $value = isset($this->options['styles']['footer_background']) ? esc_attr($this->options['styles']['footer_background']) : '#f8f8f8';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][footer_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+        echo '<p class="description">' . __('Color de fondo para el footer del carrito.', 'snap-sidebar-cart') . '</p>';
     }
 
     /**
@@ -731,6 +826,84 @@ class Snap_Sidebar_Cart_Admin {
         </select>
         <?php
     }
+    
+    /**
+     * Callback para el número de slides a desplazar.
+     *
+     * @since    1.1.5
+     */
+    public function slides_to_scroll_callback() {
+        $value = isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2;
+        ?>
+        <input type="number" name="snap_sidebar_cart_options[related_products][slides_to_scroll]" value="<?php echo $value; ?>" min="1" max="5" class="small-text">
+        <p class="description"><?php _e('Número de productos a desplazar cuando se hace clic en los botones de navegación.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Callback para mostrar badge de última oportunidad.
+     *
+     * @since    1.1.5
+     */
+    public function show_last_chance_callback() {
+        $checked = isset($this->options['related_products']['show_last_chance']) && $this->options['related_products']['show_last_chance'] ? 'checked="checked"' : '';
+        ?>
+        <input type="checkbox" name="snap_sidebar_cart_options[related_products][show_last_chance]" value="1" <?php echo $checked; ?>>
+        <p class="description"><?php _e('Mostrar badge de última oportunidad en productos con stock limitado.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Callback para el límite de stock para última oportunidad.
+     *
+     * @since    1.1.5
+     */
+    public function last_chance_stock_limit_callback() {
+        $value = isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5;
+        ?>
+        <input type="number" name="snap_sidebar_cart_options[related_products][last_chance_stock_limit]" value="<?php echo $value; ?>" min="1" max="20" class="small-text">
+        <p class="description"><?php _e('Mostrar badge de última oportunidad cuando el stock sea igual o menor a este valor.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Callback para el título del badge de última oportunidad.
+     *
+     * @since    1.2.0
+     */
+    public function last_chance_title_callback() {
+        $value = isset($this->options['related_products']['last_chance_title']) ? esc_attr($this->options['related_products']['last_chance_title']) : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart');
+        ?>
+        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_title]" value="<?php echo $value; ?>" class="regular-text">
+        <p class="description"><?php _e('Texto que se mostrará en el badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Callback para el color de fondo del badge de última oportunidad.
+     *
+     * @since    1.2.0
+     */
+    public function last_chance_bg_color_callback() {
+        $value = isset($this->options['related_products']['last_chance_bg_color']) ? esc_attr($this->options['related_products']['last_chance_bg_color']) : '#e74c3c';
+        ?>
+        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_bg_color]" value="<?php echo $value; ?>" class="snap-sidebar-cart-color-picker">
+        <p class="description"><?php _e('Color de fondo del badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Callback para el color de texto del badge de última oportunidad.
+     *
+     * @since    1.2.0
+     */
+    public function last_chance_text_color_callback() {
+        $value = isset($this->options['related_products']['last_chance_text_color']) ? esc_attr($this->options['related_products']['last_chance_text_color']) : '#ffffff';
+        ?>
+        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_text_color]" value="<?php echo $value; ?>" class="snap-sidebar-cart-color-picker">
+        <p class="description"><?php _e('Color del texto del badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
 
     /**
      * Callback para las pestañas activas de productos relacionados.
@@ -740,13 +913,14 @@ class Snap_Sidebar_Cart_Admin {
     public function related_active_tabs_callback() {
         $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
                       explode(',', $this->options['related_products']['active_tabs']) : 
-                      array('related');
+                      array('upsells', 'crosssells', 'related');
         
         $tab_options = array(
-            'related' => __('Productos relacionados', 'snap-sidebar-cart'),
-            'category' => __('Misma categoría', 'snap-sidebar-cart'),
+            'upsells' => __('Complementos (Up-sells)', 'snap-sidebar-cart'),
+            'crosssells' => __('Productos cruzados (Cross-sells)', 'snap-sidebar-cart'),
+            'related' => __('Misma categoría', 'snap-sidebar-cart'),
             'bestsellers' => __('Más vendidos', 'snap-sidebar-cart'),
-            'accessories' => __('Accesorios', 'snap-sidebar-cart'),
+            'featured' => __('Destacados', 'snap-sidebar-cart'),
             'custom' => __('Consulta personalizada', 'snap-sidebar-cart')
         );
         
@@ -875,7 +1049,7 @@ return wp_list_pluck($products, \'ID\');</pre>';
             foreach ($input['styles'] as $key => $value) {
                 if (in_array($key, array('sidebar_width'))) {
                     $output['styles'][$key] = sanitize_text_field($value);
-                } elseif (in_array($key, array('sidebar_background', 'header_background', 'header_text_color', 'product_text_color', 'button_background', 'button_text_color'))) {
+                } elseif (in_array($key, array('header_background', 'header_text_color', 'product_text_color', 'button_background', 'button_text_color', 'products_background', 'related_section_background', 'footer_background'))) {
                     $output['styles'][$key] = sanitize_hex_color($value);
                 }
             }
@@ -967,6 +1141,44 @@ return wp_list_pluck($products, \'ID\');</pre>';
         if (isset($input['related_products']['orderby'])) {
             $valid_orderby = array('rand', 'date', 'price', 'popularity', 'rating');
             $output['related_products']['orderby'] = in_array($input['related_products']['orderby'], $valid_orderby) ? $input['related_products']['orderby'] : 'rand';
+        }
+        
+        // Validar el número de slides a desplazar
+        if (isset($input['related_products']['slides_to_scroll'])) {
+            $output['related_products']['slides_to_scroll'] = intval($input['related_products']['slides_to_scroll']);
+            if ($output['related_products']['slides_to_scroll'] < 1) {
+                $output['related_products']['slides_to_scroll'] = 1;
+            } elseif ($output['related_products']['slides_to_scroll'] > 5) {
+                $output['related_products']['slides_to_scroll'] = 5;
+            }
+        }
+        
+        // Validar badge "Last chance"
+        $output['related_products']['show_last_chance'] = isset($input['related_products']['show_last_chance']) ? 1 : 0;
+        
+        // Validar el límite de stock para "Last chance"
+        if (isset($input['related_products']['last_chance_stock_limit'])) {
+            $output['related_products']['last_chance_stock_limit'] = intval($input['related_products']['last_chance_stock_limit']);
+            if ($output['related_products']['last_chance_stock_limit'] < 1) {
+                $output['related_products']['last_chance_stock_limit'] = 1;
+            } elseif ($output['related_products']['last_chance_stock_limit'] > 20) {
+                $output['related_products']['last_chance_stock_limit'] = 20;
+            }
+        }
+        
+        // Validar título del badge
+        if (isset($input['related_products']['last_chance_title'])) {
+            $output['related_products']['last_chance_title'] = sanitize_text_field($input['related_products']['last_chance_title']);
+        }
+        
+        // Validar el color de fondo del badge
+        if (isset($input['related_products']['last_chance_bg_color'])) {
+            $output['related_products']['last_chance_bg_color'] = sanitize_hex_color($input['related_products']['last_chance_bg_color']);
+        }
+        
+        // Validar el color de texto del badge
+        if (isset($input['related_products']['last_chance_text_color'])) {
+            $output['related_products']['last_chance_text_color'] = sanitize_hex_color($input['related_products']['last_chance_text_color']);
         }
 
         // Procesamos los checkboxes para pestañas activas

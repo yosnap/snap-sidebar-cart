@@ -3,7 +3,7 @@
  * Plugin Name: Snap Sidebar Cart
  * Plugin URI: https://github.com/yosnap/snap-sidebar-cart-wp
  * Description: Un carrito lateral para WooCommerce que muestra productos cuando se agregan al carrito y productos relacionados con animaciones personalizables.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Paulo
  * Author URI: 
  * Text Domain: snap-sidebar-cart
@@ -20,7 +20,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Definir constantes
-define( 'SNAP_SIDEBAR_CART_VERSION', '1.1.1' );
+define( 'SNAP_SIDEBAR_CART_VERSION', '1.2.0' );
 define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
@@ -73,7 +73,9 @@ function snap_sidebar_cart_activate() {
         'auto_open' => true,
         'styles' => array(
             'sidebar_width' => '400px',
-            'sidebar_background' => '#ffffff',
+            'products_background' => '#ffffff',
+            'related_section_background' => '#f9f9f9',
+            'footer_background' => '#f8f8f8',
             'header_background' => '#f8f8f8',
             'header_text_color' => '#333333',
             'product_text_color' => '#333333',
@@ -85,6 +87,12 @@ function snap_sidebar_cart_activate() {
             'count' => 4,
             'columns' => 2,
             'orderby' => 'rand',
+            'slides_to_scroll' => 2,
+            'show_last_chance' => true,
+            'last_chance_stock_limit' => 5,
+            'last_chance_title' => __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
+            'last_chance_bg_color' => '#e74c3c',
+            'last_chance_text_color' => '#ffffff',
         ),
         'preloader' => array(
             'type' => 'circle',  // Opciones: circle, square, dots, spinner

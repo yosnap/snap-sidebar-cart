@@ -69,32 +69,35 @@ $cart_count = WC()->cart->get_cart_contents_count();
                 <div class="snap-sidebar-cart__related-section">
                     <h3 class="snap-sidebar-cart__related-title"><?php echo isset($this->options['related_products']['title']) ? esc_html($this->options['related_products']['title']) : _e('Te puede gustar', 'snap-sidebar-cart'); ?></h3>
                     
-                    <div class="snap-sidebar-cart__related-tabs">
-                        <?php
-                        // Obtener las pestañas activas configuradas en las opciones
-                        $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
-                            explode(',', $this->options['related_products']['active_tabs']) : 
-                            array('related', 'category', 'bestsellers', 'accessories');
-                        
-                        // Definir las etiquetas por defecto
-                        $tab_labels = array(
-                            'related' => __('Relacionados', 'snap-sidebar-cart'),
-                            'category' => __('Misma categoría', 'snap-sidebar-cart'),
-                            'bestsellers' => __('Más vendidos', 'snap-sidebar-cart'),
-                            'accessories' => __('Accesorios', 'snap-sidebar-cart'),
-                            'custom' => isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : __('Recomendados', 'snap-sidebar-cart')
-                        );
-                        
-                        // Mostrar sólo las pestañas activas
-                        $first_tab = true;
-                        foreach ($active_tabs as $tab_key) {
-                            if (isset($tab_labels[$tab_key])) {
-                                $active_class = $first_tab ? ' active' : '';
-                                echo '<button type="button" class="snap-sidebar-cart__related-tab' . $active_class . '" data-tab="' . esc_attr($tab_key) . '">' . esc_html($tab_labels[$tab_key]) . '</button>';
-                                $first_tab = false;
+                    <div class="snap-sidebar-cart__related-header">
+                        <div class="snap-sidebar-cart__related-tabs">
+                            <?php
+                            // Obtener las pestañas activas configuradas en las opciones
+                            $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
+                                explode(',', $this->options['related_products']['active_tabs']) : 
+                                array('upsells', 'crosssells', 'related', 'bestsellers', 'featured');
+                            
+                            // Definir las etiquetas por defecto
+                            $tab_labels = array(
+                                'upsells' => __('Complementos', 'snap-sidebar-cart'),
+                                'crosssells' => __('Productos cruzados', 'snap-sidebar-cart'),
+                                'related' => __('Misma categoría', 'snap-sidebar-cart'),
+                                'bestsellers' => __('Más vendidos', 'snap-sidebar-cart'),
+                                'featured' => __('Destacados', 'snap-sidebar-cart'),
+                                'custom' => isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : __('Recomendados', 'snap-sidebar-cart')
+                            );
+                            
+                            // Mostrar sólo las pestañas activas
+                            $first_tab = true;
+                            foreach ($active_tabs as $tab_key) {
+                                if (isset($tab_labels[$tab_key])) {
+                                    $active_class = $first_tab ? ' active' : '';
+                                    echo '<button type="button" class="snap-sidebar-cart__related-tab' . $active_class . '" data-tab="' . esc_attr($tab_key) . '">' . esc_html($tab_labels[$tab_key]) . '</button>';
+                                    $first_tab = false;
+                                }
                             }
-                        }
-                        ?>
+                            ?>
+                        </div>
                     </div>
                     
                     <div class="snap-sidebar-cart__related-content">
@@ -104,13 +107,20 @@ $cart_count = WC()->cart->get_cart_contents_count();
                             $active_class = $first_tab ? ' active' : '';
                             echo '<div class="snap-sidebar-cart__related-container' . $active_class . '" data-content="' . esc_attr($tab_key) . '">';
                             echo '<div class="snap-sidebar-cart__slider">';
-                            echo '<button type="button" class="snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-prev" aria-label="' . esc_attr__('Anterior', 'snap-sidebar-cart') . '">‹</button>';
-                            echo '<div class="snap-sidebar-cart__slider-track">';
+                            
+                            // Implementar Swiper.js
+                            echo '<div class="swiper-container snap-sidebar-cart__swiper-container">';
+                            echo '<div class="swiper-wrapper snap-sidebar-cart__slider-track">';
                             // Los productos se cargarán dinámicamente vía AJAX
                             echo '</div>';
-                            echo '<button type="button" class="snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-next" aria-label="' . esc_attr__('Siguiente', 'snap-sidebar-cart') . '">›</button>';
-                            echo '</div>';
-                            echo '</div>';
+                            
+                            // Navegación para Swiper (ahora arriba a la derecha)
+                            echo '<div class="swiper-button-prev snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-prev"></div>';
+                            echo '<div class="swiper-button-next snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-next"></div>';
+                            
+                            echo '</div>'; // cierre swiper-container
+                            echo '</div>'; // cierre snap-sidebar-cart__slider
+                            echo '</div>'; // cierre snap-sidebar-cart__related-container
                             
                             $first_tab = false;
                         }

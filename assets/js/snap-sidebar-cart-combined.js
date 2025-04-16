@@ -1,12 +1,20 @@
 /**
- * Script específico para corregir las pestañas del slider de productos relacionados
- * Versión actualizada para las nuevas pestañas
+ * Script combinado para el carrito lateral con todas las funcionalidades
+ * - Navegación de pestañas
+ * - Navegación de slider
+ * - Manejo de preloader
+ * 
+ * @since 1.1.1
  */
 (function($) {
     "use strict";
     
+    // Objeto global para almacenar métodos y estado
+    window.snap_sidebar_cart = window.snap_sidebar_cart || {};
+    
+    // Inicializar cuando el DOM esté listo
     $(document).ready(function() {
-        console.log('Script mejorado de tabs cargado');
+        console.log('Snap Sidebar Cart: Script combinado cargado');
         
         // Constantes de tipos de tabs
         const TAB_TYPES = {
@@ -18,10 +26,16 @@
             CUSTOM: 'custom'           // Consulta personalizada
         };
         
-        // Guardar estado de pestañas ya cargadas
+        // Cargar pestañas con contenido
         var loadedTabs = {};
         
-        // Función mejorada para cambiar de pestaña con cache
+        // ===========================
+        // FUNCIONES PARA LAS PESTAÑAS
+        // ===========================
+        
+        /**
+         * Cambia entre pestañas y carga el contenido correspondiente
+         */
         function switchTab($tab, forceReload = false) {
             var tabType = $tab.data('tab');
             console.log('Cambiando a pestaña:', tabType);
@@ -44,7 +58,7 @@
             // 3. Cargar productos para esta pestaña si el contenedor está vacío
             var $targetContainer = $tabContainer.find('.snap-sidebar-cart__slider-track');
             
-            // Verificar si ya tenemos los productos cargados y no se fuerza recarga
+            // Verificar si ya tenemos productos cargados y no se fuerza recarga
             if (!forceReload && loadedTabs[tabType] && $targetContainer.children('.snap-sidebar-cart__related-product').length > 0) {
                 console.log('Usando productos en caché para pestaña:', tabType);
                 initSliderNavigation($targetContainer);
@@ -124,7 +138,16 @@
             });
         }
         
-        // Función para inicializar la navegación del slider
+        // Exponer la función al objeto global
+        window.snap_sidebar_cart.switchTab = switchTab;
+        
+        // ===========================
+        // FUNCIONES PARA EL SLIDER
+        // ===========================
+        
+        /**
+         * Inicializa la navegación del slider
+         */
         function initSliderNavigation($track) {
             if (!$track || !$track.length) return;
             
@@ -159,29 +182,53 @@
                 $nextButton.show();
                 
                 // Inicializar estado de botones
-                if ($track.scrollLeft() <= 0) {
-                    $prevButton.addClass('disabled').css('opacity', '0.5');
-                } else {
-                    $prevButton.removeClass('disabled').css('opacity', '1');
-                }
+                updateButtonState($track);
                 
-                var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
-                if ($track.scrollLeft() >= maxScrollLeft - 5) {
-                    $nextButton.addClass('disabled').css('opacity', '0.5');
-                } else {
-                    $nextButton.removeClass('disabled').css('opacity', '1');
-                }
+                // Agregar evento de scroll si no existe
+                $track.off('scroll.sliderNav').on('scroll.sliderNav', function() {
+                    updateButtonState($(this));
+                });
             }
         }
         
-        // Función para inicializar efectos de hover en imágenes de productos
+        /**
+         * Actualiza el estado visual de los botones según la posición del scroll
+         */
+        function updateButtonState($track) {
+            if (!$track.length || !$track[0]) return;
+            
+            var $prevButton = $track.siblings('.snap-sidebar-cart__slider-prev');
+            var $nextButton = $track.siblings('.snap-sidebar-cart__slider-next');
+            var currentScrollLeft = $track.scrollLeft();
+            var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
+            
+            // Actualizar botón anterior
+            if (currentScrollLeft <= 0) {
+                $prevButton.addClass('disabled').css('opacity', '0.5');
+            } else {
+                $prevButton.removeClass('disabled').css('opacity', '1');
+            }
+            
+            // Actualizar botón siguiente
+            if (currentScrollLeft >= maxScrollLeft - 5) { // 5px margen para redondeo
+                $nextButton.addClass('disabled').css('opacity', '0.5');
+            } else {
+                $nextButton.removeClass('disabled').css('opacity', '1');
+            }
+        }
+        
+        /**
+         * Inicializa efectos de hover en imágenes de productos
+         */
         function initProductHoverEffects($container) {
             // La implementación del efecto hover está principalmente en CSS
             // y en la estructura HTML generada en el servidor
-            
-            // Si se necesita funcionalidad adicional JS para hover, se puede agregar aquí
             console.log('Efectos de hover inicializados para productos');
         }
+        
+        // ===========================
+        // REGISTRO DE EVENTOS
+        // ===========================
         
         // Delegación de evento para pestañas - usando namespaces para evitar duplicados
         $(document).off('click.tabSwitch').on('click.tabSwitch', '.snap-sidebar-cart__related-tab', function(e) {
@@ -254,34 +301,9 @@
             });
         });
         
-        // Actualizar estado de los botones según posición del scroll
-        function updateButtonState($track) {
-            if (!$track.length || !$track[0]) return;
-            
-            var $prevButton = $track.siblings('.snap-sidebar-cart__slider-prev');
-            var $nextButton = $track.siblings('.snap-sidebar-cart__slider-next');
-            var currentScrollLeft = $track.scrollLeft();
-            var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
-            
-            // Actualizar botón anterior
-            if (currentScrollLeft <= 0) {
-                $prevButton.addClass('disabled').css('opacity', '0.5');
-            } else {
-                $prevButton.removeClass('disabled').css('opacity', '1');
-            }
-            
-            // Actualizar botón siguiente
-            if (currentScrollLeft >= maxScrollLeft - 5) { // 5px margen para redondeo
-                $nextButton.addClass('disabled').css('opacity', '0.5');
-            } else {
-                $nextButton.removeClass('disabled').css('opacity', '1');
-            }
-        }
-        
-        // Agregar eventos de scroll para actualizar estado de botones
-        $('.snap-sidebar-cart__slider-track').on('scroll', function() {
-            updateButtonState($(this));
-        });
+        // ===========================
+        // INICIALIZACIÓN
+        // ===========================
         
         // Inicializar la primera pestaña activa al cargar
         function initFirstActiveTab() {
@@ -299,8 +321,10 @@
             }
         }
         
-        // Inicializar todo
-        initFirstActiveTab();
+        // Inicializar todo al cargar la página
+        setTimeout(function() {
+            initFirstActiveTab();
+        }, 300);
         
         // Reinicializar cuando se actualiza el carrito
         $(document.body).on('snap_sidebar_cart_updated', function() {
@@ -310,10 +334,25 @@
             loadedTabs = {};
             
             // Reinicializar pestaña activa
-            var $activeTab = $('.snap-sidebar-cart__related-tab.active');
-            if ($activeTab.length) {
-                switchTab($activeTab, true); // Forzar recarga
-            }
+            setTimeout(function() {
+                var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                if ($activeTab.length) {
+                    switchTab($activeTab, true); // Forzar recarga
+                } else {
+                    initFirstActiveTab();
+                }
+            }, 300);
+        });
+        
+        // Detectar cuando se abre el carrito lateral
+        $(document).on('click', snap_sidebar_cart_params.activation_selectors, function() {
+            console.log('Carrito abierto - reinicializando componentes');
+            setTimeout(function() {
+                var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                if ($activeTab.length) {
+                    switchTab($activeTab);
+                }
+            }, 500);
         });
     });
     

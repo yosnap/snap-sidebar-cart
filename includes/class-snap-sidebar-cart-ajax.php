@@ -193,21 +193,31 @@ class Snap_Sidebar_Cart_Ajax {
             wp_send_json_error(array('message' => __('Producto no encontrado en el carrito', 'snap-sidebar-cart')));
         }
         
+        // Para la respuesta, indicar que solo cambió la cantidad
+        $data_response = array(
+            'quantity_changed' => true,
+            'updated_key' => $cart_item_key
+        );
+        
         // Si la cantidad es 0, eliminar el producto
         if ($quantity === 0) {
             $removed = WC()->cart->remove_cart_item($cart_item_key);
             
             if ($removed) {
-                $this->get_cart_contents();
+                $this->get_cart_contents('', $data_response);
             } else {
                 wp_send_json_error(array('message' => __('Error al eliminar del carrito', 'snap-sidebar-cart')));
             }
         } else {
+            // Obtener cantidad actual antes de actualizar
+            $cart_items = WC()->cart->get_cart();
+            $current_quantity = $cart_items[$cart_item_key]['quantity'];
+            
             // Actualizar cantidad
             $updated = WC()->cart->set_quantity($cart_item_key, $quantity);
             
             if ($updated) {
-                $this->get_cart_contents();
+                $this->get_cart_contents('', $data_response);
             } else {
                 wp_send_json_error(array('message' => __('Error al actualizar el carrito', 'snap-sidebar-cart')));
             }
@@ -261,7 +271,7 @@ class Snap_Sidebar_Cart_Ajax {
         // Verificar si el tipo está en las pestañas activas configuradas
         $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
             explode(',', $this->options['related_products']['active_tabs']) : 
-            array('related', 'category', 'bestsellers', 'accessories', 'custom');
+            array('upsells', 'crosssells', 'related', 'bestsellers', 'featured', 'custom');
         
         error_log('Pestañas activas configuradas: ' . implode(', ', $active_tabs));
         
@@ -274,7 +284,15 @@ class Snap_Sidebar_Cart_Ajax {
         error_log('Obteniendo productos para el tipo: ' . $type);
         
         switch ($type) {
-            case 'category':
+            case 'upsells':
+                error_log('Llamando a get_upsell_products()');
+                $products = $this->get_upsell_products($product);
+                break;
+            case 'crosssells':
+                error_log('Llamando a get_crosssell_products()');
+                $products = $this->get_crosssell_products($product);
+                break;
+            case 'related':
                 error_log('Llamando a get_same_category_products()');
                 $products = $this->get_same_category_products($product);
                 break;
@@ -282,18 +300,17 @@ class Snap_Sidebar_Cart_Ajax {
                 error_log('Llamando a get_bestseller_products()');
                 $products = $this->get_bestseller_products();
                 break;
-            case 'accessories':
-                error_log('Llamando a get_accessory_products()');
-                $products = $this->get_accessory_products($product);
+            case 'featured':
+                error_log('Llamando a get_featured_products()');
+                $products = $this->get_featured_products();
                 break;
             case 'custom':
                 error_log('Llamando a get_custom_products()');
                 $products = $this->get_custom_products($product);
                 break;
-            case 'related':
             default:
-                error_log('Llamando a get_product_related_products()');
-                $products = $this->get_product_related_products($product);
+                error_log('Tipo no reconocido, usando get_same_category_products() como fallback');
+                $products = $this->get_same_category_products($product);
                 break;
         }
         
@@ -372,35 +389,246 @@ class Snap_Sidebar_Cart_Ajax {
      * @param    WC_Product    $product    El producto base.
      * @return   array                     Lista de productos relacionados.
      */
-    private function get_product_related_products($product) {
+    /**
+     * Obtiene los productos up-sell del producto.
+     *
+     * @since    1.1.0
+     * @param    WC_Product    $product    El producto base.
+     * @return   array                     Lista de productos up-sell.
+     */
+    private function get_upsell_products($product) {
+        error_log('=== INICIO get_upsell_products() ===');
+        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        
         $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
         
-        // Primero intentamos obtener productos relacionados definidos por el usuario
-        $related_ids = $product->get_upsell_ids();
-        
-        // Si no hay suficientes, añadimos productos relacionados calculados automáticamente
-        if (count($related_ids) < $related_limit) {
-            $calculated_related = wc_get_related_products(
-                $product->get_id(),
-                $related_limit - count($related_ids),
-                array_merge($related_ids, array($product->get_id()))
-            );
-            
-            $related_ids = array_merge($related_ids, $calculated_related);
-        }
+        // Obtener los IDs de productos up-sell definidos por el usuario
+        $upsell_ids = $product->get_upsell_ids();
+        error_log('Up-sells directamente configurados: ' . count($upsell_ids));
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
         foreach (WC()->cart->get_cart() as $cart_item) {
             $cart_product_ids[] = $cart_item['product_id'];
         }
-        $related_ids = array_diff($related_ids, $cart_product_ids);
         
-        // Limitar al número máximo
-        $related_ids = array_slice($related_ids, 0, $related_limit);
+        // Incluir el producto actual entre los filtrados
+        $cart_product_ids[] = $product->get_id();
+        $upsell_ids = array_diff($upsell_ids, $cart_product_ids);
+        error_log('Up-sells después de filtrar productos en carrito: ' . count($upsell_ids));
         
-        // Convertir IDs a objetos de producto
-        return array_filter(array_map('wc_get_product', $related_ids));
+        // Si no hay suficientes up-sells, obtener productos recomendados según determinados criterios
+        if (count($upsell_ids) < $related_limit) {
+            error_log('No hay suficientes up-sells, buscando productos sustitutos');
+            
+            // Buscar productos con precio superior (lógica de up-sell)
+            $product_price = $product->get_price();
+            
+            if ($product_price > 0) {
+                // Para up-sells, buscamos productos con precio un poco mayor (10-30% más)
+                $min_price = $product_price * 1.1;  // 10% más caro
+                $max_price = $product_price * 1.3;  // 30% más caro
+                
+                // Obtener categorías del producto
+                $product_categories = wc_get_product_term_ids($product->get_id(), 'product_cat');
+                
+                // Si hay categorías, buscar productos de la misma categoría con precio superior
+                if (!empty($product_categories)) {
+                    error_log('Buscando productos de la misma categoría con precio superior');
+                    
+                    $args = array(
+                        'post_type'      => 'product',
+                        'post_status'    => 'publish',
+                        'posts_per_page' => $related_limit - count($upsell_ids),
+                        'post__not_in'   => array_merge($cart_product_ids, $upsell_ids),
+                        'tax_query'      => array(
+                            array(
+                                'taxonomy' => 'product_cat',
+                                'field'    => 'term_id',
+                                'terms'    => $product_categories,
+                                'operator' => 'IN',
+                            ),
+                        ),
+                        'meta_query'     => array(
+                            array(
+                                'key'     => '_price',
+                                'value'   => array($min_price, $max_price),
+                                'type'    => 'NUMERIC',
+                                'compare' => 'BETWEEN',
+                            ),
+                        ),
+                        'orderby'        => 'meta_value_num',
+                        'meta_key'       => '_price',
+                        'order'          => 'ASC',
+                    );
+                    
+                    $higher_priced_products = get_posts($args);
+                    
+                    if (!empty($higher_priced_products)) {
+                        error_log('Productos encontrados con precio superior: ' . count($higher_priced_products));
+                        foreach ($higher_priced_products as $higher_product) {
+                            $upsell_ids[] = $higher_product->ID;
+                        }
+                    } else {
+                        error_log('No se encontraron productos con precio superior en las mismas categorías');
+                    }
+                }
+            }
+        }
+        
+        // Si aún no hay suficientes, usar productos destacados
+        if (count($upsell_ids) < $related_limit) {
+            error_log('Buscando productos destacados para completar');
+            
+            $args = array(
+                'post_type'      => 'product',
+                'post_status'    => 'publish',
+                'posts_per_page' => $related_limit - count($upsell_ids),
+                'post__not_in'   => array_merge($cart_product_ids, $upsell_ids),
+                'tax_query'      => array(
+                    array(
+                        'taxonomy' => 'product_visibility',
+                        'field'    => 'name',
+                        'terms'    => 'featured',
+                        'operator' => 'IN',
+                    ),
+                ),
+                'orderby'        => 'rand',
+            );
+            
+            $featured_products = get_posts($args);
+            
+            if (!empty($featured_products)) {
+                error_log('Productos destacados encontrados: ' . count($featured_products));
+                foreach ($featured_products as $featured_product) {
+                    $upsell_ids[] = $featured_product->ID;
+                }
+            }
+        }
+        
+        // Limitar al número máximo y convertir a objetos de producto
+        $upsell_ids = array_slice($upsell_ids, 0, $related_limit);
+        error_log('Total de IDs de up-sells: ' . count($upsell_ids));
+        
+        $result = array_filter(array_map('wc_get_product', $upsell_ids));
+        error_log('Total de objetos de producto válidos: ' . count($result));
+        error_log('=== FIN get_upsell_products() ===');
+        
+        return $result;
+    }
+    
+    /**
+     * Obtiene los productos cross-sell del producto.
+     *
+     * @since    1.1.0
+     * @param    WC_Product    $product    El producto base.
+     * @return   array                     Lista de productos cross-sell.
+     */
+    private function get_crosssell_products($product) {
+        error_log('=== INICIO get_crosssell_products() ===');
+        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        
+        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+        
+        // Obtener los IDs de productos cross-sell definidos por el usuario
+        $crosssell_ids = $product->get_cross_sell_ids();
+        error_log('Cross-sells directamente configurados: ' . count($crosssell_ids));
+        
+        // Filtrar productos que ya están en el carrito
+        $cart_product_ids = array();
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            $cart_product_ids[] = $cart_item['product_id'];
+        }
+        
+        // Incluir el producto actual entre los filtrados
+        $cart_product_ids[] = $product->get_id();
+        $crosssell_ids = array_diff($crosssell_ids, $cart_product_ids);
+        error_log('Cross-sells después de filtrar productos en carrito: ' . count($crosssell_ids));
+        
+        // Si no hay suficientes cross-sells, obtener productos que frecuentemente se compran juntos
+        if (count($crosssell_ids) < $related_limit) {
+            error_log('No hay suficientes cross-sells, buscando productos complementarios');
+            
+            // Obtener categorías del producto
+            $product_categories = wc_get_product_term_ids($product->get_id(), 'product_cat');
+            
+            if (!empty($product_categories)) {
+                error_log('Buscando productos complementarios de categorías similares');
+                
+                // Para cross-sells buscamos productos complementarios con precio similar o inferior
+                $product_price = $product->get_price();
+                $max_price = $product_price * 1.2;  // hasta 20% más caro
+                
+                $args = array(
+                    'post_type'      => 'product',
+                    'post_status'    => 'publish',
+                    'posts_per_page' => $related_limit - count($crosssell_ids),
+                    'post__not_in'   => array_merge($cart_product_ids, $crosssell_ids),
+                    'tax_query'      => array(
+                        array(
+                            'taxonomy' => 'product_cat',
+                            'field'    => 'term_id',
+                            'terms'    => $product_categories,
+                            'operator' => 'IN',
+                        ),
+                    ),
+                    'meta_query'     => $product_price > 0 ? array(
+                        array(
+                            'key'     => '_price',
+                            'value'   => $max_price,
+                            'type'    => 'NUMERIC',
+                            'compare' => '<=',
+                        ),
+                    ) : array(),
+                    'orderby'        => 'rand',
+                );
+                
+                $complementary_products = get_posts($args);
+                
+                if (!empty($complementary_products)) {
+                    error_log('Productos complementarios encontrados: ' . count($complementary_products));
+                    foreach ($complementary_products as $complementary_product) {
+                        $crosssell_ids[] = $complementary_product->ID;
+                    }
+                } else {
+                    error_log('No se encontraron productos complementarios en las mismas categorías');
+                }
+            }
+        }
+        
+        // Si aún no hay suficientes, añadir productos más vendidos
+        if (count($crosssell_ids) < $related_limit) {
+            error_log('Buscando productos más vendidos para completar');
+            
+            $args = array(
+                'post_type'      => 'product',
+                'post_status'    => 'publish',
+                'posts_per_page' => $related_limit - count($crosssell_ids),
+                'post__not_in'   => array_merge($cart_product_ids, $crosssell_ids),
+                'meta_key'       => 'total_sales',
+                'orderby'        => 'meta_value_num',
+                'order'          => 'DESC',
+            );
+            
+            $bestseller_products = get_posts($args);
+            
+            if (!empty($bestseller_products)) {
+                error_log('Productos más vendidos encontrados: ' . count($bestseller_products));
+                foreach ($bestseller_products as $bestseller_product) {
+                    $crosssell_ids[] = $bestseller_product->ID;
+                }
+            }
+        }
+        
+        // Limitar al número máximo y convertir a objetos de producto
+        $crosssell_ids = array_slice($crosssell_ids, 0, $related_limit);
+        error_log('Total de IDs de cross-sells: ' . count($crosssell_ids));
+        
+        $result = array_filter(array_map('wc_get_product', $crosssell_ids));
+        error_log('Total de objetos de producto válidos: ' . count($result));
+        error_log('=== FIN get_crosssell_products() ===');
+        
+        return $result;
     }
 
     /**
@@ -603,75 +831,101 @@ class Snap_Sidebar_Cart_Ajax {
      * @param    WC_Product    $product    El producto base.
      * @return   array                     Lista de productos accesorios.
      */
-    private function get_accessory_products($product) {
+    /**
+     * Obtiene los productos destacados (featured).
+     *
+     * @since    1.1.0
+     * @return   array    Lista de productos destacados.
+     */
+    private function get_featured_products() {
+        error_log('=== INICIO get_featured_products() ===');
+        
         $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
         
-        // Aquí se implementaría la lógica específica para productos accesorios
-        // Por defecto, podríamos usar productos marcados como cross-sells
-        $accessory_ids = $product->get_cross_sell_ids();
-        
-        // Si no hay suficientes, podríamos buscar productos con una categoría "accesorios" relacionada
-        if (count($accessory_ids) < $related_limit) {
-            // Ejemplo: buscar productos con una categoría "accesorio" o etiqueta específica
-            $accessory_tax_query = array();
-            
-            // Verificar si existe la categoría "accesorios"
-            $accessory_cat = get_term_by('slug', 'accesorios', 'product_cat');
-            if ($accessory_cat) {
-                $accessory_tax_query[] = array(
-                    'taxonomy'    => 'product_cat',
-                    'field'       => 'term_id',
-                    'terms'       => $accessory_cat->term_id,
-                );
-            }
-            
-            // Verificar si existe la etiqueta "accesorio"
-            $accessory_tag = get_term_by('slug', 'accesorio', 'product_tag');
-            if ($accessory_tag) {
-                $accessory_tax_query[] = array(
-                    'taxonomy'    => 'product_tag',
-                    'field'       => 'term_id',
-                    'terms'       => $accessory_tag->term_id,
-                );
-                
-                // Relación OR entre taxonomías
-                if (count($accessory_tax_query) > 1) {
-                    $accessory_tax_query['relation'] = 'OR';
-                }
-            }
-            
-            // Solo ejecutar la consulta si tenemos taxonomías para filtrar
-            if (!empty($accessory_tax_query)) {
-                // Filtrar productos que ya están en el carrito
-                $cart_product_ids = array();
-                foreach (WC()->cart->get_cart() as $cart_item) {
-                    $cart_product_ids[] = $cart_item['product_id'];
-                }
-                $cart_product_ids[] = $product->get_id(); // Excluir el producto actual
-                
-                // Consultar accesorios
-                $args = array(
-                    'post_type'           => 'product',
-                    'post_status'         => 'publish',
-                    'posts_per_page'      => $related_limit - count($accessory_ids),
-                    'orderby'             => 'rand',
-                    'post__not_in'        => array_merge($cart_product_ids, $accessory_ids),
-                    'tax_query'           => $accessory_tax_query,
-                );
-                
-                $accessories = get_posts($args);
-                
-                foreach ($accessories as $accessory) {
-                    $accessory_ids[] = $accessory->ID;
-                }
-            }
+        // Filtrar productos que ya están en el carrito
+        $cart_product_ids = array();
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            $cart_product_ids[] = $cart_item['product_id'];
         }
         
-        // Limitar al número máximo
-        $accessory_ids = array_slice($accessory_ids, 0, $related_limit);
+        // Consultar productos destacados
+        $args = array(
+            'post_type'      => 'product',
+            'post_status'    => 'publish',
+            'posts_per_page' => $related_limit + count($cart_product_ids), // Obtenemos más para compensar los filtrados
+            'post__not_in'   => $cart_product_ids,
+            'tax_query'      => array(
+                array(
+                    'taxonomy' => 'product_visibility',
+                    'field'    => 'name',
+                    'terms'    => 'featured',
+                    'operator' => 'IN',
+                ),
+            ),
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        );
         
-        // Convertir IDs a objetos de producto
-        return array_filter(array_map('wc_get_product', $accessory_ids));
+        error_log('Ejecutando consulta de productos destacados');
+        error_log('Parámetros de consulta: ' . json_encode($args));
+        
+        $featured_posts = get_posts($args);
+        
+        if (!empty($featured_posts)) {
+            error_log('Productos destacados encontrados: ' . count($featured_posts));
+            
+            // Convertir a IDs
+            $featured_ids = array();
+            foreach ($featured_posts as $featured_post) {
+                $featured_ids[] = $featured_post->ID;
+                error_log('Producto destacado: ' . $featured_post->post_title . ' (ID: ' . $featured_post->ID . ')');
+            }
+            
+            // Limitar al número máximo
+            $featured_ids = array_slice($featured_ids, 0, $related_limit);
+            
+            // Convertir a objetos de producto
+            $featured_products = array_filter(array_map('wc_get_product', $featured_ids));
+            error_log('Total de objetos de producto válidos: ' . count($featured_products));
+            
+            error_log('=== FIN get_featured_products() ===');
+            return $featured_products;
+        } else {
+            error_log('No se encontraron productos destacados, buscando productos aleatorios');
+            
+            // Si no hay productos destacados, obtener productos aleatorios
+            $args = array(
+                'post_type'      => 'product',
+                'post_status'    => 'publish',
+                'posts_per_page' => $related_limit,
+                'post__not_in'   => $cart_product_ids,
+                'orderby'        => 'rand',
+            );
+            
+            $random_posts = get_posts($args);
+            
+            if (!empty($random_posts)) {
+                error_log('Productos aleatorios encontrados: ' . count($random_posts));
+                
+                // Convertir a IDs
+                $random_ids = array();
+                foreach ($random_posts as $random_post) {
+                    $random_ids[] = $random_post->ID;
+                    error_log('Producto aleatorio: ' . $random_post->post_title . ' (ID: ' . $random_post->ID . ')');
+                }
+                
+                // Convertir a objetos de producto
+                $random_products = array_filter(array_map('wc_get_product', $random_ids));
+                error_log('Total de objetos de producto aleatorios válidos: ' . count($random_products));
+                
+                error_log('=== FIN get_featured_products() (con productos aleatorios) ===');
+                return $random_products;
+            }
+            
+            error_log('No se encontraron productos');
+            error_log('=== FIN get_featured_products() (sin productos) ===');
+            return array();
+        }
     }
 
     /**
@@ -772,7 +1026,7 @@ class Snap_Sidebar_Cart_Ajax {
      * @since    1.0.9
      * @param    string    $new_item_key    Clave del nuevo item añadido (opcional).
      */
-    private function get_cart_contents($new_item_key = '') {
+    private function get_cart_contents($new_item_key = '', $extra_data = array()) {
         // Asegurarse de que los totales estén calculados
         WC()->cart->calculate_totals();
         
@@ -996,6 +1250,7 @@ class Snap_Sidebar_Cart_Ajax {
         
         $cart_html = ob_get_clean();
         
+        // Combinar datos adicionales con la respuesta
         $data = array(
             'cart_html' => $cart_html,
             'cart_count' => $cart_count,
@@ -1003,6 +1258,11 @@ class Snap_Sidebar_Cart_Ajax {
             'shipping_total' => wc_price($shipping_total),
             'total' => wc_price($subtotal + $shipping_total)
         );
+        
+        // Agregar datos extra si existen
+        if (!empty($extra_data) && is_array($extra_data)) {
+            $data = array_merge($data, $extra_data);
+        }
         
         wp_send_json_success($data);
     }

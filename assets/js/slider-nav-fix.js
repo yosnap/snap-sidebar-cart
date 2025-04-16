@@ -6,15 +6,22 @@
     "use strict";
     
     $(document).ready(function() {
-        console.log('Inicializando fix de navegación para slider de productos relacionados');
+        console.log('Inicializando navegación mejorada para slider de productos relacionados');
         
         // Función para actualizar la navegación del slider
         function updateSliderNavigation($track) {
+            // Validar que el track exista
+            if (!$track.length || !$track[0]) {
+                console.warn('Track del slider no válido');
+                return;
+            }
+            
             var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
             var currentScrollLeft = $track.scrollLeft();
             
-            var $prevButton = $track.siblings(".snap-sidebar-cart__slider-prev");
-            var $nextButton = $track.siblings(".snap-sidebar-cart__slider-next");
+            var $slider = $track.closest(".snap-sidebar-cart__slider");
+            var $prevButton = $slider.find(".snap-sidebar-cart__slider-prev");
+            var $nextButton = $slider.find(".snap-sidebar-cart__slider-next");
             
             // Mostrar u ocultar botones según la posición del scroll
             if (currentScrollLeft <= 0) {
@@ -28,6 +35,16 @@
             } else {
                 $nextButton.removeClass('disabled').css('opacity', '1');
             }
+            
+            // Verificar si se necesitan botones de navegación (si hay suficientes productos)
+            var $items = $track.children('.snap-sidebar-cart__related-product');
+            if ($items.length === 0 || $track[0].scrollWidth <= $track.outerWidth()) {
+                $prevButton.hide();
+                $nextButton.hide();
+            } else {
+                $prevButton.show();
+                $nextButton.show();
+            }
         }
         
         // Inicializar todos los sliders
@@ -35,33 +52,86 @@
             console.log('Inicializando todos los sliders');
             $('.snap-sidebar-cart__slider-track').each(function() {
                 var $track = $(this);
-                updateSliderNavigation($track);
+                
+                // Desvincular eventos anteriores para evitar duplicados
+                $track.off('scroll.sliderNav');
                 
                 // Agregar evento de scroll para actualizar la navegación
-                $track.off('scroll').on('scroll', function() {
+                $track.on('scroll.sliderNav', function() {
                     updateSliderNavigation($(this));
                 });
+                
+                // Actualizar navegación inicial
+                updateSliderNavigation($track);
+                
+                // Verificar visibilidad del carousel
+                checkCarouselVisibility($track);
             });
         }
         
-        // Re-vincular eventos click de navegación
-        $(document).off('click', '.snap-sidebar-cart__slider-prev').on('click', '.snap-sidebar-cart__slider-prev', function(e) {
+        // Función para verificar si el carousel tiene suficientes elementos para mostrar navegación
+        function checkCarouselVisibility($track) {
+            var $items = $track.children('.snap-sidebar-cart__related-product');
+            var $slider = $track.closest('.snap-sidebar-cart__slider');
+            var $prevButton = $slider.find('.snap-sidebar-cart__slider-prev');
+            var $nextButton = $slider.find('.snap-sidebar-cart__slider-next');
+            
+            // Ocultar navegación si no hay suficientes productos
+            if ($items.length === 0) {
+                console.log('No hay productos en el slider, ocultando navegación');
+                $prevButton.hide();
+                $nextButton.hide();
+                return;
+            }
+            
+            // Calcular si los elementos ocupan más ancho que el contenedor
+            var totalItemsWidth = 0;
+            $items.each(function() {
+                totalItemsWidth += $(this).outerWidth(true);
+            });
+            
+            var containerWidth = $track.width();
+            
+            console.log('Ancho total de items:', totalItemsWidth, 'Ancho de contenedor:', containerWidth);
+            
+            if (totalItemsWidth <= containerWidth) {
+                console.log('Los productos caben en el contenedor, ocultando navegación');
+                $prevButton.hide();
+                $nextButton.hide();
+            } else {
+                console.log('Se necesita navegación, mostrando flechas');
+                $prevButton.show();
+                $nextButton.show();
+            }
+        }
+        
+        // Re-vincular eventos click de navegación con manejo mejorado de items
+        $(document).off('click.sliderPrev', '.snap-sidebar-cart__slider-prev').on('click.sliderPrev', '.snap-sidebar-cart__slider-prev', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('Clic en botón anterior del slider');
             
-            var $track = $(this).siblings('.snap-sidebar-cart__slider-track');
+            var $track = $(this).closest('.snap-sidebar-cart__related-container.active').find('.snap-sidebar-cart__slider-track');
             if (!$track.length) {
                 console.error('No se encontró el track del slider');
                 return;
             }
             
-            // Calcular desplazamiento - mover por items, no por ancho
+            // Calcular desplazamiento basado en items visibles
             var $item = $track.find('.snap-sidebar-cart__related-product').first();
-            var itemWidth = $item.length ? $item.outerWidth(true) : 0;
-            var scrollAmount = itemWidth > 0 ? itemWidth : $track.width() * 0.5;
+            if (!$item.length) {
+                console.warn('No hay productos para desplazar');
+                return;
+            }
             
-            console.log('Desplazando slider: ' + scrollAmount + 'px a la izquierda');
+            // Calcular cuántos items son visibles completamente
+            var itemWidth = $item.outerWidth(true);
+            var visibleItems = Math.floor($track.width() / itemWidth);
+            // Usar al menos 1 item o la cantidad visible
+            var itemsToScroll = Math.max(1, visibleItems - 1);
+            var scrollAmount = itemWidth * itemsToScroll;
+            
+            console.log('Desplazando slider ' + itemsToScroll + ' items (' + scrollAmount + 'px) a la izquierda');
             $track.stop().animate({
                 scrollLeft: $track.scrollLeft() - scrollAmount
             }, 300, function() {
@@ -69,105 +139,37 @@
             });
         });
         
-        $(document).off('click', '.snap-sidebar-cart__slider-next').on('click', '.snap-sidebar-cart__slider-next', function(e) {
+        $(document).off('click.sliderNext', '.snap-sidebar-cart__slider-next').on('click.sliderNext', '.snap-sidebar-cart__slider-next', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('Clic en botón siguiente del slider');
             
-            var $track = $(this).siblings('.snap-sidebar-cart__slider-track');
+            var $track = $(this).closest('.snap-sidebar-cart__related-container.active').find('.snap-sidebar-cart__slider-track');
             if (!$track.length) {
                 console.error('No se encontró el track del slider');
                 return;
             }
             
-            // Calcular desplazamiento - mover por items, no por ancho
+            // Calcular desplazamiento basado en items visibles
             var $item = $track.find('.snap-sidebar-cart__related-product').first();
-            var itemWidth = $item.length ? $item.outerWidth(true) : 0;
-            var scrollAmount = itemWidth > 0 ? itemWidth : $track.width() * 0.5;
+            if (!$item.length) {
+                console.warn('No hay productos para desplazar');
+                return;
+            }
             
-            console.log('Desplazando slider: ' + scrollAmount + 'px a la derecha');
+            // Calcular cuántos items son visibles completamente
+            var itemWidth = $item.outerWidth(true);
+            var visibleItems = Math.floor($track.width() / itemWidth);
+            // Usar al menos 1 item o la cantidad visible
+            var itemsToScroll = Math.max(1, visibleItems - 1);
+            var scrollAmount = itemWidth * itemsToScroll;
+            
+            console.log('Desplazando slider ' + itemsToScroll + ' items (' + scrollAmount + 'px) a la derecha');
             $track.stop().animate({
                 scrollLeft: $track.scrollLeft() + scrollAmount
             }, 300, function() {
                 updateSliderNavigation($track);
             });
-        });
-        
-        // Re-vincular eventos para cambiar de pestaña
-        $(document).off('click', '.snap-sidebar-cart__related-tab').on('click', '.snap-sidebar-cart__related-tab', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            var $tab = $(this);
-            var tabType = $tab.data('tab');
-            
-            console.log('Cambiando a pestaña:', tabType);
-            
-            // Actualizar UI
-            $('.snap-sidebar-cart__related-tab').removeClass('active');
-            $tab.addClass('active');
-            
-            $('.snap-sidebar-cart__related-container').removeClass('active');
-            $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]').addClass('active');
-            
-            // Obtener productos para esta pestaña si el contenedor está vacío
-            var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .snap-sidebar-cart__slider-track');
-            
-            if ($targetContainer.length && $targetContainer.children().length === 0) {
-                // Mostrar loader mientras cargamos
-                $targetContainer.html(
-                    '<div class="snap-sidebar-cart__loading-products">' +
-                    '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
-                    '<span>Cargando productos...</span>' +
-                    '</div>'
-                );
-                
-                // Obtener todos los productos del carrito
-                var productIds = [];
-                $('.snap-sidebar-cart__product').each(function() {
-                    var productId = $(this).data('product-id');
-                    if (productId) {
-                        productIds.push(productId);
-                    }
-                });
-                
-                if (productIds.length > 0) {
-                    // Usar el primer producto como referencia
-                    var productId = productIds[0];
-                    
-                    // Hacer la solicitud AJAX para cargar los productos relacionados
-                    $.ajax({
-                        type: 'POST',
-                        url: snap_sidebar_cart_params.ajax_url,
-                        data: {
-                            action: 'snap_sidebar_cart_get_related',
-                            nonce: snap_sidebar_cart_params.nonce,
-                            product_id: productId,
-                            type: tabType
-                        },
-                        success: function(response) {
-                            if (response.success && response.data && response.data.html) {
-                                $targetContainer.html(response.data.html);
-                            } else {
-                                $targetContainer.html('<div class="snap-sidebar-cart__no-products">No se encontraron productos.</div>');
-                            }
-                            
-                            // Inicializar navegación
-                            initializeAllSliders();
-                        },
-                        error: function() {
-                            $targetContainer.html('<div class="snap-sidebar-cart__no-products">Error al cargar productos.</div>');
-                        }
-                    });
-                } else {
-                    $targetContainer.html('<div class="snap-sidebar-cart__no-products">No hay productos en el carrito.</div>');
-                }
-            } else {
-                // Solo inicializar sliders si ya hay contenido
-                setTimeout(function() {
-                    initializeAllSliders();
-                }, 100);
-            }
         });
         
         // Inicializar sliders al cargar
