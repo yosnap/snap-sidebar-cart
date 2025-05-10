@@ -1,5 +1,19 @@
 # Changelog - Snap Sidebar Cart
 
+## Versión 1.3.0 - 10 de mayo de 2025
+
+### Mejoras
+- Unificación de archivos CSS en un único archivo (`snap-sidebar-cart-unified.css`) para mejorar el rendimiento y facilitar el mantenimiento
+- Optimización del diseño del listado de productos en el carrito para una visualización más compacta y profesional
+- Mejora en la visualización de precios con descuento, mostrando el porcentaje de forma más destacada
+- Ajuste del tamaño y espaciado de los controles de cantidad para una mejor experiencia de usuario
+- Reorganización del código CSS en secciones lógicas para facilitar futuras modificaciones
+
+### Correcciones
+- Solucionado problema con la visualización incorrecta de productos en el carrito lateral
+- Corregido el formato de visualización de descuentos para que se muestre correctamente el porcentaje
+- Ajustado el espaciado y alineación de elementos para mantener consistencia visual
+
 ## Versión 1.2.0 - 16 de abril de 2025
 
 ### Nuevas características

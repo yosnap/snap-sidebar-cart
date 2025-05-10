@@ -1,0 +1,44 @@
+{
+  "active_scripts": [
+    "snap-sidebar-cart-public.js",
+    "snap-sidebar-cart-core.js",
+    "snap-sidebar-cart-ajax.js",
+    "quantity-handler-unified.js"
+  ],
+  "compatibility_scripts": [
+    "cart-controller.js",
+    "tab-controller.js",
+    "scroll-snap.js"
+  ],
+  "admin_scripts": [
+    "admin.js"
+  ],
+  "obsolete_scripts": [
+    "ajax-update-handler.js",
+    "buttons-direct-fix.js",
+    "close-button-test.js",
+    "close-sidebar-fix.js",
+    "cors-handler.js",
+    "direct-close-fix.js",
+    "direct-fix.js",
+    "direct-remove-button-fix.js",
+    "frontend.js",
+    "immediate-fix.js",
+    "last-unit-handler.js",
+    "preloader-controller.js",
+    "preloader-fix.js",
+    "quantity-preloader.js",
+    "remove-button-fix-enhanced.js",
+    "remove-button-fix-simple.js",
+    "remove-button-fix.js",
+    "simple-preloader.js",
+    "slider-nav-fix.js",
+    "snap-sidebar-cart-combined.js",
+    "snap-sidebar-cart-debug.js",
+    "snap-sidebar-cart-main.js",
+    "stock-and-remove-handler.js",
+    "swiper-init.js",
+    "tabs-fix.js",
+    "tabs-loader.js"
+  ]
+}

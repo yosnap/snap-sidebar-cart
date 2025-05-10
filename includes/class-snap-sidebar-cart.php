@@ -136,6 +136,7 @@ class Snap_Sidebar_Cart {
      * Añade un timestamp al producto cuando se agrega al carrito.
      * Esto permite ordenar los productos por la fecha/hora de adición.
      * También gestiona la agrupación de productos idénticos actualizando la cantidad.
+     * Compatible con HPOS (High-Performance Order Storage).
      *
      * @since    1.0.8
      * @param    array    $cart_item_data    Los datos actuales del artículo del carrito.
@@ -156,7 +157,9 @@ class Snap_Sidebar_Cart {
         $existing_cart_item_key = '';
         
         // Buscar si el producto ya existe comparando exactamente producto y variación
-        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+        // Usar método compatible con HPOS
+        $cart_contents = $cart->get_cart();
+        foreach ($cart_contents as $cart_item_key => $cart_item) {
             // Comparamos por ID de producto y variación (o ambas son 0)
             if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
                 // Verificar también atributos de variación si los hay
@@ -196,8 +199,8 @@ class Snap_Sidebar_Cart {
             
             error_log('Actualizando cantidad del producto existente de ' . $current_quantity . ' a ' . $new_quantity);
             
-            // Actualizar la cantidad del producto existente
-            $cart->set_quantity($existing_cart_item_key, $new_quantity, true);
+            // Actualizar la cantidad del producto existente usando método compatible con HPOS
+            $cart->set_quantity($existing_cart_item_key, $new_quantity);
             
             // Actualizar el timestamp para mantener el producto en la posición correcta según configuración
             // Esto es importante para preservar la ordenación por nuevos/antiguos

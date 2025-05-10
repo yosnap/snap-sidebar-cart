@@ -3,7 +3,7 @@
  * Plugin Name: Snap Sidebar Cart
  * Plugin URI: https://github.com/yosnap/snap-sidebar-cart-wp
  * Description: Un carrito lateral para WooCommerce que muestra productos cuando se agregan al carrito y productos relacionados con animaciones personalizables.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Paulo
  * Author URI: 
  * Text Domain: snap-sidebar-cart
@@ -12,7 +12,20 @@
  * Requires PHP: 7.3
  * WC requires at least: 4.0
  * WC tested up to: 8.5
+ *
+ * @package Snap_Sidebar_Cart
+ *
+ * Woo: 12345:342928dfsfhsf8429842374wdf4234sfd
+ * WC requires at least: 4.0
+ * WC tested up to: 8.5
  */
+
+// Declarar compatibilidad con HPOS
+add_action('before_woocommerce_init', function() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
 // Si este archivo es llamado directamente, abortar.
 if ( ! defined( 'WPINC' ) ) {
@@ -20,7 +33,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Definir constantes
-define( 'SNAP_SIDEBAR_CART_VERSION', '1.2.0' );
+define( 'SNAP_SIDEBAR_CART_VERSION', '1.3.0' );
 define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );

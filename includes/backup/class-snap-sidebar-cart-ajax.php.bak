@@ -1,0 +1,558 @@
+<?php
+/**
+ * Maneja las peticiones AJAX del plugin.
+ *
+ * @since      1.0.0
+ */
+class Snap_Sidebar_Cart_Ajax {
+
+    /**
+     * Las opciones del plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      array    $options    Las opciones del plugin.
+     */
+    private $options;
+
+    /**
+     * Inicializa la clase y establece sus propiedades.
+     *
+     * @since    1.0.0
+     * @param    array    $options    Las opciones del plugin.
+     */
+    public function __construct($options) {
+        $this->options = $options;
+    }
+
+    /**
+     * Agrega un producto al carrito vía AJAX.
+     * Compatible con HPOS (High-Performance Order Storage).
+     *
+     * @since    1.0.11
+     */
+    public function add_to_cart() {
+        check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
+        
+        if (!isset($_POST['product_id'])) {
+            wp_send_json_error(array('message' => __('No se proporcionó un ID de producto', 'snap-sidebar-cart')));
+        }
+        
+        $product_id = absint($_POST['product_id']);
+        $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
+        $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
+        $variation = isset($_POST['variation']) ? $_POST['variation'] : array();
+        
+        // DEBUG: Información detallada sobre la operación
+        error_log('==== INICIO add_to_cart() AJAX ====');
+        error_log('Producto a añadir ID: ' . $product_id . ', Cantidad: ' . $quantity);
+        error_log('Variación ID: ' . $variation_id . ', Atributos: ' . json_encode($variation));
+        error_log('Configuración de posición de nuevos productos: ' . (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'No definido'));
+        
+        // Verificar que el producto existe
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            error_log('Error: Producto no encontrado');
+            wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
+        }
+        
+        // Verificar stock antes de proceder
+        $stock_quantity = $product->get_stock_quantity();
+        error_log('Stock disponible del producto: ' . ($stock_quantity !== null ? $stock_quantity : 'Ilimitado'));
+        
+        // Comprobar la cantidad actual en el carrito de este producto
+        $cart = WC()->cart;
+        $existing_item_key = null;
+        $needs_quantity_update = false;
+        $current_qty_in_cart = 0;
+        
+        // Buscar si ya existe una entrada idéntica en el carrito usando método compatible con HPOS
+        $cart_contents = $cart->get_cart();
+        foreach ($cart_contents as $cart_item_key => $cart_item) {
+            if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
+                // Para productos con variaciones, verificar si los atributos coinciden
+                $attributes_match = true;
+                if (!empty($variation)) {
+                    foreach ($variation as $attr_name => $attr_value) {
+                        if (!isset($cart_item['variation'][$attr_name]) || $cart_item['variation'][$attr_name] !== $attr_value) {
+                            $attributes_match = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($attributes_match) {
+                    $existing_item_key = $cart_item_key;
+                    $needs_quantity_update = true;
+                    $current_qty_in_cart = $cart_item['quantity'];
+                    error_log('Producto encontrado en carrito: Clave=' . $existing_item_key . ', Cantidad actual=' . $current_qty_in_cart);
+                    break;
+                }
+            }
+        }
+        
+        // Si el producto ya existe, actualizamos su cantidad manualmente
+        if ($needs_quantity_update && $existing_item_key) {
+            $new_qty = $current_qty_in_cart + $quantity;
+            
+            error_log('Actualizando cantidad del producto existente de ' . $current_qty_in_cart . ' a ' . $new_qty);
+            
+            // Verificar si esta es la última unidad disponible
+            $is_last_available = false;
+            if ($stock_quantity !== null && $new_qty >= $stock_quantity) {
+                $is_last_available = true;
+                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+            }
+            
+            // Actualizamos la cantidad usando método compatible con HPOS
+            $cart->set_quantity($existing_item_key, $new_qty);
+            
+            // Para productos existentes, NO actualizamos el timestamp
+            // Esto conserva la posición original del producto en el carrito
+            // cuando se incrementa su cantidad
+            error_log('Conservando posición del producto existente (no se actualiza timestamp)');
+            
+            $cart_item_key = $existing_item_key;
+        } else {
+            // Es un producto nuevo, lo añadimos normalmente con método compatible con HPOS
+            error_log('Añadiendo nuevo producto al carrito');
+            $cart_item_key = $cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
+            
+            // Verificar si esta es la última unidad disponible
+            if ($stock_quantity !== null && $quantity >= $stock_quantity) {
+                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+                $is_last_available = true;
+            }
+        }
+        
+        // Verificar el resultado y registrar información
+        if ($cart_item_key) {
+            error_log('Operación exitosa: clave del producto ' . $cart_item_key);
+        } else {
+            error_log('No se pudo obtener una clave para el producto');
+        }
+        
+        error_log('==== FIN add_to_cart() AJAX ====');
+        
+        // Forzar el recálculo de totales
+        $cart->calculate_totals();
+        
+        // Devolver el contenido actualizado del carrito
+        $this->get_cart_contents($cart_item_key);
+        
+        wp_die();
+    }
+
+    /**
+     * Elimina un producto del carrito vía AJAX.
+     * Compatible con HPOS (High-Performance Order Storage).
+     *
+     * @since    1.0.0
+     */
+    public function remove_from_cart() {
+        check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
+        
+        if (!isset($_POST['cart_item_key'])) {
+            wp_send_json_error(array('message' => __('No se proporcionó una clave de producto', 'snap-sidebar-cart')));
+        }
+        
+        $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
+        
+        // Obtener el carrito de forma compatible con HPOS
+        $cart = WC()->cart;
+        $cart_contents = $cart->get_cart();
+        
+        // Verificar que el item existe en el carrito
+        if (!isset($cart_contents[$cart_item_key])) {
+            wp_send_json_error(array('message' => __('Producto no encontrado en el carrito', 'snap-sidebar-cart')));
+        }
+        
+        // Eliminar del carrito usando método compatible con HPOS
+        $removed = $cart->remove_cart_item($cart_item_key);
+        
+        if ($removed) {
+            // Enviar la respuesta exitosa con el contenido actualizado del carrito
+            $this->get_cart_contents();
+        } else {
+            wp_send_json_error(array('message' => __('Error al eliminar del carrito', 'snap-sidebar-cart')));
+        }
+        
+        wp_die();
+    }
+
+    /**
+     * Actualiza la cantidad de un producto en el carrito vía AJAX.
+     * Compatible con HPOS (High-Performance Order Storage).
+     *
+     * @since    1.0.0
+     */
+    public function update_cart() {
+        check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
+        
+        if (!isset($_POST['cart_item_key']) || !isset($_POST['quantity'])) {
+            wp_send_json_error(array('message' => __('Parámetros insuficientes', 'snap-sidebar-cart')));
+        }
+        
+        $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
+        $quantity = absint($_POST['quantity']);
+        
+        // Obtener el carrito de forma compatible con HPOS
+        $cart = WC()->cart;
+        $cart_contents = $cart->get_cart();
+        
+        // Verificar que el item existe en el carrito
+        if (!isset($cart_contents[$cart_item_key])) {
+            wp_send_json_error(array('message' => __('Producto no encontrado en el carrito', 'snap-sidebar-cart')));
+        }
+        
+        // Para la respuesta, indicar que solo cambió la cantidad
+        $data_response = array(
+            'quantity_changed' => true,
+            'updated_key' => $cart_item_key
+        );
+        
+        // Si la cantidad es 0, eliminar el producto
+        if ($quantity <= 0) {
+            $cart->remove_cart_item($cart_item_key);
+            $data_response['removed'] = true;
+        } else {
+            // Actualizar la cantidad
+            $cart->set_quantity($cart_item_key, $quantity);
+        }
+        
+        // Forzar el recálculo de totales
+        $cart->calculate_totals();
+        
+        // Devolver el contenido actualizado del carrito
+        $this->get_cart_contents($cart_item_key, $data_response);
+        
+        wp_die();
+    }
+
+    /**
+     * Obtiene productos relacionados vía AJAX.
+     *
+     * @since    1.0.0
+     */
+    public function get_related_products() {
+        // Implementación del método
+        // ...
+    }
+
+    /**
+     * Obtiene todo el contenido del carrito como respuesta AJAX.
+     * Este método se usa para actualizar el carrito sin tener que enviar una acción específica.
+     *
+     * @since    1.0.0
+     */
+    public function get_cart_content() {
+        // No necesitamos nonce aquí porque solo estamos obteniendo datos públicos
+        $this->get_cart_contents();
+        wp_die();
+    }
+    
+    /**
+     * Obtiene el contenido del carrito y lo envía como respuesta JSON.
+     * Compatible con HPOS (High-Performance Order Storage).
+     *
+     * @since    1.0.0
+     * @param    string    $updated_key    Clave del producto actualizado (opcional).
+     * @param    array     $extra_data     Datos adicionales para incluir en la respuesta (opcional).
+     */
+    public function get_cart_contents($updated_key = '', $extra_data = array()) {
+        // Obtener el contenido del carrito de forma compatible con HPOS
+        $cart = WC()->cart;
+        $cart_items = $cart->get_cart();
+        
+        // Verificar si hay productos duplicados (NO DEBERÍA HABER)
+        $product_counts = array();
+        foreach ($cart_items as $key => $item) {
+            $product_id = $item['product_id'];
+            $variation_id = $item['variation_id'];
+            
+            // Crear un identificador único basado en producto y variación
+            // Para las variaciones, también incluir los atributos específicos
+            $variation_string = '';
+            if (!empty($item['variation']) && is_array($item['variation'])) {
+                // Ordenar los atributos para consistencia
+                ksort($item['variation']);
+                foreach ($item['variation'] as $attr => $value) {
+                    $variation_string .= $attr . '=' . $value . ';';
+                }
+            }
+            
+            $identifier = $product_id . '-' . $variation_id . '-' . $variation_string;
+            
+            if (!isset($product_counts[$identifier])) {
+                $product_counts[$identifier] = ['count' => 0, 'keys' => [], 'name' => isset($item['data']) ? $item['data']->get_name() : 'Producto'];
+            }
+            
+            $product_counts[$identifier]['count']++;
+            $product_counts[$identifier]['keys'][] = $key;
+            $product_counts[$identifier]['qty'][$key] = $item['quantity'];
+        }
+        
+        // Registrar si se encontraron duplicados exactos (mismo producto y variación)
+        foreach ($product_counts as $identifier => $data) {
+            if ($data['count'] > 1) {
+                error_log('ALERTA: Producto duplicado encontrado: ' . $identifier . ' aparece ' . $data['count'] . ' veces');
+                
+                // Mostrar keys de los duplicados
+                error_log('Claves de los duplicados: ' . implode(', ', $data['keys']));
+                
+                // Para este caso de duplicados exactos, debemos conservar una sola entrada
+                // Pero asegurarnos de que la cantidad sea correcta
+                // Identificamos qué entrada mantener (usaremos la primera por convención)
+                $main_key = $data['keys'][0];
+                
+                // Antes de modificar, registramos las cantidades para depuración
+                $qty_log = "Cantidades originales: ";
+                foreach ($data['keys'] as $k) {
+                    $qty_log .= "{$k}:{$cart_items[$k]['quantity']}, ";
+                }
+                error_log($qty_log);
+                
+                // Si hay duplicados, eliminar los adicionales usando método compatible con HPOS
+                for ($i = 1; $i < count($data['keys']); $i++) {
+                    $dup_key = $data['keys'][$i];
+                    error_log('Eliminando duplicado con clave: ' . $dup_key . ' con cantidad: ' . $cart_items[$dup_key]['quantity']);
+                    $cart->remove_cart_item($dup_key);
+                }
+                
+                // Recargar los elementos del carrito después de estas modificaciones
+                $cart_items = $cart->get_cart();
+            }
+        }
+        
+        // Ordenar los elementos del carrito según el timestamp (más recientes primero)
+        $sorted_items = $this->sort_cart_items($cart_items);
+        
+        // Preparar la respuesta
+        $response = array(
+            'cart_count' => $cart->get_cart_contents_count(),
+            'cart_total' => $cart->get_cart_total(),
+            'cart_subtotal' => $cart->get_cart_subtotal(),
+            'cart_items' => array(),
+            'updated_key' => $updated_key,
+            'empty_cart' => empty($cart_items),
+            'shipping_total' => $cart->get_shipping_total(),
+            'shipping_tax' => $cart->get_shipping_tax(),
+            'needs_shipping' => $cart->needs_shipping(),
+            'has_calculated_shipping' => $cart->needs_shipping() ? $cart->show_shipping() : false,
+            'show_shipping' => isset($this->options['show_shipping']) ? $this->options['show_shipping'] : true,
+        );
+        
+        // Si hay envío calculado, agregarlo a la respuesta
+        if ($response['needs_shipping'] && $response['has_calculated_shipping']) {
+            $response['shipping_label'] = __('Envío', 'snap-sidebar-cart');
+            $response['shipping_value'] = wc_price($cart->get_shipping_total() + $cart->get_shipping_tax());
+        }
+        
+        // Agregar los elementos del carrito a la respuesta
+        foreach ($sorted_items as $cart_item_key => $cart_item) {
+            $product = $cart_item['data'];
+            $product_id = $cart_item['product_id'];
+            
+            if (!$product) {
+                continue;
+            }
+            
+            // Obtener la imagen destacada usando métodos compatibles con HPOS
+            $thumbnail_id = $product->get_image_id();
+            $thumbnail_url = $thumbnail_id ? wp_get_attachment_image_url($thumbnail_id, 'thumbnail') : wc_placeholder_img_src('thumbnail');
+            
+            // Verificar si es la última unidad disponible
+            $is_last_available = false;
+            $stock_quantity = $product->get_stock_quantity();
+            if ($stock_quantity !== null && $cart_item['quantity'] >= $stock_quantity) {
+                $is_last_available = true;
+            }
+            
+            // Obtener el precio unitario y total
+            $price = $product->get_price();
+            $line_total = $cart_item['line_total'];
+            $line_subtotal = $cart_item['line_subtotal'];
+            
+            // Determinar si hay un descuento
+            $has_discount = $line_subtotal > $line_total;
+            $original_price = $has_discount ? $line_subtotal / $cart_item['quantity'] : 0;
+            
+            // Preparar el elemento para la respuesta
+            $cart_item_data = array(
+                'key' => $cart_item_key,
+                'product_id' => $product_id,
+                'variation_id' => $cart_item['variation_id'],
+                'name' => $product->get_name(),
+                'price' => wc_price($price),
+                'price_raw' => $price,
+                'quantity' => $cart_item['quantity'],
+                'thumbnail' => $thumbnail_url,
+                'permalink' => $product->get_permalink(),
+                'is_last_available' => $is_last_available,
+                'has_discount' => $has_discount,
+                'original_price' => $has_discount ? wc_price($original_price) : '',
+                'line_total' => wc_price($line_total),
+                'line_subtotal' => $has_discount ? wc_price($line_subtotal) : '',
+                'timestamp' => isset($cart_item['timestamp']) ? $cart_item['timestamp'] : 0,
+            );
+            
+            // Agregar a la respuesta
+            $response['cart_items'][] = $cart_item_data;
+        }
+        
+        // Obtener productos relacionados si están habilitados
+        if (!empty($cart_items) && isset($this->options['related_products']['show']) && $this->options['related_products']['show']) {
+            $response['related_products'] = $this->get_related_products($cart_items);
+        } else {
+            $response['related_products'] = array();
+        }
+        
+        // Para compatibilidad con el código antiguo
+        $cart_count = $cart->get_cart_contents_count();
+        $subtotal = $cart->get_subtotal() + $cart->get_subtotal_tax();
+        $shipping_total = $cart->get_shipping_total() + $cart->get_shipping_tax();
+        
+        // Obtener preferencia de posición para nuevos productos
+        $new_product_position = isset($this->options['new_product_position']) 
+            ? $this->options['new_product_position'] 
+            : 'top';
+        
+        // Generar HTML del carrito
+        ob_start();
+        
+        if (empty($sorted_items)) {
+            echo '<div class="snap-sidebar-cart__empty">';
+            echo '<p>' . __('Tu carrito está vacío.', 'snap-sidebar-cart') . '</p>';
+            echo '<a href="' . esc_url(get_permalink(wc_get_page_id('shop'))) . '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">' . __('Continuar comprando', 'snap-sidebar-cart') . '</a>';
+            echo '</div>';
+        } else {
+            echo '<ul class="snap-sidebar-cart__products-list">';
+            
+            // Mostrar los productos ordenados
+            foreach ($sorted_items as $cart_item_key => $cart_item) {
+                $product = $cart_item['data'];
+                $is_new_item = ($cart_item_key === $updated_key); // Marcar el nuevo producto
+                
+                if ($is_new_item) {
+                    error_log('Mostrando nuevo producto: ' . $product->get_name());
+                }
+                
+                include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
+            }
+            
+            echo '</ul>';
+        }
+        
+        $cart_html = ob_get_clean();
+        
+        // Combinar datos adicionales con la respuesta
+        $data = array(
+            'cart_html' => $cart_html,
+            'cart_count' => $cart_count,
+            'subtotal' => wc_price($subtotal),
+            'shipping_total' => wc_price($shipping_total),
+            'total' => wc_price($subtotal + $shipping_total)
+        );
+        
+        // Agregar datos extra si existen
+        if (!empty($extra_data) && is_array($extra_data)) {
+            $data = array_merge($data, $extra_data);
+        }
+        
+        wp_send_json_success($data);
+    }
+    
+    /**
+     * Ordena los elementos del carrito según su timestamp.
+     * Compatible con HPOS (High-Performance Order Storage).
+     *
+     * @since    1.2.1
+     * @param    array    $cart_items    Los elementos del carrito.
+     * @return   array                   Los elementos del carrito ordenados.
+     */
+    private function sort_cart_items($cart_items) {
+        // Copia de los items del carrito para ordenar
+        $sorted_cart_items = $cart_items;
+        
+        // Obtener preferencia de posición para nuevos productos
+        $new_product_position = isset($this->options['new_product_position']) 
+            ? $this->options['new_product_position'] 
+            : 'top';
+        
+        // Solo ordenar si hay más de un producto
+        if (count($sorted_cart_items) > 1) {
+            // Para evitar problemas de ordenación inconsistente, asignaremos tiempos fijos
+            // en lugar de aleatorios, basados en el ID del producto
+            $product_position_map = array();
+            $position_counter = 1;
+            
+            // Primero creamos un mapeo de IDs de productos a posiciones
+            foreach ($sorted_cart_items as $key => $item) {
+                $product_id = $item['product_id'];
+                if (!isset($product_position_map[$product_id])) {
+                    $product_position_map[$product_id] = $position_counter++;
+                }
+            }
+            
+            // Ahora asignamos timestamps basados en este mapeo consistente
+            foreach ($sorted_cart_items as $key => $item) {
+                $has_timestamp = false;
+                $product_id = $item['product_id'];
+                
+                // Verificar primero en la raíz del item
+                if (isset($item['timestamp'])) {
+                    $has_timestamp = true;
+                }
+                // Verificar en custom_data si existe
+                else if (isset($item['custom_data']) && isset($item['custom_data']['timestamp'])) {
+                    $sorted_cart_items[$key]['timestamp'] = $item['custom_data']['timestamp'];
+                    $has_timestamp = true;
+                }
+                
+                // Si aún no tiene timestamp, asignar uno basado en la posición fija
+                if (!$has_timestamp) {
+                    // Para productos existentes, asignar un timestamp basado en la posición fija del producto
+                    // Esto asegura que el orden sea consistente entre recargas
+                    $base_timestamp = time() - 20000; // Base antigua
+                    $position_value = isset($product_position_map[$product_id]) ? $product_position_map[$product_id] * 100 : 0;
+                    $sorted_cart_items[$key]['timestamp'] = $base_timestamp + $position_value;
+                }
+            }
+            
+            // Ordenar según la configuración
+            if ($new_product_position === 'top') {
+                // Ordenar descendentemente (más nuevos primero)
+                uasort($sorted_cart_items, function($a, $b) {
+                    $time_a = isset($a['timestamp']) ? $a['timestamp'] : 0;
+                    $time_b = isset($b['timestamp']) ? $b['timestamp'] : 0;
+                    
+                    // Si los timestamps son iguales, usar el ID del producto para mantener consistencia
+                    if ($time_a == $time_b) {
+                        $id_a = $a['product_id'];
+                        $id_b = $b['product_id'];
+                        return $id_a - $id_b; // Orden ascendente por ID como tiebreaker
+                    }
+                    
+                    return $time_b - $time_a; // Orden descendente por timestamp
+                });
+            } else {
+                // Ordenar ascendentemente (más antiguos primero)
+                uasort($sorted_cart_items, function($a, $b) {
+                    $time_a = isset($a['timestamp']) ? $a['timestamp'] : 0;
+                    $time_b = isset($b['timestamp']) ? $b['timestamp'] : 0;
+                    
+                    // Si los timestamps son iguales, usar el ID del producto para mantener consistencia
+                    if ($time_a == $time_b) {
+                        $id_a = $a['product_id'];
+                        $id_b = $b['product_id'];
+                        return $id_a - $id_b; // Orden ascendente por ID como tiebreaker
+                    }
+                    
+                    return $time_a - $time_b; // Orden ascendente por timestamp
+                });
+            }
+        }
+        
+        return $sorted_cart_items;
+    }
+}

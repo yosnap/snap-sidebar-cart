@@ -108,17 +108,29 @@ $cart_count = WC()->cart->get_cart_contents_count();
                             echo '<div class="snap-sidebar-cart__related-container' . $active_class . '" data-content="' . esc_attr($tab_key) . '">';
                             echo '<div class="snap-sidebar-cart__slider">';
                             
-                            // Implementar Swiper.js
-                            echo '<div class="swiper-container snap-sidebar-cart__swiper-container">';
-                            echo '<div class="swiper-wrapper snap-sidebar-cart__slider-track">';
+                            // Implementar Scroll Snap
+                            // Obtener el número de columnas configurado
+                            $columns = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2;
+                            
+                            echo '<div id="snap-sidebar-cart-related-' . esc_attr($tab_key) . '" class="snap-sidebar-cart__related-slider-container snap-sidebar-cart__columns-' . esc_attr($columns) . '">';
+                            
+                            echo '<div class="snap-sidebar-cart__related-slider-wrapper">';
+                            echo '<div class="snap-sidebar-cart__related-slider">';
                             // Los productos se cargarán dinámicamente vía AJAX
                             echo '</div>';
+                            echo '</div>';
                             
-                            // Navegación para Swiper (ahora arriba a la derecha)
-                            echo '<div class="swiper-button-prev snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-prev"></div>';
-                            echo '<div class="swiper-button-next snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-next"></div>';
+                            // Botones de navegación
+                            echo '<div class="snap-sidebar-cart__related-navigation">';
+                            echo '<button type="button" class="snap-sidebar-cart__related-prev" aria-label="Anterior">';
+                            echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+                            echo '</button>';
+                            echo '<button type="button" class="snap-sidebar-cart__related-next" aria-label="Siguiente">';
+                            echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+                            echo '</button>';
+                            echo '</div>';
                             
-                            echo '</div>'; // cierre swiper-container
+                            echo '</div>'; // cierre snap-sidebar-cart__related-slider-container
                             echo '</div>'; // cierre snap-sidebar-cart__slider
                             echo '</div>'; // cierre snap-sidebar-cart__related-container
                             

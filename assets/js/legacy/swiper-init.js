@@ -18,25 +18,32 @@
         // Verificar si ya existe una instancia para este tab
         if (swiperInstances[tabId]) {
             swiperInstances[tabId].destroy();
+            delete swiperInstances[tabId];
         }
         
         console.log("Inicializando Swiper para pestaña: " + tabId);
+        
+        // Asegurarse de que los elementos de navegación existen
+        var nextButton = $container.find('.swiper-button-next')[0];
+        var prevButton = $container.find('.swiper-button-prev')[0];
         
         // Configurar el slider con Swiper
         swiperInstances[tabId] = new Swiper(container, {
             slidesPerView: 'auto',
             spaceBetween: 10,
             navigation: {
-                nextEl: $container.find('.swiper-button-next')[0],
-                prevEl: $container.find('.swiper-button-prev')[0],
+                nextEl: nextButton,
+                prevEl: prevButton,
             },
             // Usar slidesPerGroup con el valor configurado de slides_to_scroll
-            slidesPerGroup: snap_sidebar_cart_params.slides_to_scroll || 2,
+            slidesPerGroup: snap_sidebar_cart_params.slides_to_scroll || 1,
             watchOverflow: true,
             resistance: true,
             resistanceRatio: 0.85,
             grabCursor: true,
             autoHeight: true,
+            observer: true,          // Observar cambios en los elementos
+            observeParents: true,    // Observar cambios en los padres
             on: {
                 init: function() {
                     console.log('Swiper inicializado para: ' + tabId);
@@ -104,6 +111,13 @@
             '</div>'
         );
         
+        // Destruir la instancia de Swiper existente antes de cargar nuevos productos
+        var tabId = type;
+        if (swiperInstances[tabId]) {
+            swiperInstances[tabId].destroy();
+            delete swiperInstances[tabId];
+        }
+        
         // Realizar la petición AJAX
         $.ajax({
             type: "POST",
@@ -115,26 +129,38 @@
                 type: type,
             },
             success: function(response) {
-                console.log("Respuesta AJAX recibida");
+                console.log("Respuesta AJAX recibida:", response);
                 
-                if (response.success && response.data.html) {
+                if (response.success && response.data && response.data.html) {
                     // Preparar los productos para Swiper
                     var productsHtml = prepareSwiperSlides(response.data.html);
                     $targetContainer.html(productsHtml);
                     
-                    // Inicializar o actualizar Swiper
-                    var swiperContainer = $targetContainer.closest('.swiper-container')[0];
-                    if (swiperContainer) {
-                        var swiper = initSwiper(swiperContainer);
-                        
-                        // Verificar si hay suficientes productos
-                        if (response.data.count <= 2) {
-                            // Ocultar botones de navegación si hay pocos productos
-                            $targetContainer.closest('.swiper-container').find('.swiper-button-prev, .swiper-button-next').hide();
-                        } else {
-                            $targetContainer.closest('.swiper-container').find('.swiper-button-prev, .swiper-button-next').show();
+                    // Esperar a que el DOM se actualice
+                    setTimeout(function() {
+                        // Inicializar o actualizar Swiper
+                        var swiperContainer = $targetContainer.closest('.swiper-container')[0];
+                        if (swiperContainer) {
+                            var swiper = initSwiper(swiperContainer);
+                            
+                            // Verificar si hay suficientes productos
+                            var productCount = response.data.count || $targetContainer.find('.swiper-slide').length;
+                            if (productCount <= 2) {
+                                // Ocultar botones de navegación si hay pocos productos
+                                $targetContainer.closest('.swiper-container').find('.swiper-button-prev, .swiper-button-next').hide();
+                            } else {
+                                $targetContainer.closest('.swiper-container').find('.swiper-button-prev, .swiper-button-next').show();
+                                
+                                // Forzar actualización del Swiper
+                                if (swiper) {
+                                    swiper.update();
+                                    swiper.updateSlides();
+                                    swiper.updateSize();
+                                    swiper.updateSlidesClasses();
+                                }
+                            }
                         }
-                    }
+                    }, 100);
                 } else {
                     console.log("No se encontraron productos o respuesta inválida");
                     $targetContainer.html(
@@ -165,10 +191,16 @@
         // Convertir cada producto en un slide
         $temp.find('.snap-sidebar-cart__related-product').each(function() {
             var productHtml = $(this).prop('outerHTML');
-            result += '<div class="swiper-slide">' + productHtml + '</div>';
+            result += '<div class="swiper-slide" style="width: auto;">' + productHtml + '</div>';
         });
         
-        return result || '<div class="swiper-slide snap-sidebar-cart__no-products">No se encontraron productos.</div>';
+        // Si no hay productos, mostrar mensaje
+        if (!result) {
+            result = '<div class="swiper-slide snap-sidebar-cart__no-products">No se encontraron productos.</div>';
+        }
+        
+        console.log("Slides preparados:", result);
+        return result;
     }
 
     // Inicializar cuando el DOM esté listo
@@ -193,13 +225,14 @@
             $tab.addClass('active');
             
             $('.snap-sidebar-cart__related-container').removeClass('active');
-            $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]').addClass('active');
+            var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]');
+            $activeContainer.addClass('active');
             
             // Cargar productos si el contenedor está vacío
-            var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .swiper-wrapper');
+            var $targetContainer = $activeContainer.find('.swiper-wrapper');
             var $slides = $targetContainer.children();
             
-            if ($slides.length === 0 || ($slides.length === 1 && $slides.first().hasClass('snap-sidebar-cart__loading-products'))) {
+            if ($slides.length === 0 || ($slides.length === 1 && ($slides.first().hasClass('snap-sidebar-cart__loading-products') || $slides.first().hasClass('snap-sidebar-cart__no-products')))) {
                 // Obtener el primer producto del carrito
                 var firstProduct = $('.snap-sidebar-cart__product').first();
                 if (firstProduct.length) {
@@ -208,9 +241,24 @@
                         loadRelatedProducts(productId, tabType);
                     }
                 }
-            } else if (swiperInstances[tabType]) {
-                // Si ya hay productos, actualizar el Swiper
-                swiperInstances[tabType].update();
+            } else {
+                // Si ya hay productos, reinicializar el Swiper
+                var swiperContainer = $activeContainer.find('.swiper-container')[0];
+                if (swiperContainer) {
+                    // Destruir la instancia existente si hay
+                    if (swiperInstances[tabType]) {
+                        swiperInstances[tabType].destroy();
+                        delete swiperInstances[tabType];
+                    }
+                    
+                    // Inicializar una nueva instancia
+                    setTimeout(function() {
+                        var swiper = initSwiper(swiperContainer);
+                        if (swiper) {
+                            swiper.update();
+                        }
+                    }, 50);
+                }
             }
         });
         

@@ -22,12 +22,12 @@
                 var $button = $(this);
                 var $wrapper = $button.closest('.quantity.buttoned-input');
                 var $input = $wrapper.find('input.cart-item__quantity-input');
-                var cartItemKey = $wrapper.data('key') || $input.data('key');
+                var cartItemKey = $wrapper.data('cart-item-key') || $input.data('cart-item-key');
                 var currentVal = parseInt($input.val(), 10) || 0;
                 var $product = $button.closest('.snap-sidebar-cart__product');
                 
                 if (!cartItemKey && $product.length) {
-                    cartItemKey = $product.data('key');
+                    cartItemKey = $product.data('cart-item-key');
                 }
                 
                 if (!cartItemKey) {
@@ -38,7 +38,11 @@
                 var newVal = currentVal + 1;
                 $input.val(newVal);
                 
-                self.showLoader($product);
+                // Mostrar preloader
+                if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.showPreloader === 'function') {
+                    window.snap_sidebar_cart.showPreloader($product);
+                }
+                
                 self.updateCartItem(cartItemKey, newVal);
             });
             
@@ -49,104 +53,90 @@
                 var $button = $(this);
                 var $wrapper = $button.closest('.quantity.buttoned-input');
                 var $input = $wrapper.find('input.cart-item__quantity-input');
-                var cartItemKey = $wrapper.data('key') || $input.data('key');
+                var cartItemKey = $wrapper.data('cart-item-key') || $input.data('cart-item-key');
                 var currentVal = parseInt($input.val(), 10) || 0;
                 var $product = $button.closest('.snap-sidebar-cart__product');
                 
                 if (!cartItemKey && $product.length) {
-                    cartItemKey = $product.data('key');
+                    cartItemKey = $product.data('cart-item-key');
                 }
-                
-                if (!cartItemKey || currentVal <= 0) {
-                    return;
-                }
-                
-                var newVal = currentVal - 1;
-                $input.val(newVal);
-                
-                if (newVal === 0) {
-                    $product.addClass('removing');
-                }
-                
-                self.showLoader($product);
-                self.updateCartItem(cartItemKey, newVal);
-            });
-            
-            // Input de cantidad
-            $(document).on('change', '.cart-item__quantity-input', function() {
-                var $input = $(this);
-                var $product = $input.closest('.snap-sidebar-cart__product');
-                var cartItemKey = $product.data('key') || $input.data('key');
-                var newVal = parseInt($input.val(), 10) || 0;
                 
                 if (!cartItemKey) {
+                    console.error('No se pudo obtener la clave del producto');
                     return;
                 }
                 
+                var newVal = Math.max(1, currentVal - 1);
+                $input.val(newVal);
+                
+                // Si la nueva cantidad es 0, eliminamos el producto
                 if (newVal === 0) {
-                    $product.addClass('removing');
+                    self.removeCartItem(cartItemKey);
+                    return;
                 }
                 
-                self.showLoader($product);
+                // Mostrar preloader
+                if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.showPreloader === 'function') {
+                    window.snap_sidebar_cart.showPreloader($product);
+                }
+                
                 self.updateCartItem(cartItemKey, newVal);
             });
-        },
-        
-        showLoader: function($product) {
-            if (!$product || !$product.length) return;
             
-            // Obtener configuración del preloader desde parámetros
-            var preloaderType = 'circle';
-            var preloaderPosition = 'center';
+            $(document).on('change', 'input.cart-item__quantity-input', function(e) {
+                var $input = $(this);
+                var $wrapper = $input.closest('.quantity.buttoned-input');
+                var cartItemKey = $wrapper.data('cart-item-key') || $input.data('cart-item-key');
+                var newVal = parseInt($input.val(), 10) || 1;
+                var $product = $input.closest('.snap-sidebar-cart__product');
+                
+                if (!cartItemKey && $product.length) {
+                    cartItemKey = $product.data('cart-item-key');
+                }
+                
+                if (!cartItemKey) {
+                    console.error('No se pudo obtener la clave del producto');
+                    return;
+                }
+                
+                // Asegurarse de que la cantidad sea al menos 1
+                if (newVal < 1) {
+                    newVal = 1;
+                    $input.val(newVal);
+                }
+                
+                // Mostrar preloader
+                if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.showPreloader === 'function') {
+                    window.snap_sidebar_cart.showPreloader($product);
+                }
+                
+                self.updateCartItem(cartItemKey, newVal);
+            });
             
-            if (window.snap_sidebar_cart_params && window.snap_sidebar_cart_params.preloader) {
-                preloaderType = window.snap_sidebar_cart_params.preloader.type || 'circle';
-                preloaderPosition = window.snap_sidebar_cart_params.preloader.position || 'center';
-            }
-            
-            // Preparar el preloader según configuración
-            var $loader = $product.find('.snap-sidebar-cart__loader-spinner');
-            $loader.attr('class', 'snap-sidebar-cart__loader-spinner');
-            $loader.addClass('preloader-' + preloaderType);
-            $loader.addClass('preloader-position-' + preloaderPosition);
-            
-            // Contenido específico según tipo de preloader
-            if (preloaderType === 'dots') {
-                $loader.html('<span></span><span></span><span></span>');
-            } else {
-                $loader.html('');
-            }
-            
-            $product.find('.snap-sidebar-cart__product-loader').show();
-        },
-        
-        hideLoaders: function() {
-            $('.snap-sidebar-cart__product-loader').hide();
+            // Manejar eventos de click delegados para el botón de eliminar
+            $(document).on('click', '.snap-sidebar-cart__product-remove', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var $button = $(this);
+                var $product = $button.closest('.snap-sidebar-cart__product');
+                var cartItemKey = $product.data('cart-item-key');
+                
+                if (!cartItemKey) {
+                    console.error('No se pudo obtener la clave del producto');
+                    return;
+                }
+                
+                // Mostrar preloader
+                if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.showPreloader === 'function') {
+                    window.snap_sidebar_cart.showPreloader($product);
+                }
+                
+                self.removeCartItem(cartItemKey);
+            });
         },
         
         updateCartItem: function(cartItemKey, quantity) {
-            var self = this;
-            
-            // Animación especial para productos que se eliminan
-            if (quantity === 0) {
-                var $product = $('[data-key="' + cartItemKey + '"]');
-                if ($product.length) {
-                    $product.addClass('removing');
-                    
-                    // Reproducir animación de eliminación antes de enviar la solicitud
-                    setTimeout(function() {
-                        self.sendUpdateRequest(cartItemKey, quantity);
-                    }, 300); // Dar tiempo para que se muestre la animación
-                } else {
-                    self.sendUpdateRequest(cartItemKey, quantity);
-                }
-            } else {
-                // Para actualizaciones normales de cantidad
-                self.sendUpdateRequest(cartItemKey, quantity);
-            }
-        },
-        
-        sendUpdateRequest: function(cartItemKey, quantity) {
             var self = this;
             
             $.ajax({
@@ -161,30 +151,38 @@
                 success: function(response) {
                     if (response.success) {
                         self.updateCartContent(response.data);
-                        
-                        // Actualizar también los fragmentos de carrito de WooCommerce si están disponibles
-                        if (typeof wc_cart_fragments_params !== 'undefined') {
-                            $.ajax({
-                                url: wc_cart_fragments_params.wc_ajax_url.toString().replace('%%endpoint%%', 'get_refreshed_fragments'),
-                                type: 'POST',
-                                success: function(data) {
-                                    if (data && data.fragments) {
-                                        $.each(data.fragments, function(key, value) {
-                                            $(key).replaceWith(value);
-                                        });
-                                        
-                                        if (typeof sessionStorage !== 'undefined') {
-                                            sessionStorage.setItem(wc_cart_fragments_params.fragment_name, JSON.stringify(data.fragments));
-                                            sessionStorage.setItem('wc_cart_hash', data.cart_hash);
-                                        }
-                                        
-                                        $(document.body).trigger('wc_fragments_refreshed');
-                                    }
-                                }
-                            });
-                        }
                     } else {
                         self.hideLoaders();
+                        
+                        if (response.data && response.data.message) {
+                            alert(response.data.message);
+                        }
+                    }
+                },
+                error: function() {
+                    self.hideLoaders();
+                    alert('Error al comunicarse con el servidor');
+                }
+            });
+        },
+        
+        removeCartItem: function(cartItemKey) {
+            var self = this;
+            
+            $.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_remove',
+                    cart_item_key: cartItemKey,
+                    nonce: snap_sidebar_cart_params.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        self.updateCartContent(response.data);
+                    } else {
+                        self.hideLoaders();
+                        
                         if (response.data && response.data.message) {
                             alert(response.data.message);
                         }
@@ -198,86 +196,44 @@
         },
         
         updateCartContent: function(data) {
-            // Actualizar el HTML del carrito
-            $('.snap-sidebar-cart__products').html(data.cart_html);
-            
-            // Actualizar todos los contadores del carrito en la página
-            $('.snap-sidebar-cart__count').text(data.cart_count);
-            $('.cart-contents-count').text(data.cart_count);
-            
-            // Actualizar título con contador (formato "Carrito de compra (X)")
-            var title = $('.snap-sidebar-cart__title').first().contents().filter(function() {
-                return this.nodeType === 3; // nodos de texto
-            }).text().trim();
-            
-            // Extraer el título base sin el contador
-            var baseTitle = title.replace(/\s*\(\d+\)$/, '');
-            $('.snap-sidebar-cart__title').first().contents().filter(function() {
-                return this.nodeType === 3;
-            }).first()[0].textContent = baseTitle + ' ';
-            
-            // Actualizar los totales
-            $('.snap-sidebar-cart__shipping-price').html(data.shipping_total);
-            $('.snap-sidebar-cart__subtotal-price').html(data.subtotal);
-            $('.snap-sidebar-cart__total-price').html(data.total);
-            
-            // Actualizar botones según el estado del carrito
-            if (data.cart_count > 0) {
-                if ($('.snap-sidebar-cart__buttons').length === 0) {
-                    var cartUrl = '';
-                    var checkoutUrl = '';
-                    
-                    if (typeof wc_cart_fragments_params !== 'undefined') {
-                        cartUrl = wc_cart_fragments_params.cart_url;
-                        checkoutUrl = wc_cart_fragments_params.checkout_url;
-                    } else {
-                        cartUrl = '/cart/';
-                        checkoutUrl = '/checkout/';
-                    }
-                    
-                    var buttonsHtml = 
-                        '<div class="snap-sidebar-cart__buttons">' +
-                            '<a href="' + cartUrl + '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">Ver carrito</a>' +
-                            '<a href="' + checkoutUrl + '" class="snap-sidebar-cart__button snap-sidebar-cart__button--checkout">Finalizar pedido</a>' +
-                        '</div>';
-                    
-                    $('.snap-sidebar-cart__footer').append(buttonsHtml);
-                }
-                
-                // Si hay productos relacionados pero no están cargados, intentar cargarlos
-                if ($('.snap-sidebar-cart__related-section').length && 
-                    $('.snap-sidebar-cart__related-container.active .snap-sidebar-cart__slider-track').children().length === 0) {
-                    if (window.SnapSidebarCartRelated && typeof window.SnapSidebarCartRelated.loadRelatedProductsIfEmpty === 'function') {
-                        window.SnapSidebarCartRelated.loadRelatedProductsIfEmpty();
-                    }
-                }
-            } else {
-                // Si no hay productos
-                $('.snap-sidebar-cart__buttons').remove();
-                
-                // Limpiar productos relacionados si no hay productos en el carrito
-                $('.snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track').empty();
+            if (data.cart_content) {
+                $('.snap-sidebar-cart__products').html(data.cart_content);
             }
             
-            // Comprobar límites de stock después de actualizar
-            if (window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.checkStockLimits === 'function') {
-                window.SnapSidebarCartQuantity.checkStockLimits();
+            if (data.cart_totals) {
+                $('.snap-sidebar-cart__totals').html(data.cart_totals);
             }
             
-            // Ocultar loaders
+            if (data.cart_count !== undefined) {
+                $('.snap-sidebar-cart__count').text(data.cart_count);
+                
+                // Actualizar también otros contadores de carrito en la página
+                $('.cart-contents-count').text(data.cart_count);
+                $('.cart-count').text(data.cart_count);
+            }
+            
             this.hideLoaders();
             
-            // Disparar evento para que otros scripts puedan responder
-            $(document.body).trigger('snap_sidebar_cart_updated');
+            // Disparar evento personalizado para que otros scripts puedan reaccionar
+            $(document.body).trigger('snap_sidebar_cart_updated', [data]);
+        },
+        
+        hideLoaders: function() {
+            // Ocultar preloader global
+            if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.hideGlobalLoader === 'function') {
+                window.snap_sidebar_cart.hideGlobalLoader();
+            }
+            
+            // Ocultar preloaders de productos
+            $('.snap-sidebar-cart__product').each(function() {
+                if (window.snap_sidebar_cart && typeof window.snap_sidebar_cart.hidePreloader === 'function') {
+                    window.snap_sidebar_cart.hidePreloader($(this));
+                }
+            });
         }
     };
     
-    // Inicializar cuando el DOM esté listo
     $(document).ready(function() {
         AjaxUpdateHandler.init();
     });
-    
-    // Exportar para uso en otros scripts
-    window.SnapSidebarCartAjaxHandler = AjaxUpdateHandler;
-    
 })(jQuery);

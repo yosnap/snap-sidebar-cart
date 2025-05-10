@@ -120,12 +120,14 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
 
             <div class="snap-sidebar-cart__product-price-container">
                 <?php if ($has_discount) : ?>
-                    <span class="snap-sidebar-cart__product-regular-price">
-                        <?php echo wc_price($regular_price); ?>
-                    </span>
-                    <span class="snap-sidebar-cart__product-discount">
-                        <?php echo sprintf('-%d%%', $discount_percentage); ?>
-                    </span>
+                    <div class="snap-sidebar-cart__product-price-row">
+                        <span class="snap-sidebar-cart__product-regular-price">
+                            <?php echo wc_price($regular_price); ?>
+                        </span>
+                        <span class="snap-sidebar-cart__product-discount">
+                            <?php echo sprintf('%d%%', $discount_percentage); ?>
+                        </span>
+                    </div>
                 <?php endif; ?>
                 <span class="snap-sidebar-cart__product-price">
                     <?php echo $price; ?>

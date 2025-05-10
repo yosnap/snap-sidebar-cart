@@ -37,19 +37,27 @@ class Snap_Sidebar_Cart_Public {
         // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
-        // Registrar y cargar el CSS principal
-        wp_deregister_style('snap-sidebar-cart-public');
-        wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
+        // Desregistrar estilos antiguos para evitar conflictos
+        $styles_to_deregister = array(
+            'snap-sidebar-cart-public',
+            'snap-sidebar-cart-slider-fix',
+            'snap-sidebar-cart-scroll-snap'
+        );
         
-        // Registrar y cargar el CSS de arreglo del slider con prioridad más alta
-        wp_deregister_style('snap-sidebar-cart-slider-fix');
-        wp_enqueue_style('snap-sidebar-cart-slider-fix', SNAP_SIDEBAR_CART_URL . 'assets/css/slider-fix.css', array('snap-sidebar-cart-public'), $version, 'all');
+        foreach ($styles_to_deregister as $style) {
+            if (wp_style_is($style, 'registered')) {
+                wp_deregister_style($style);
+            }
+        }
+        
+        // Registrar y cargar el CSS unificado
+        wp_enqueue_style('snap-sidebar-cart-unified', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-unified.css', array(), $version, 'all');
         
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
         $preloader_css = $this->generate_preloader_css();
         
-        wp_add_inline_style('snap-sidebar-cart-slider-fix', $custom_css . $preloader_css);
+        wp_add_inline_style('snap-sidebar-cart-unified', $custom_css . $preloader_css);
     }
 
     /**
@@ -88,98 +96,6 @@ class Snap_Sidebar_Cart_Public {
         // Cargar jQuery explícitamente
         wp_enqueue_script('jquery');
         
-        // Cargar Swiper.js para los sliders
-        wp_enqueue_style(
-            'swiper-styles', 
-            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css',
-            array(),
-            '10.0.0'
-        );
-        
-        wp_enqueue_script(
-            'swiper-script',
-            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js',
-            array('jquery'),
-            '10.0.0',
-            true
-        );
-        
-        // Cargar el script principal
-        wp_enqueue_script(
-            'snap-sidebar-cart-public', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
-            array('jquery', 'swiper-script'), 
-            $version, 
-            true
-        );
-        
-        // Cargar inicializador de Swiper
-        wp_enqueue_script(
-            'snap-sidebar-cart-swiper-init', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/swiper-init.js', 
-            array('jquery', 'swiper-script', 'snap-sidebar-cart-public'), 
-            $version, 
-            true
-        );
-        
-        // Cargar solución inmediata para tabs y slider
-        wp_enqueue_script(
-            'snap-sidebar-cart-immediate-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/immediate-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-swiper-init'), 
-            $version, 
-            true
-        );
-        
-        // Agregar código inline para asegurar el correcto funcionamiento
-        wp_add_inline_script('snap-sidebar-cart-public', "
-            jQuery(document).ready(function($) {
-                // Aplicar solución directa para las pestañas
-                $(document).on('click', '.snap-sidebar-cart__related-tab', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var tabType = $(this).data('tab');
-                    
-                    // Actualizar UI
-                    $('.snap-sidebar-cart__related-tab').removeClass('active');
-                    $(this).addClass('active');
-                    
-                    $('.snap-sidebar-cart__related-container').removeClass('active');
-                    $('.snap-sidebar-cart__related-container[data-content=\"' + tabType + '\"]').addClass('active');
-                });
-                
-                // Aplicar solución directa para los botones de navegación
-                $(document).on('click', '.snap-sidebar-cart__slider-prev', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
-                    if (!\$track.length) return;
-                    
-                    \$track.animate({
-                        scrollLeft: Math.max(0, \$track.scrollLeft() - \$track.width() * 0.8)
-                    }, 300);
-                });
-                
-                $(document).on('click', '.snap-sidebar-cart__slider-next', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
-                    if (!\$track.length) return;
-                    
-                    var maxScroll = \$track[0].scrollWidth - \$track.width();
-                    
-                    \$track.animate({
-                        scrollLeft: Math.min(maxScroll, \$track.scrollLeft() + \$track.width() * 0.8)
-                    }, 300);
-                });
-            });
-        ");
-        
-        // No cargamos los scripts de depuración en producción
-        
         // Opciones para el script con todos los parámetros necesarios
         $script_options = array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -204,6 +120,8 @@ class Snap_Sidebar_Cart_Public {
             // Opciones para productos relacionados
             'related' => array(
                 'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2,
+                'products_per_page' => isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 7,
+                'columns_count' => isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2,
                 'show_last_chance' => isset($this->options['related_products']['show_last_chance']) ? (bool)$this->options['related_products']['show_last_chance'] : true,
                 'last_chance_stock_limit' => isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5,
                 'last_chance_title' => isset($this->options['related_products']['last_chance_title']) ? $this->options['related_products']['last_chance_title'] : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
@@ -223,7 +141,117 @@ class Snap_Sidebar_Cart_Public {
             'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
         );
         
-        wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
+        // Comprobar si existe el archivo JS compilado por Webpack
+        $webpack_js_path = SNAP_SIDEBAR_CART_PATH . 'assets/js/dist/snap-sidebar-cart.js';
+        $use_webpack = file_exists($webpack_js_path);
+        
+        if ($use_webpack) {
+            // Usar la versión compilada por Webpack
+            wp_enqueue_script(
+                'snap-sidebar-cart-webpack', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/dist/snap-sidebar-cart.js', 
+                array('jquery'), 
+                $version, 
+                true
+            );
+            
+            // Localizar scripts para la versión Webpack
+            wp_localize_script('snap-sidebar-cart-webpack', 'snap_sidebar_cart_params', $script_options);
+            
+            // Registrar script de administración si estamos en el panel de administración
+            if (is_admin()) {
+                $admin_js_path = SNAP_SIDEBAR_CART_PATH . 'assets/js/dist/admin.js';
+                if (file_exists($admin_js_path)) {
+                    wp_enqueue_script(
+                        'snap-sidebar-cart-admin', 
+                        SNAP_SIDEBAR_CART_URL . 'assets/js/dist/admin.js', 
+                        array('jquery'), 
+                        $version, 
+                        true
+                    );
+                    wp_localize_script('snap-sidebar-cart-admin', 'snap_sidebar_cart_params', $script_options);
+                }
+            }
+            
+            // Registrar CSS compilado por Webpack si existe
+            $webpack_css_path = SNAP_SIDEBAR_CART_PATH . 'assets/css/snap-sidebar-cart.css';
+            if (file_exists($webpack_css_path)) {
+                wp_enqueue_style(
+                    'snap-sidebar-cart-webpack-styles', 
+                    SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart.css', 
+                    array(), 
+                    $version, 
+                    'all'
+                );
+            }
+        } else {
+            // Usar la versión antigua para compatibilidad
+            // Cargar el script principal
+            wp_enqueue_script(
+                'snap-sidebar-cart-public', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
+                array('jquery'), 
+                $version, 
+                true
+            );
+            
+            // Cargar inicializador de Scroll Snap
+            wp_enqueue_script(
+                'snap-sidebar-cart-scroll-snap', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/scroll-snap.js', 
+                array('jquery', 'snap-sidebar-cart-public'), 
+                $version, 
+                true
+            );
+            
+            // Cargar solución inmediata para tabs y slider
+            wp_enqueue_script(
+                'snap-sidebar-cart-immediate-fix', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/immediate-fix.js', 
+                array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-scroll-snap'), 
+                $version, 
+                true
+            );
+            
+            // Cargar el controlador de pestañas
+            wp_enqueue_script(
+                'snap-sidebar-cart-tab-controller', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/tab-controller.js', 
+                array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-scroll-snap'), 
+                $version, 
+                true
+            );
+            
+            // Cargar el controlador del carrito
+            wp_enqueue_script(
+                'snap-sidebar-cart-cart-controller', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/cart-controller.js', 
+                array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-tab-controller'), 
+                $version, 
+                true
+            );
+            
+            // Cargar el controlador del preloader
+            wp_enqueue_script(
+                'snap-sidebar-cart-preloader-controller', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/preloader-controller.js', 
+                array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-cart-controller'), 
+                $version, 
+                true
+            );
+            
+            // Cargar el manejador de AJAX
+            wp_enqueue_script(
+                'snap-sidebar-cart-ajax-update-handler', 
+                SNAP_SIDEBAR_CART_URL . 'assets/js/ajax-update-handler.js', 
+                array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-preloader-controller'), 
+                $version, 
+                true
+            );
+            
+            // Localizar scripts para la versión antigua
+            wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
+        }
     }
 
     /**
