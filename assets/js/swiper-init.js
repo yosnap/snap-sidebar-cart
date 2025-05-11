@@ -22,27 +22,51 @@
         
         console.log("Inicializando Swiper para pestaña: " + tabId);
         
+        // Eliminar cualquier estilo inline de altura que pueda estar causando problemas
+        $container.find('.swiper-wrapper').css('height', '');
+        
+        // Obtener configuración desde los parámetros del admin
+        var slidesToScroll = parseInt(snap_sidebar_cart_params.slides_to_scroll) || 2;
+        var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+        
+        // Log para debug
+        console.log("Configuración del slider para " + tabId + ":", {
+            slidesToScroll: slidesToScroll,
+            slidesPerView: slidesPerView,
+            totalProducts: snap_sidebar_cart_params.related.count || 4
+        });
+        
         // Configurar el slider con Swiper
         swiperInstances[tabId] = new Swiper(container, {
-            slidesPerView: 'auto',
+            slidesPerView: slidesPerView,
             spaceBetween: 10,
             navigation: {
                 nextEl: $container.find('.swiper-button-next')[0],
                 prevEl: $container.find('.swiper-button-prev')[0],
             },
             // Usar slidesPerGroup con el valor configurado de slides_to_scroll
-            slidesPerGroup: snap_sidebar_cart_params.slides_to_scroll || 2,
+            slidesPerGroup: slidesToScroll,
             watchOverflow: true,
             resistance: true,
             resistanceRatio: 0.85,
             grabCursor: true,
-            autoHeight: true,
+            autoHeight: false, // Cambiado a false para evitar problemas de altura
+            updateOnWindowResize: true,
+            observer: true, // Observar cambios en el DOM
+            observeParents: true, // Observar cambios en los padres
+            resizeObserver: true, // Usar ResizeObserver si está disponible
             on: {
                 init: function() {
                     console.log('Swiper inicializado para: ' + tabId);
                     
                     // Configurar evento de hover para imágenes de galería
                     setupProductGalleryHover();
+                    
+                    // Forzar actualización de tamaño después de la inicialización
+                    setTimeout(function() {
+                        swiperInstances[tabId].updateSize();
+                        swiperInstances[tabId].updateSlides();
+                    }, 50);
                 },
                 slideChange: function() {
                     console.log('Cambio de slide en: ' + tabId);
@@ -96,6 +120,11 @@
             return;
         }
         
+        // Obtener configuración desde los parámetros del admin
+        var slidesToScroll = parseInt(snap_sidebar_cart_params.slides_to_scroll) || 2;
+        var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+        var totalProducts = parseInt(snap_sidebar_cart_params.related.count) || 4;
+        
         // Mostrar preloader
         $targetContainer.html(
             '<div class="swiper-slide snap-sidebar-cart__loading-products">' +
@@ -113,6 +142,7 @@
                 nonce: snap_sidebar_cart_params.nonce,
                 product_id: productId,
                 type: type,
+                count: totalProducts // Pasar el número total de productos configurado en el admin
             },
             success: function(response) {
                 console.log("Respuesta AJAX recibida");
@@ -127,8 +157,9 @@
                     if (swiperContainer) {
                         var swiper = initSwiper(swiperContainer);
                         
-                        // Verificar si hay suficientes productos
-                        if (response.data.count <= 2) {
+                        // Verificar si hay suficientes productos para mostrar los controles de navegación
+                        // Solo mostrar si hay más productos que el número de columnas
+                        if (response.data.count <= slidesPerView) {
                             // Ocultar botones de navegación si hay pocos productos
                             $targetContainer.closest('.swiper-container').find('.swiper-button-prev, .swiper-button-next').hide();
                         } else {
@@ -162,8 +193,15 @@
         var $temp = $('<div>').html(html);
         var result = '';
         
-        // Convertir cada producto en un slide
+        // Obtener configuración de columnas desde los parámetros del admin
+        var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+        var columnWidth = 100 / slidesPerView;
+        
+        // Asegurar que cada producto tenga el ancho correcto según la configuración
         $temp.find('.snap-sidebar-cart__related-product').each(function() {
+            // Aplicar el ancho correcto basado en la configuración del admin
+            $(this).css('width', 'calc(' + columnWidth + '% - 20px)');
+            
             var productHtml = $(this).prop('outerHTML');
             result += '<div class="swiper-slide">' + productHtml + '</div>';
         });
@@ -174,6 +212,22 @@
     // Inicializar cuando el DOM esté listo
     $(document).ready(function() {
         console.log("Inicializando sistema de Swiper para Snap Sidebar Cart");
+        
+        // Log de la configuración general para debug
+        console.log("Configuración general de productos relacionados:", {
+            slidesToScroll: snap_sidebar_cart_params.slides_to_scroll,
+            columns: snap_sidebar_cart_params.related.columns,
+            totalProducts: snap_sidebar_cart_params.related.count
+        });
+        
+        // Aplicar el ancho correcto a todos los productos inmediatamente
+        var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+        var columnWidth = 100 / slidesPerView;
+        
+        // Aplicar estilos directamente a través de CSS en el head
+        $('<style>').prop('type', 'text/css')
+            .html('.snap-sidebar-cart__related-product { width: calc(' + columnWidth + '% - 20px) !important; }')
+            .appendTo('head');
         
         // Cambio de pestaña en productos relacionados
         $(document).on('click', '.snap-sidebar-cart__related-tab', function(e) {
@@ -199,6 +253,21 @@
             var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .swiper-wrapper');
             var $slides = $targetContainer.children();
             
+            // Eliminar cualquier estilo inline de altura que pueda estar causando problemas
+            $targetContainer.css('height', '');
+            
+            // Aplicar el ancho correcto a todos los productos en este contenedor
+            var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+            var columnWidth = 100 / slidesPerView;
+            $targetContainer.find('.snap-sidebar-cart__related-product').css('width', 'calc(' + columnWidth + '% - 20px)');
+            
+            // Forzar actualización de Swiper si existe una instancia
+            if (swiperInstances[tabType]) {
+                setTimeout(function() {
+                    swiperInstances[tabType].update();
+                }, 50);
+            }
+            
             if ($slides.length === 0 || ($slides.length === 1 && $slides.first().hasClass('snap-sidebar-cart__loading-products'))) {
                 // Obtener el primer producto del carrito
                 var firstProduct = $('.snap-sidebar-cart__product').first();
@@ -209,8 +278,16 @@
                     }
                 }
             } else if (swiperInstances[tabType]) {
-                // Si ya hay productos, actualizar el Swiper
+                // Si ya hay productos, actualizar el Swiper y forzar recalculo de altura
+                swiperInstances[tabType].updateSize();
+                swiperInstances[tabType].updateSlides();
                 swiperInstances[tabType].update();
+                
+                // Forzar un reflow para asegurar que la altura se actualice correctamente
+                setTimeout(function() {
+                    swiperInstances[tabType].updateSize();
+                    swiperInstances[tabType].updateSlides();
+                }, 50);
             }
         });
         
@@ -219,18 +296,15 @@
             // Si hay productos, inicializar Swiper
             var $products = $(this).find('.swiper-wrapper').children();
             
-            if ($products.length === 0) {
-                // Cargar productos
-                var firstProduct = $('.snap-sidebar-cart__product').first();
-                if (firstProduct.length) {
-                    var productId = firstProduct.data('product-id');
-                    var tabType = $(this).closest('.snap-sidebar-cart__related-container').data('content');
-                    
-                    if (productId && tabType) {
-                        loadRelatedProducts(productId, tabType);
-                    }
-                }
-            } else if (!$products.first().hasClass('snap-sidebar-cart__loading-products')) {
+            // Aplicar el ancho correcto a todos los productos en la primera carga
+            var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+            var columnWidth = 100 / slidesPerView;
+            $(this).find('.snap-sidebar-cart__related-product').css('width', 'calc(' + columnWidth + '% - 20px)');
+            
+            // Eliminar cualquier estilo inline de altura que pueda estar causando problemas
+            $(this).find('.swiper-wrapper').css('height', '');
+            
+            if ($products.length > 0 && !$products.first().hasClass('snap-sidebar-cart__loading-products')) {
                 // Inicializar Swiper solo si hay productos reales
                 initSwiper(this);
             }
@@ -240,13 +314,73 @@
         $(document).on('click', snap_sidebar_cart_params.activation_selectors, function() {
             // Esperar a que se abra el sidebar
             setTimeout(function() {
-                // Actualizar todos los Swipers
-                $('.snap-sidebar-cart__swiper-container').each(function() {
+                console.log('Sidebar abierto, aplicando estilos y actualizando sliders');
+                
+                // Aplicar el ancho correcto a todos los productos
+                var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+                var columnWidth = 100 / slidesPerView;
+                $('.snap-sidebar-cart__related-product').css('width', 'calc(' + columnWidth + '% - 20px)');
+                
+                // Eliminar cualquier estilo inline de altura que pueda estar causando problemas
+                $('.swiper-wrapper').css('height', '');
+                
+                // Verificar si hay que cargar productos en la pestaña activa
+                var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                var activeTabType = $activeTab.length ? $activeTab.data('tab') : null;
+                
+                if (!activeTabType) {
+                    // Si no hay pestaña activa, activar la primera
+                    $activeTab = $('.snap-sidebar-cart__related-tab').first();
+                    $activeTab.addClass('active');
+                    activeTabType = $activeTab.data('tab');
+                    
+                    // Activar el contenedor correspondiente
+                    $('.snap-sidebar-cart__related-container').removeClass('active');
+                    $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]').addClass('active');
+                }
+                
+                // Verificar si hay productos en la pestaña activa
+                var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
+                var $targetWrapper = $activeContainer.find('.swiper-wrapper');
+                var $products = $targetWrapper.children();
+                
+                // Si no hay productos o solo está el loader, cargarlos
+                if ($products.length === 0 || ($products.length === 1 && $products.first().hasClass('snap-sidebar-cart__loading-products'))) {
+                    console.log('Cargando productos para la pestaña activa:', activeTabType);
+                    var firstProduct = $('.snap-sidebar-cart__product').first();
+                    if (firstProduct.length) {
+                        var productId = firstProduct.data('product-id');
+                        if (productId) {
+                            // Cargar productos para la pestaña activa
+                            loadRelatedProducts(productId, activeTabType);
+                        }
+                    }
+                }
+                
+                // Actualizar todos los Swipers existentes
+                $('.swiper-container').each(function() {
                     var tabId = $(this).closest('.snap-sidebar-cart__related-container').data('content');
-                    if (swiperInstances[tabId]) {
+                    if (tabId && swiperInstances[tabId]) {
+                        console.log('Actualizando Swiper para tab:', tabId);
+                        swiperInstances[tabId].updateSize();
+                        swiperInstances[tabId].updateSlides();
                         swiperInstances[tabId].update();
                     }
                 });
+                
+                // Forzar un reflow adicional para asegurar que todo se muestre correctamente
+                setTimeout(function() {
+                    $('.swiper-wrapper').css('height', '');
+                    
+                    // Actualizar todos los Swipers una vez más
+                    for (var tabId in swiperInstances) {
+                        if (swiperInstances[tabId]) {
+                            swiperInstances[tabId].updateSize();
+                            swiperInstances[tabId].updateSlides();
+                            swiperInstances[tabId].update();
+                        }
+                    }
+                }, 100);
             }, 300);
         });
         

@@ -253,6 +253,10 @@ class Snap_Sidebar_Cart_Ajax {
         $product_id = absint($_POST['product_id']);
         error_log('Product ID recibido: ' . $product_id);
         
+        // Obtener el número de productos a mostrar desde la petición o usar el valor por defecto
+        $count = isset($_POST['count']) ? absint($_POST['count']) : (isset($this->options['related_products']['count']) ? absint($this->options['related_products']['count']) : 4);
+        error_log('Número de productos a mostrar: ' . $count);
+        
         // Obtener el producto
         $product = wc_get_product($product_id);
         
@@ -280,37 +284,37 @@ class Snap_Sidebar_Cart_Ajax {
             $type = 'related';
         }
         
-        // Obtener los productos según el tipo
-        error_log('Obteniendo productos para el tipo: ' . $type);
+        // Obtener productos según el tipo
+        error_log('Obteniendo productos para el tipo: ' . $type . ', cantidad: ' . $count);
         
         switch ($type) {
             case 'upsells':
                 error_log('Llamando a get_upsell_products()');
-                $products = $this->get_upsell_products($product);
+                $products = $this->get_upsell_products($product, $count);
                 break;
             case 'crosssells':
                 error_log('Llamando a get_crosssell_products()');
-                $products = $this->get_crosssell_products($product);
+                $products = $this->get_crosssell_products($product, $count);
                 break;
             case 'related':
                 error_log('Llamando a get_same_category_products()');
-                $products = $this->get_same_category_products($product);
+                $products = $this->get_same_category_products($product, $count);
                 break;
             case 'bestsellers':
                 error_log('Llamando a get_bestseller_products()');
-                $products = $this->get_bestseller_products();
+                $products = $this->get_bestseller_products($count);
                 break;
             case 'featured':
                 error_log('Llamando a get_featured_products()');
-                $products = $this->get_featured_products();
+                $products = $this->get_featured_products($count);
                 break;
             case 'custom':
                 error_log('Llamando a get_custom_products()');
-                $products = $this->get_custom_products($product);
+                $products = $this->get_custom_products($product, $count);
                 break;
             default:
                 error_log('Tipo no reconocido, usando get_same_category_products() como fallback');
-                $products = $this->get_same_category_products($product);
+                $products = $this->get_same_category_products($product, $count);
                 break;
         }
         
@@ -394,13 +398,15 @@ class Snap_Sidebar_Cart_Ajax {
      *
      * @since    1.1.0
      * @param    WC_Product    $product    El producto base.
+     * @param    int           $count      Número de productos a mostrar.
      * @return   array                     Lista de productos up-sell.
      */
-    private function get_upsell_products($product) {
+    private function get_upsell_products($product, $count = null) {
         error_log('=== INICIO get_upsell_products() ===');
         error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
-        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+        $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
+        error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Obtener los IDs de productos up-sell definidos por el usuario
         $upsell_ids = $product->get_upsell_ids();
@@ -522,13 +528,15 @@ class Snap_Sidebar_Cart_Ajax {
      *
      * @since    1.1.0
      * @param    WC_Product    $product    El producto base.
+     * @param    int           $count      Número de productos a mostrar.
      * @return   array                     Lista de productos cross-sell.
      */
-    private function get_crosssell_products($product) {
+    private function get_crosssell_products($product, $count = null) {
         error_log('=== INICIO get_crosssell_products() ===');
         error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
-        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+        $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
+        error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Obtener los IDs de productos cross-sell definidos por el usuario
         $crosssell_ids = $product->get_cross_sell_ids();
@@ -636,9 +644,10 @@ class Snap_Sidebar_Cart_Ajax {
      *
      * @since    1.0.0
      * @param    WC_Product    $product    El producto base.
+     * @param    int           $count      Número de productos a mostrar.
      * @return   array                     Lista de productos de la misma categoría.
      */
-    private function get_same_category_products($product) {
+    private function get_same_category_products($product, $count = null) {
         error_log('=== INICIO get_same_category_products() ===');
         error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
@@ -795,10 +804,14 @@ class Snap_Sidebar_Cart_Ajax {
      * Obtiene los productos más vendidos.
      *
      * @since    1.0.0
-     * @return   array    Lista de productos más vendidos.
+     * @param    int     $count    Número de productos a mostrar.
+     * @return   array             Lista de productos más vendidos.
      */
-    private function get_bestseller_products() {
-        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+    private function get_bestseller_products($count = null) {
+        error_log('=== INICIO get_bestseller_products() ===');
+        
+        $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
+        error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -835,12 +848,14 @@ class Snap_Sidebar_Cart_Ajax {
      * Obtiene los productos destacados (featured).
      *
      * @since    1.1.0
-     * @return   array    Lista de productos destacados.
+     * @param    int     $count    Número de productos a mostrar.
+     * @return   array             Lista de productos destacados.
      */
-    private function get_featured_products() {
+    private function get_featured_products($count = null) {
         error_log('=== INICIO get_featured_products() ===');
         
-        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+        $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
+        error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -933,10 +948,16 @@ class Snap_Sidebar_Cart_Ajax {
      *
      * @since    1.0.0
      * @param    WC_Product    $product    El producto base.
+     * @param    int           $count      Número de productos a mostrar.
      * @return   array                     Lista de productos personalizados.
      */
-    private function get_custom_products($product) {
-        $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
+    private function get_custom_products($product, $count = null) {
+        error_log('=== INICIO get_custom_products() ===');
+        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        
+        $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
+        error_log('Límite de productos relacionados: ' . $related_limit);
+        
         $custom_query = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
         
         // Si no hay consulta personalizada, devolvemos productos aleatorios como fallback

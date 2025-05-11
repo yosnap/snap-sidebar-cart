@@ -37,19 +37,19 @@ class Snap_Sidebar_Cart_Public {
         // Forzar recarga eliminando la caché
         $version = SNAP_SIDEBAR_CART_VERSION . '.' . time();
         
-        // Registrar y cargar el CSS principal
+        // Registrar y cargar el CSS unificado (ahora incluye los estilos de slider-fix.css)
         wp_deregister_style('snap-sidebar-cart-public');
         wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
         
-        // Registrar y cargar el CSS de arreglo del slider con prioridad más alta
+        // Ya no necesitamos cargar slider-fix.css porque sus estilos están en snap-sidebar-cart-public.css
         wp_deregister_style('snap-sidebar-cart-slider-fix');
-        wp_enqueue_style('snap-sidebar-cart-slider-fix', SNAP_SIDEBAR_CART_URL . 'assets/css/slider-fix.css', array('snap-sidebar-cart-public'), $version, 'all');
         
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
         $preloader_css = $this->generate_preloader_css();
         
-        wp_add_inline_style('snap-sidebar-cart-slider-fix', $custom_css . $preloader_css);
+        // Agregar estilos personalizados al CSS principal
+        wp_add_inline_style('snap-sidebar-cart-public', $custom_css . $preloader_css);
     }
 
     /**
