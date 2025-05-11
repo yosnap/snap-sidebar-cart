@@ -12,6 +12,12 @@
  * Requires PHP: 7.3
  * WC requires at least: 4.0
  * WC tested up to: 8.5
+ *
+ * Woo: 12345:342928dfsfhsf8429842374wdf4234sfd
+ * WC requires at least: 4.0
+ * WC tested up to: 8.5
+ *
+ * @package Snap_Sidebar_Cart
  */
 
 // Si este archivo es llamado directamente, abortar.
@@ -27,6 +33,13 @@ define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
 
 // Cargar archivos principales
 require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart.php';
+
+// Declarar compatibilidad con HPOS de WooCommerce
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
 
 // Verificar si WooCommerce está activo
 function snap_sidebar_cart_check_woocommerce() {

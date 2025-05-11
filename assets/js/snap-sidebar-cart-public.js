@@ -719,9 +719,11 @@
     // Selector específico para los elementos que activan el carrito lateral
     $body.on(
       "click",
-      snap_sidebar_cart_params.activation_selectors,
+      snap_sidebar_cart_params.activation_selectors + ", .minicart-header",
       function (e) {
         var $this = $(this);
+        
+        console.log("Click en activador de sidebar:", this);
 
         // Verificar si el botón podría ser para una variación de producto
         if (
@@ -739,7 +741,7 @@
         // Para otros botones, abrimos normalmente el sidebar
         e.preventDefault();
         e.stopPropagation();
-        console.log("Botón de producto simple detectado - Abriendo sidebar");
+        console.log("Botón de producto simple o minicart-header detectado - Abriendo sidebar");
         openSidebar();
       }
     );
@@ -768,11 +770,26 @@
         }
 
         // Si la apertura automática está habilitada, primero abrimos el sidebar
-        if (
-          snap_sidebar_cart_params.auto_open === "1" ||
-          snap_sidebar_cart_params.auto_open === true
-        ) {
-          openSidebar();
+        // Convertir el valor a booleano para manejar diferentes formatos (string, number, boolean)
+        var autoOpenValue = snap_sidebar_cart_params.auto_open;
+        var shouldAutoOpen = (autoOpenValue === "1" || autoOpenValue === 1 || autoOpenValue === true || autoOpenValue === "true");
+        
+        console.log("Valor de auto_open:", autoOpenValue, "Tipo:", typeof autoOpenValue);
+        console.log("¿Debería abrirse automáticamente?", shouldAutoOpen);
+        
+        if (shouldAutoOpen) {
+          console.log("Abriendo sidebar automáticamente después de añadir al carrito");
+          // Forzar apertura del sidebar
+          $(".snap-sidebar-cart").addClass("open");
+          $(".snap-sidebar-cart__overlay").css("display", "block");
+          $("body").addClass("snap-sidebar-cart-open");
+          
+          // Llamar a la función openSidebar para asegurar que se ejecute la lógica completa
+          setTimeout(function() {
+            openSidebar();
+          }, 50);
+        } else {
+          console.log("Apertura automática deshabilitada:", autoOpenValue);
         }
 
         // Si es una actualización y no una adición, manejarlo diferente
@@ -905,6 +922,9 @@
       $(".snap-sidebar-cart").addClass("open");
       $(".snap-sidebar-cart__overlay").css("display", "block");
       $("body").addClass("snap-sidebar-cart-open");
+      
+      // Debug para verificar que el sidebar se está abriendo correctamente
+      console.log("Sidebar abierto - Clase 'open' añadida:", $(".snap-sidebar-cart").hasClass("open"));
 
       // Cargar productos relacionados si el contenedor activo está vacío
       var $activeContainer = $(

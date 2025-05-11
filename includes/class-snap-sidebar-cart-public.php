@@ -148,33 +148,6 @@ class Snap_Sidebar_Cart_Public {
                     $('.snap-sidebar-cart__related-container').removeClass('active');
                     $('.snap-sidebar-cart__related-container[data-content=\"' + tabType + '\"]').addClass('active');
                 });
-                
-                // Aplicar solución directa para los botones de navegación
-                $(document).on('click', '.snap-sidebar-cart__slider-prev', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
-                    if (!\$track.length) return;
-                    
-                    \$track.animate({
-                        scrollLeft: Math.max(0, \$track.scrollLeft() - \$track.width() * 0.8)
-                    }, 300);
-                });
-                
-                $(document).on('click', '.snap-sidebar-cart__slider-next', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var \$track = $(this).siblings('.snap-sidebar-cart__slider-track');
-                    if (!\$track.length) return;
-                    
-                    var maxScroll = \$track[0].scrollWidth - \$track.width();
-                    
-                    \$track.animate({
-                        scrollLeft: Math.min(maxScroll, \$track.scrollLeft() + \$track.width() * 0.8)
-                    }, 300);
-                });
             });
         ");
         

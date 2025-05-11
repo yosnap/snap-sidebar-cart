@@ -108,15 +108,15 @@ $cart_count = WC()->cart->get_cart_contents_count();
                             echo '<div class="snap-sidebar-cart__related-container' . $active_class . '" data-content="' . esc_attr($tab_key) . '">';
                             echo '<div class="snap-sidebar-cart__slider">';
                             
-                            // Implementar Swiper.js
-                            echo '<div class="swiper-container snap-sidebar-cart__swiper-container">';
-                            echo '<div class="swiper-wrapper snap-sidebar-cart__slider-track">';
+                            // Implementar Scroll Snap
+                            echo '<div class="snap-sidebar-cart__swiper-container">';
+                            echo '<div class="snap-sidebar-cart__slider-track">';
                             // Los productos se cargarán dinámicamente vía AJAX
                             echo '</div>';
                             
-                            // Navegación para Swiper (ahora arriba a la derecha)
-                            echo '<div class="swiper-button-prev snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-prev"></div>';
-                            echo '<div class="swiper-button-next snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-next"></div>';
+                            // Navegación para Scroll Snap
+                            echo '<div class="snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-prev"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>';
+                            echo '<div class="snap-sidebar-cart__slider-nav snap-sidebar-cart__slider-next"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>';
                             
                             echo '</div>'; // cierre swiper-container
                             echo '</div>'; // cierre snap-sidebar-cart__slider
