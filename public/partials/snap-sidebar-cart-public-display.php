@@ -109,8 +109,8 @@ $cart_count = WC()->cart->get_cart_contents_count();
                             echo '<div class="snap-sidebar-cart__slider">';
                             
                             // Implementar Scroll Snap
-                            echo '<div class="snap-sidebar-cart__swiper-container">';
-                            echo '<div class="snap-sidebar-cart__slider-track">';
+                            echo '<div class="swiper-container">';
+                            echo '<div class="swiper-wrapper">';
                             // Los productos se cargarán dinámicamente vía AJAX
                             echo '</div>';
                             

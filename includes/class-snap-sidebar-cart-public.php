@@ -88,36 +88,23 @@ class Snap_Sidebar_Cart_Public {
         // Cargar jQuery explícitamente
         wp_enqueue_script('jquery');
         
-        // Cargar Swiper.js para los sliders
-        wp_enqueue_style(
-            'swiper-styles', 
-            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css',
-            array(),
-            '10.0.0'
-        );
-        
-        wp_enqueue_script(
-            'swiper-script',
-            'https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js',
-            array('jquery'),
-            '10.0.0',
-            true
-        );
+        // Ya no cargamos Swiper.js, usamos CSS Scroll Snap en su lugar
+        // Los estilos necesarios están incluidos en snap-sidebar-cart-public.css
         
         // Cargar el script principal
         wp_enqueue_script(
             'snap-sidebar-cart-public', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
-            array('jquery', 'swiper-script'), 
+            array('jquery'), 
             $version, 
             true
         );
         
-        // Cargar inicializador de Swiper
+        // Cargar inicializador de Scroll Snap
         wp_enqueue_script(
-            'snap-sidebar-cart-swiper-init', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/swiper-init.js', 
-            array('jquery', 'swiper-script', 'snap-sidebar-cart-public'), 
+            'snap-sidebar-cart-scroll-snap-init', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/scroll-snap-init.js', 
+            array('jquery', 'snap-sidebar-cart-public'), 
             $version, 
             true
         );
@@ -126,7 +113,25 @@ class Snap_Sidebar_Cart_Public {
         wp_enqueue_script(
             'snap-sidebar-cart-immediate-fix', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/immediate-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-swiper-init'), 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-scroll-snap-init'), 
+            $version, 
+            true
+        );
+        
+        // Cargar solución específica para la apertura del sidebar
+        wp_enqueue_script(
+            'snap-sidebar-cart-opener-fix', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/sidebar-opener-fix.js', 
+            array('jquery', 'snap-sidebar-cart-public'), 
+            $version, 
+            true
+        );
+        
+        // Cargar solución simple para los botones de cantidad
+        wp_enqueue_script(
+            'snap-sidebar-cart-quantity-buttons-fix', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/quantity-buttons-fix.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-opener-fix'), 
             $version, 
             true
         );

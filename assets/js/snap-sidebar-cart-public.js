@@ -202,7 +202,11 @@
       success: function (response) {
         console.log("Respuesta de actualización:", response);
         if (response.success) {
+          // Actualizar el contenido del carrito
           updateCartContent(response.data);
+          
+          // Forzar una actualización completa del carrito para obtener el precio total actualizado
+          forceCartRefresh();
         } else {
           if (response.data && response.data.message) {
             alert(response.data.message);
@@ -224,16 +228,38 @@
   function updateCartContent(data) {
     console.log("Actualizando contenido del carrito con datos:", data);
 
+    // Asegurarnos de que los contenedores estén definidos
+    if (!$container || $container.length === 0) {
+      $container = $(".snap-sidebar-cart__products");
+      console.log("Redefiniendo $container:", $container.length > 0 ? "Encontrado" : "No encontrado");
+    }
+    
+    if (!$productsContainer || $productsContainer.length === 0) {
+      $productsContainer = $(".snap-sidebar-cart__products-list");
+      console.log("Redefiniendo $productsContainer:", $productsContainer.length > 0 ? "Encontrado" : "No encontrado");
+    }
+
     // Actualizar el HTML del carrito
-    $(".snap-sidebar-cart__products").html(data.cart_html);
+    if (data.cart_html) {
+      $(".snap-sidebar-cart__products").html(data.cart_html);
+      console.log("HTML del carrito actualizado con éxito");
+    } else {
+      console.error("Error: No se recibió HTML del carrito en la respuesta");
+    }
 
     // Actualizar el contador
-    $(".snap-sidebar-cart__count").text(data.cart_count);
-    console.log("Actualizando contador a:", data.cart_count);
+    if (data.cart_count !== undefined) {
+      $(".snap-sidebar-cart__count").text(data.cart_count);
+      console.log("Actualizando contador a:", data.cart_count);
+    }
 
     // Actualizar los totales
-    $(".snap-sidebar-cart__shipping-price").html(data.shipping_total);
-    $(".snap-sidebar-cart__subtotal-price").html(data.subtotal);
+    if (data.shipping_total) {
+      $(".snap-sidebar-cart__shipping-price").html(data.shipping_total);
+    }
+    if (data.subtotal) {
+      $(".snap-sidebar-cart__subtotal-price").html(data.subtotal);
+    }
 
     // Volver a vincular los eventos a los nuevos elementos del DOM
     bindQuantityEvents();
@@ -243,6 +269,9 @@
 
     // Actualizar botones según el estado del carrito
     if (data.cart_count > 0) {
+      // Actualizar la visibilidad del footer
+      updateFooterVisibility(data.cart_count);
+      
       if ($(".snap-sidebar-cart__buttons").length === 0) {
         var buttonsHtml =
           '<div class="snap-sidebar-cart__buttons">' +
@@ -257,6 +286,10 @@
           "</div>";
         $(".snap-sidebar-cart__footer").append(buttonsHtml);
       }
+    } else {
+      // Actualizar la visibilidad del footer
+      updateFooterVisibility(0);
+    }
 
       // Si hay productos pero no hay productos relacionados cargados, cargar para el primer producto
       if (
@@ -303,10 +336,10 @@
     var $targetContainer = $(
       '.snap-sidebar-cart__related-container[data-content="' +
         type +
-        '"] .snap-sidebar-cart__slider-track'
+        '"] .swiper-wrapper'
     );
 
-    console.log("Buscando contenedor:", '.snap-sidebar-cart__related-container[data-content="' + type + '"] .snap-sidebar-cart__slider-track');
+    console.log("Buscando contenedor:", '.snap-sidebar-cart__related-container[data-content="' + type + '"] .swiper-wrapper');
     console.log("Contenedor encontrado:", $targetContainer.length > 0 ? "Sí" : "No");
 
     if ($targetContainer.length === 0) {
@@ -689,16 +722,157 @@
     });
   }
 
+  // Variables principales (definidas a nivel global para que estén disponibles en todos los manejadores)
+  var $body = $("body");
+  var $sidebar = $(".snap-sidebar-cart");
+  var $overlay = $(".snap-sidebar-cart__overlay");
+  var $container = $(".snap-sidebar-cart__products");
+  var $productsContainer = $(".snap-sidebar-cart__products-list");
+  var $footer = $(".snap-sidebar-cart__footer");
+  var addingProduct = false;
+  
+  // Función para actualizar la visibilidad del footer según el estado del carrito
+  function updateFooterVisibility(cartCount) {
+    if (cartCount === 0) {
+      // Ocultar el footer cuando el carrito está vacío
+      $footer.hide();
+      console.log("Carrito vacío: ocultando footer");
+    } else {
+      // Mostrar el footer cuando hay productos
+      $footer.show();
+      console.log("Carrito con productos: mostrando footer");
+    }
+  }
+  
+  /**
+   * Fuerza una actualización completa del carrito para obtener el precio total actualizado
+   */
+  function forceCartRefresh() {
+    console.log("Forzando actualización completa del carrito...");
+    
+    // Calcular el total manualmente primero
+    var manualTotal = 0;
+    var totalItems = 0;
+    
+    // Recorrer todos los productos en el carrito
+    $('.snap-sidebar-cart__product').each(function() {
+      var $product = $(this);
+      var quantity = parseInt($product.find('input.cart-item__quantity-input, input.snap-sidebar-cart__quantity-input').val(), 10) || 0;
+      var price = parseFloat($product.find('.snap-sidebar-cart__product-price .woocommerce-Price-amount').text().replace(/[^0-9,\.]/g, '').replace(',', '.')) || 0;
+      
+      var itemTotal = quantity * price;
+      manualTotal += itemTotal;
+      totalItems += quantity;
+      
+      console.log("Producto:", $product.find('.snap-sidebar-cart__product-title').text());
+      console.log("Cantidad:", quantity, "Precio:", price, "Total:", itemTotal);
+    });
+    
+    console.log("Total calculado manualmente:", manualTotal.toFixed(2), "€");
+    console.log("Total de ítems calculado manualmente:", totalItems);
+    
+    // Formatear el total calculado manualmente
+    var formattedTotal = manualTotal.toFixed(2).replace('.', ',') + ' €';
+    var formattedTotalHtml = '<span class="woocommerce-Price-amount amount"><bdi>' + formattedTotal + '</bdi></span>';
+    
+    // Actualizar el subtotal con el valor calculado manualmente
+    $('.snap-sidebar-cart__subtotal-price').html(formattedTotalHtml);
+    $('.snap-sidebar-cart__subtotal-value').html(formattedTotalHtml);
+    
+    // Actualizar el contador de ítems
+    $('.snap-sidebar-cart__count').text(totalItems);
+    
+    // También realizar la petición AJAX para mantener sincronizado el backend
+    $.ajax({
+      type: "POST",
+      url: snap_sidebar_cart_params.ajax_url,
+      data: {
+        action: "snap_sidebar_cart_get_cart",
+        nonce: snap_sidebar_cart_params.nonce
+      },
+      success: function(response) {
+        console.log("Respuesta de actualización completa:", response);
+        
+        // Ocultar cualquier loader que pueda estar visible
+        $(".snap-sidebar-cart__product-loader").hide();
+      },
+      error: function(xhr, status, error) {
+        console.error("Error al actualizar el carrito:", error);
+        $(".snap-sidebar-cart__product-loader").hide();
+      }
+    });
+  }
+  
+  // Función auxiliar para manejar el método closest de manera segura
+  function safeClosest($element, selector) {
+    try {
+      if ($element && $element.closest) {
+        return $element.closest(selector);
+      } else {
+        // Alternativa manual si closest no está disponible
+        var $current = $element;
+        while ($current.length) {
+          if ($current.is(selector)) {
+            return $current;
+          }
+          $current = $current.parent();
+          if (!$current.length) break;
+        }
+        return $();
+      }
+    } catch (error) {
+      console.error("Error en safeClosest:", error);
+      return $();
+    }
+  }
+  
+  // Función para forzar la apertura del sidebar
+  function forceOpenSidebar() {
+    console.log("Forzando apertura del sidebar");
+    
+    try {
+      // Asegurarnos de que el sidebar esté definido
+      if (!$sidebar || $sidebar.length === 0) {
+        $sidebar = $(".snap-sidebar-cart");
+      }
+      
+      // Aplicar estilos directamente
+      $sidebar.addClass("open").css({
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "transform": "translateX(0)"
+      });
+      
+      $(".snap-sidebar-cart__overlay").css({
+        "display": "block",
+        "opacity": "1"
+      });
+      
+      $("body").addClass("snap-sidebar-cart-open");
+      
+      console.log("Sidebar forzado a abrir:", $sidebar.length > 0 ? "Encontrado" : "No encontrado");
+    } catch (error) {
+      console.error("Error al forzar apertura del sidebar:", error);
+    }
+  }
+  
   $(document).ready(function () {
     console.log("Inicializando Snap Sidebar Cart...");
-
-    // Variables principales
-    var $body = $("body");
-    var $sidebar = $(".snap-sidebar-cart");
-    var $overlay = $(".snap-sidebar-cart__overlay");
-    var $container = $(".snap-sidebar-cart__products");
-    var $productsContainer = $(".snap-sidebar-cart__products-list");
-    var addingProduct = false;
+    
+    // Verificar el estado inicial del carrito y actualizar la visibilidad del footer
+    var initialCartCount = parseInt($(".snap-sidebar-cart__count").text()) || 0;
+    updateFooterVisibility(initialCartCount);
+    console.log("Estado inicial del carrito:", initialCartCount, "productos");
+    
+    // Añadir manejador directo para el botón de carrito del tema
+    $(".cart-contents, .ti-shopping-cart, .site-header-cart a").on("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Click en botón de carrito del tema");
+      forceOpenSidebar();
+      return false;
+    });
     var currentRelatedProductTab = "related"; // Tab activo por defecto
 
     console.log(
@@ -719,30 +893,39 @@
     // Selector específico para los elementos que activan el carrito lateral
     $body.on(
       "click",
-      snap_sidebar_cart_params.activation_selectors + ", .minicart-header",
+      snap_sidebar_cart_params.activation_selectors + ", .minicart-header, .snap-sidebar-cart-trigger, .ti-shopping-cart, .cart-contents",
       function (e) {
         var $this = $(this);
         
         console.log("Click en activador de sidebar:", this);
+        console.log("Clases del elemento:", $this.attr('class'));
 
-        // Verificar si el botón podría ser para una variación de producto
-        if (
-          $this.hasClass("add_to_cart_button") &&
-          (($this.attr("href") && isProductVariation($this.attr("href"))) || 
-           $this.hasClass("product_type_variable") ||
-           $this.hasClass("variations_form") ||
-           $this.closest(".variations_form").length)
-        ) {
-          console.log("Botón de variación de producto detectado - No abriendo sidebar");
-          // No prevenimos el comportamiento por defecto para que WooCommerce maneje la navegación a la página de detalles
-          return;
+        try {
+          // Verificar si el botón podría ser para una variación de producto
+          if (
+            $this.hasClass("add_to_cart_button") &&
+            (($this.attr("href") && isProductVariation($this.attr("href"))) || 
+             $this.hasClass("product_type_variable") ||
+             $this.hasClass("variations_form") ||
+             (safeClosest($this, ".variations_form").length > 0))
+          ) {
+            console.log("Botón de variación de producto detectado - No abriendo sidebar");
+            // No prevenimos el comportamiento por defecto para que WooCommerce maneje la navegación a la página de detalles
+            return;
+          }
+
+          // Para otros botones, abrimos normalmente el sidebar
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Botón de producto simple o minicart-header detectado - Abriendo sidebar");
+          
+          // Usar la función forceOpenSidebar para abrir el sidebar de manera segura
+          forceOpenSidebar();
+        } catch (error) {
+          console.error("Error en el manejador de clic:", error);
+          // Intento de apertura directa en caso de error
+          forceOpenSidebar();
         }
-
-        // Para otros botones, abrimos normalmente el sidebar
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("Botón de producto simple o minicart-header detectado - Abriendo sidebar");
-        openSidebar();
       }
     );
 
@@ -751,6 +934,32 @@
       "added_to_cart",
       function (event, fragments, cart_hash, $button) {
         console.log("Evento added_to_cart detectado");
+        
+        // Verificar si la apertura automática está habilitada
+        var autoOpenValue = snap_sidebar_cart_params.auto_open;
+        var shouldAutoOpen = (autoOpenValue === "1" || autoOpenValue === 1 || autoOpenValue === true || autoOpenValue === "true");
+        
+        console.log("Valor de auto_open:", autoOpenValue, "Tipo:", typeof autoOpenValue);
+        console.log("¿Debería abrirse automáticamente?", shouldAutoOpen);
+        
+        // Solo abrir el sidebar si la apertura automática está habilitada
+        if (shouldAutoOpen) {
+            console.log("Abriendo sidebar automáticamente después de añadir al carrito");
+            // Usar la función global para abrir el sidebar de manera definitiva
+            if (window.openSidebarDefinitive) {
+                window.openSidebarDefinitive();
+            } else {
+                forceOpenSidebar();
+            }
+        } else {
+            console.log("Apertura automática deshabilitada:", autoOpenValue);
+        }
+        
+        // Asegurarnos de que el contenedor de productos esté definido
+        if (!$productsContainer || $productsContainer.length === 0) {
+          $productsContainer = $(".snap-sidebar-cart__products-list");
+          console.log("Redefiniendo $productsContainer:", $productsContainer.length > 0 ? "Encontrado" : "No encontrado");
+        }
 
         // Verificar si es una actualización de un producto existente
         var isProductUpdate = false;
@@ -769,28 +978,7 @@
           );
         }
 
-        // Si la apertura automática está habilitada, primero abrimos el sidebar
-        // Convertir el valor a booleano para manejar diferentes formatos (string, number, boolean)
-        var autoOpenValue = snap_sidebar_cart_params.auto_open;
-        var shouldAutoOpen = (autoOpenValue === "1" || autoOpenValue === 1 || autoOpenValue === true || autoOpenValue === "true");
-        
-        console.log("Valor de auto_open:", autoOpenValue, "Tipo:", typeof autoOpenValue);
-        console.log("¿Debería abrirse automáticamente?", shouldAutoOpen);
-        
-        if (shouldAutoOpen) {
-          console.log("Abriendo sidebar automáticamente después de añadir al carrito");
-          // Forzar apertura del sidebar
-          $(".snap-sidebar-cart").addClass("open");
-          $(".snap-sidebar-cart__overlay").css("display", "block");
-          $("body").addClass("snap-sidebar-cart-open");
-          
-          // Llamar a la función openSidebar para asegurar que se ejecute la lógica completa
-          setTimeout(function() {
-            openSidebar();
-          }, 50);
-        } else {
-          console.log("Apertura automática deshabilitada:", autoOpenValue);
-        }
+        // La apertura automática ya se verificó al inicio del manejador
 
         // Si es una actualización y no una adición, manejarlo diferente
         if (isProductUpdate) {
@@ -861,6 +1049,18 @@
 
           // Actualizar contenido del carrito mediante AJAX
           setTimeout(function () {
+            // Asegurarnos de que los contenedores estén definidos antes de hacer la solicitud AJAX
+            if (!$container || $container.length === 0) {
+              $container = $(".snap-sidebar-cart__products");
+              console.log("Redefiniendo $container antes de AJAX:", $container.length > 0 ? "Encontrado" : "No encontrado");
+            }
+            
+            if (!$productsContainer || $productsContainer.length === 0) {
+              $productsContainer = $(".snap-sidebar-cart__products-list");
+              console.log("Redefiniendo $productsContainer antes de AJAX:", $productsContainer.length > 0 ? "Encontrado" : "No encontrado");
+            }
+            
+            console.log("Realizando solicitud AJAX para obtener contenido del carrito");
             $.ajax({
               type: "POST",
               url: snap_sidebar_cart_params.ajax_url,
@@ -868,12 +1068,17 @@
                 action: "snap_sidebar_cart_get_content",
               },
               success: function (response) {
+                console.log("Respuesta AJAX recibida:", response);
+                
                 if (response.success) {
                   console.log("Contenido del carrito actualizado via AJAX");
 
                   // Eliminar el placeholder
-                  if ($newItemPlaceholder) {
+                  if ($newItemPlaceholder && $newItemPlaceholder.length > 0) {
+                    console.log("Eliminando placeholder");
                     $newItemPlaceholder.remove();
+                  } else {
+                    console.log("No se encontró placeholder para eliminar");
                   }
 
                   // Actualizar el contenido del carrito
@@ -919,17 +1124,33 @@
     // Función para abrir el sidebar
     function openSidebar() {
       console.log("Ejecutando openSidebar()");
-      $(".snap-sidebar-cart").addClass("open");
-      $(".snap-sidebar-cart__overlay").css("display", "block");
-      $("body").addClass("snap-sidebar-cart-open");
       
-      // Debug para verificar que el sidebar se está abriendo correctamente
-      console.log("Sidebar abierto - Clase 'open' añadida:", $(".snap-sidebar-cart").hasClass("open"));
-
-      // Cargar productos relacionados si el contenedor activo está vacío
-      var $activeContainer = $(
-        ".snap-sidebar-cart__related-container.active .snap-sidebar-cart__slider-track"
-      );
+      // Usar la función forceOpenSidebar para abrir el sidebar de manera segura
+      forceOpenSidebar();
+      
+      try {
+        // Cargar productos relacionados si el contenedor activo está vacío
+        var $activeContainer = $(".snap-sidebar-cart__related-container.active .swiper-wrapper");
+        
+        if ($activeContainer.length && $activeContainer.children().length === 0) {
+          console.log("Contenedor activo vacío, cargando productos relacionados");
+          var firstProduct = $(".snap-sidebar-cart__product").first();
+          
+          if (firstProduct.length) {
+            var productId = firstProduct.data("product-id");
+            if (productId) {
+              console.log("Cargando productos relacionados para ID:", productId);
+              loadRelatedProducts(productId);
+            }
+          }
+        }
+        
+        // Verificar el estado del carrito y actualizar la visibilidad del footer
+        var cartCount = parseInt($(".snap-sidebar-cart__count").text()) || 0;
+        updateFooterVisibility(cartCount);
+      } catch (error) {
+        console.error("Error al cargar productos relacionados:", error);
+      }
       if ($activeContainer.length && $activeContainer.children().length === 0) {
         // Obtener el primer producto del carrito para cargar sus relacionados
         var firstProduct = $(".snap-sidebar-cart__product").first();
@@ -1100,7 +1321,7 @@
       currentRelatedProductTab = tabType;
 
       // Cargar productos si el contenedor está vacío
-      var $targetContainer = $targetContent.find(".snap-sidebar-cart__slider-track");
+      var $targetContainer = $targetContent.find(".swiper-wrapper");
       console.log("Contenedor de productos:", "¿Encontrado?", $targetContainer.length > 0 ? "Sí" : "No");
 
       // Mostrar un preloader mientras se cargan los productos
@@ -1146,7 +1367,7 @@
       e.preventDefault();
       e.stopPropagation();
       console.log("Botón prev del slider clickeado");
-      var $track = $(this).siblings(".snap-sidebar-cart__slider-track");
+      var $track = $(this).siblings(".swiper-wrapper");
       
       // Calcular el ancho de un elemento del slider para el desplazamiento
       var $item = $track.find(".snap-sidebar-cart__related-product").first();
@@ -1171,7 +1392,7 @@
       e.preventDefault();
       e.stopPropagation();
       console.log("Botón next del slider clickeado");
-      var $track = $(this).siblings(".snap-sidebar-cart__slider-track");
+      var $track = $(this).siblings(".swiper-wrapper");
       
       // Calcular el ancho de un elemento del slider para el desplazamiento
       var $item = $track.find(".snap-sidebar-cart__related-product").first();
@@ -1785,13 +2006,54 @@ function highlightExistingProduct(productId) {
  * @param {Object} data - Datos del contenido a actualizar
  */
 function updateCartContent(data) {
+  console.log("Actualizando contenido del carrito con datos:", data);
+  
   if (data.cart_content) {
+    // Actualizar el contenido del carrito
     $cartContent.html(data.cart_content);
+    
+    // Asegurarnos de que el contenedor de productos esté definido
+    if (!$productsContainer || $productsContainer.length === 0) {
+      $productsContainer = $(".snap-sidebar-cart__products-list");
+      console.log("Redefiniendo $productsContainer:", $productsContainer.length > 0 ? "Encontrado" : "No encontrado");
+    }
+    
+    // Verificar si hay productos en el carrito
+    var hasProducts = $productsContainer.find('.snap-sidebar-cart__product').length > 0;
+    console.log("¿Hay productos en el carrito?", hasProducts ? "Sí" : "No");
+    
+    if (hasProducts) {
+      // Actualizar visibilidad del footer
+      updateFooterVisibility(hasProducts ? 1 : 0);
+      
+      // Cargar productos relacionados en la pestaña activa
+      var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+      if ($activeTab.length > 0) {
+        var tabType = $activeTab.data('tab');
+        var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .swiper-wrapper');
+        
+        console.log("Recargando productos para la pestaña activa:", tabType);
+        if ($targetContainer.length > 0) {
+          // Solo cargar si el contenedor está vacío o si se acaba de añadir un producto
+          if ($targetContainer.children('.snap-sidebar-cart__related-product').length === 0 || data.product_added) {
+            loadTabProducts(tabType, $targetContainer);
+          }
+        }
+      } else {
+        // Si no hay pestaña activa, activar la primera
+        $('.snap-sidebar-cart__related-tab').first().trigger('click');
+      }
+    }
   }
+  
   if (data.cart_count !== undefined) {
     updateCartCount(data.cart_count);
   }
+  
   if (data.cart_subtotal !== undefined) {
     updateCartSubtotal(data.cart_subtotal);
   }
+  
+  // Actualizar el precio total en el subtotal del carrito
+  updateTotalPrice();
 }

@@ -6,6 +6,9 @@ jQuery(function($) {
     'use strict';
 
     console.log('Aplicando solución inmediata para las pestañas y navegación');
+    
+    // Variable global para almacenar la función loadTabProducts
+    window.loadTabProducts = null;
 
     // Esperar a que todo el DOM esté disponible
     $(window).on('load', function() {
@@ -45,7 +48,7 @@ jQuery(function($) {
             $('.snap-sidebar-cart__related-container').removeClass('active');
             $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]').addClass('active');
             
-            var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .snap-sidebar-cart__slider-track');
+            var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .swiper-wrapper');
             
             // Si no hay productos y el contenedor está vacío, cargarlos
             if ($targetContainer.length && $targetContainer.children('.snap-sidebar-cart__related-product').length === 0) {
@@ -74,7 +77,7 @@ jQuery(function($) {
             console.log('Botón anterior clickeado');
             
             var $button = $(this);
-            var $track = $button.siblings('.snap-sidebar-cart__slider-track');
+            var $track = $button.siblings('.swiper-wrapper');
             
             if (!$track.length) {
                 console.error('No se encontró el track del slider');
@@ -114,7 +117,7 @@ jQuery(function($) {
             console.log('Botón siguiente clickeado');
             
             var $button = $(this);
-            var $track = $button.siblings('.snap-sidebar-cart__slider-track');
+            var $track = $button.siblings('.swiper-wrapper');
             
             if (!$track.length) {
                 console.error('No se encontró el track del slider');
@@ -169,7 +172,7 @@ jQuery(function($) {
         
         // Mostrar/ocultar botones según el contenido
         var totalItemsWidth = 0;
-        var $items = $track.children('.snap-sidebar-cart__related-product');
+        var $items = $track.children();
         
         if ($items.length === 0) {
             $prevButton.hide();
@@ -213,6 +216,7 @@ jQuery(function($) {
     }
     
     // Cargar productos para la pestaña seleccionada
+    // Función para cargar productos en las pestañas (expuesta globalmente)
     function loadTabProducts(tabType, $container) {
         console.log('Cargando productos para la pestaña:', tabType);
         
@@ -331,4 +335,7 @@ jQuery(function($) {
         fixTabs();
         fixSliderNavigation();
     }, 500);
+    
+    // Exponer la función loadTabProducts globalmente
+    window.loadTabProducts = loadTabProducts;
 });

@@ -54,7 +54,7 @@
      * @param {jQuery} $container - Contenedor del slider
      */
     function setupNavigationButtons($container) {
-        var $track = $container.find('.snap-sidebar-cart__slider-track');
+        var $track = $container.find('.swiper-wrapper');
         var $prevBtn = $container.find('.snap-sidebar-cart__slider-prev');
         var $nextBtn = $container.find('.snap-sidebar-cart__slider-next');
         
@@ -132,7 +132,7 @@
         console.log("=== INICIO loadRelatedProducts con Scroll Snap ===");
         console.log("Cargando productos relacionados para ID: " + productId + ", tipo: " + type);
         
-        var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + type + '"] .snap-sidebar-cart__slider-track');
+        var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + type + '"] .swiper-wrapper');
         
         if ($targetContainer.length === 0) {
             console.error("No se encontró el contenedor para productos relacionados");
@@ -171,7 +171,7 @@
                     $targetContainer.html(productsHtml);
                     
                     // Inicializar Scroll Snap
-                    var $sliderContainer = $targetContainer.closest('.snap-sidebar-cart__swiper-container');
+                    var $sliderContainer = $targetContainer.closest('.swiper-container');
                     if ($sliderContainer.length) {
                         initScrollSnap($sliderContainer);
                         
@@ -188,7 +188,7 @@
                     $targetContainer.html(
                         '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__no-products">No se encontraron productos relacionados.</div>'
                     );
-                    $targetContainer.closest('.snap-sidebar-cart__swiper-container').find('.snap-sidebar-cart__slider-prev, .snap-sidebar-cart__slider-next').hide();
+                    $targetContainer.closest('.swiper-container').find('.snap-sidebar-cart__slider-prev, .snap-sidebar-cart__slider-next').hide();
                 }
             },
             error: function(xhr, status, error) {
@@ -196,7 +196,7 @@
                 $targetContainer.html(
                     '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__no-products">Error al cargar productos.</div>'
                 );
-                $targetContainer.closest('.snap-sidebar-cart__swiper-container').find('.snap-sidebar-cart__slider-prev, .snap-sidebar-cart__slider-next').hide();
+                $targetContainer.closest('.swiper-container').find('.snap-sidebar-cart__slider-prev, .snap-sidebar-cart__slider-next').hide();
             }
         });
     }
@@ -246,9 +246,9 @@
         });
         
         // Inicializar sliders existentes
-        $('.snap-sidebar-cart__related-container.active .snap-sidebar-cart__swiper-container').each(function() {
+        $('.snap-sidebar-cart__related-container.active .swiper-container').each(function() {
             // Si hay productos, inicializar Scroll Snap
-            var $products = $(this).find('.snap-sidebar-cart__slider-track').children();
+            var $products = $(this).find('.swiper-wrapper').children();
             
             // Aplicar el ancho correcto a todos los productos en la primera carga
             if ($products.length > 0 && !$products.hasClass('snap-sidebar-cart__loading-products')) {
@@ -298,7 +298,7 @@
                 }
                 
                 // Inicializar los sliders existentes
-                $('.snap-sidebar-cart__swiper-container').each(function() {
+                $('.swiper-container').each(function() {
                     initScrollSnap(this);
                 });
                 
@@ -311,7 +311,7 @@
             // Esperar a que se abra el sidebar (si está configurado para abrirse)
             setTimeout(function() {
                 // Inicializar los sliders existentes
-                $('.snap-sidebar-cart__swiper-container').each(function() {
+                $('.swiper-container').each(function() {
                     initScrollSnap(this);
                 });
                 
@@ -345,7 +345,7 @@
                     }
                 } else {
                     // Si ya hay productos, solo inicializar el slider
-                    var $sliderContainer = $container.find('.snap-sidebar-cart__swiper-container');
+                    var $sliderContainer = $container.find('.swiper-container');
                     if ($sliderContainer.length) {
                         initScrollSnap($sliderContainer[0]);
                     }
