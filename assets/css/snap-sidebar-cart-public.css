@@ -264,6 +264,7 @@
     box-shadow: none !important;
     padding: 2px 0;
     font-size: 14px;
+    appearance: textfield;
     -moz-appearance: textfield;
     background: transparent !important;
 }
@@ -650,6 +651,7 @@
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     max-height: 2.6em;
 }

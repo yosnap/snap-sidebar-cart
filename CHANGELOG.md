@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1 - 2025-05-12
+### Cambios Importantes
+- **Disponibilidad global del sidebar**: Ahora el sidebar está disponible en todas las páginas del sitio, no solo en páginas de WooCommerce
+- **Corrección de errores en sidebar-opener-fix.js**: Mejorada la robustez del código para evitar errores cuando el sidebar no se encuentra
+- **Mejoras de compatibilidad en CSS**: Añadidas propiedades estándar para mejor compatibilidad entre navegadores
+
+### Correcciones
+- Solucionado problema que impedía abrir el sidebar desde páginas que no son de WooCommerce
+- Corregidos errores de JavaScript relacionados con el método `closest()` y `offsetHeight`
+- Añadida mejor gestión de errores para evitar fallos en la consola
+
 ## 1.2.0 - 2025-05-11
 ### Cambios Importantes
 - **Reemplazo de Swiper.js con CSS Scroll Snap**: Mejora significativa en rendimiento y experiencia de usuario

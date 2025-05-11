@@ -19,6 +19,17 @@ jQuery(function($) {
     function openSidebarDefinitive() {
         console.log('Ejecutando apertura definitiva del sidebar');
         
+        // Asegurarnos de que el sidebar existe antes de intentar abrirlo
+        if (!$sidebar.length) {
+            console.error('Error: No se encontró el elemento del sidebar');
+            $sidebar = $('.snap-sidebar-cart'); // Intentar obtenerlo de nuevo
+            
+            if (!$sidebar.length) {
+                console.error('Error: No se pudo encontrar el sidebar después de reintentar');
+                return;
+            }
+        }
+        
         // Aplicar estilos directamente para garantizar que se muestre
         $sidebar.addClass('open').css({
             'display': 'block',
@@ -35,7 +46,13 @@ jQuery(function($) {
         $body.addClass('snap-sidebar-cart-open');
         
         // Forzar un reflow para asegurar que los cambios se apliquen inmediatamente
-        $sidebar[0].offsetHeight;
+        try {
+            if ($sidebar[0]) {
+                $sidebar[0].offsetHeight;
+            }
+        } catch (error) {
+            console.warn('No se pudo forzar el reflow, pero el sidebar debería mostrarse igualmente');
+        }
         
         console.log('Sidebar abierto con éxito:', $sidebar.hasClass('open'));
     }
@@ -63,17 +80,9 @@ jQuery(function($) {
     window.closeSidebarDefinitive = closeSidebarDefinitive;
     
     // 1. Manejador para los selectores de activación
-    $(document).on('click', snap_sidebar_cart_params.activation_selectors + ', .minicart-header, .snap-sidebar-cart-trigger, .ti-shopping-cart, .cart-contents', function(e) {
+    $(document).on('click', snap_sidebar_cart_params.activation_selectors, function(e) {
         console.log('Click en selector de activación detectado');
-        console.log('Elemento:', this);
-        
-        // No abrir el sidebar si es un botón de variación
-        if ($(this).hasClass('product_type_variable') || 
-            $(this).hasClass('variations_form') ||
-            $(this).closest('.variations_form').length > 0) {
-            console.log('Es un botón de variación - No abriendo sidebar');
-            return;
-        }
+        console.log('Elemento:', e.currentTarget);
         
         // Prevenir comportamiento por defecto
         e.preventDefault();
@@ -111,12 +120,26 @@ jQuery(function($) {
     
     // 4. Cerrar al hacer clic fuera del sidebar
     $(document).on('click', function(e) {
-        if ($sidebar.hasClass('open') && 
-            !$(e.target).closest('.snap-sidebar-cart').length && 
-            !$(e.target).closest(snap_sidebar_cart_params.activation_selectors).length) {
+        if ($sidebar.hasClass('open')) {
+            var clickedOnSidebar = false;
+            var clickedOnTrigger = false;
             
-            console.log('Click fuera del sidebar - Cerrando');
-            closeSidebarDefinitive();
+            try {
+                // Verificar si se hizo clic en el sidebar
+                clickedOnSidebar = $(e.target).closest('.snap-sidebar-cart').length > 0;
+                
+                // Verificar si se hizo clic en un selector de activación
+                if (snap_sidebar_cart_params.activation_selectors) {
+                    clickedOnTrigger = $(e.target).closest(snap_sidebar_cart_params.activation_selectors).length > 0;
+                }
+            } catch (error) {
+                console.warn('Error al verificar el objetivo del clic:', error);
+            }
+            
+            if (!clickedOnSidebar && !clickedOnTrigger) {
+                console.log('Click fuera del sidebar - Cerrando');
+                closeSidebarDefinitive();
+            }
         }
     });
     

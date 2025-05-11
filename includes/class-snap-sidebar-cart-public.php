@@ -726,16 +726,13 @@ class Snap_Sidebar_Cart_Public {
      * @since    1.0.0
      */
     public function render_sidebar_cart() {
-        // Solo renderizar en páginas de WooCommerce
-        if (!is_woocommerce() && !is_cart() && !is_checkout() && !is_product() && !is_shop()) {
-            return;
-        }
-        
         // Asegurarse de que WooCommerce está activo y el carrito está disponible
         if (!function_exists('WC') || !WC()->cart) {
             return;
         }
         
+        // Incluir el sidebar en todas las páginas del sitio
+        // Esto permite que el trigger funcione en cualquier página
         include_once SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-public-display.php';
     }
 }

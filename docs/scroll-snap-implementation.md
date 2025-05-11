@@ -17,6 +17,7 @@ Este documento describe los cambios realizados para reemplazar Swiper.js con CSS
 - Se implementó una solución robusta para la apertura automática del sidebar según la configuración guardada
 - Se corrigieron problemas con los selectores de activación
 - Se aseguró que el sidebar se abra correctamente al añadir productos al carrito
+- **Se modificó el plugin para mostrar el sidebar en todas las páginas del sitio**, no solo en páginas de WooCommerce
 
 ### 3. Corrección de Botones de Cantidad
 

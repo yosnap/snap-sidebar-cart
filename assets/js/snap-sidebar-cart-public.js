@@ -316,9 +316,7 @@
       $(".snap-sidebar-cart__buttons").remove();
 
       // Si no hay productos, limpiar los productos relacionados
-      $(
-        ".snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track"
-      ).empty();
+      $(".snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track").empty();
     }
 
     // Disparar un evento personalizado
