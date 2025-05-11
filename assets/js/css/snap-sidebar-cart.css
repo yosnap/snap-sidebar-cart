@@ -1,0 +1,1018 @@
+/*!*************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/scss/main.scss ***!
+  \*************************************************************************************************************/
+@charset "UTF-8";
+/**
+ * Main SCSS file for Snap Sidebar Cart
+ * 
+ * Este archivo importa todos los componentes y módulos SCSS
+ * para crear una estructura escalable y mantenible
+ */
+/**
+ * Variables SCSS para Snap Sidebar Cart
+ * 
+ * Define todas las variables globales utilizadas en el proyecto
+ */
+/* Colores principales (personalizables desde el panel de administración) */
+:root {
+  --animation-duration: 300ms;
+  --animation-delay: 200ms;
+  --sidebar-width: 540px;
+  --sidebar-background: #ffffff;
+  --header-background: #f8f8f8;
+  --header-text-color: #333333;
+  --product-text-color: #333333;
+  --button-background: #2c6aa0;
+  --button-text-color: #ffffff;
+  --border-color: #e5e5e5;
+  --remove-color: #e74c3c;
+  --highlight-color: #f1c40f;
+}
+
+/* Breakpoints para responsive */
+/* Espaciado */
+/* Bordes y sombras */
+/**
+ * Mixins SCSS para Snap Sidebar Cart
+ * 
+ * Define mixins reutilizables para el proyecto
+ */
+/**
+ * Animaciones SCSS para Snap Sidebar Cart
+ * 
+ * Define todas las animaciones utilizadas en el proyecto
+ */
+/* Fade In */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Fade Out */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+/* Quantity Updated */
+@keyframes quantityUpdated {
+  0% {
+    box-shadow: 0 0 0 2px rgba(44, 106, 160, 0.5);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+/* Spinner */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/* Dots */
+@keyframes dots {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+/* Highlight Background */
+@keyframes highlight-background {
+  0% {
+    background-color: rgba(44, 106, 160, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+/* Highlight Border */
+@keyframes highlight-border {
+  0% {
+    border-color: rgba(44, 106, 160, 0.8);
+    box-shadow: 0 0 0 2px rgba(44, 106, 160, 0.3);
+  }
+  100% {
+    border-color: #ddd;
+    box-shadow: none;
+  }
+}
+/* Slide In */
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* Slide Out */
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+/**
+ * Reset de estilos para Snap Sidebar Cart
+ * 
+ * Asegura que los estilos del carrito no se vean afectados por temas de WordPress
+ */
+.snap-sidebar-cart * {
+  box-sizing: border-box;
+}
+.snap-sidebar-cart *::before, .snap-sidebar-cart *::after {
+  box-sizing: border-box;
+}
+.snap-sidebar-cart p,
+.snap-sidebar-cart h1,
+.snap-sidebar-cart h2,
+.snap-sidebar-cart h3,
+.snap-sidebar-cart h4,
+.snap-sidebar-cart h5,
+.snap-sidebar-cart h6 {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+.snap-sidebar-cart ul,
+.snap-sidebar-cart ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.snap-sidebar-cart button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.snap-sidebar-cart button:focus {
+  outline: none;
+}
+.snap-sidebar-cart a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/**
+ * Tipografía para Snap Sidebar Cart
+ * 
+ * Define los estilos tipográficos utilizados en el carrito
+ */
+.snap-sidebar-cart {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: var(--product-text-color);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.snap-sidebar-cart h1,
+.snap-sidebar-cart h2,
+.snap-sidebar-cart h3,
+.snap-sidebar-cart h4,
+.snap-sidebar-cart h5,
+.snap-sidebar-cart h6 {
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--header-text-color);
+  line-height: 1.3;
+}
+.snap-sidebar-cart a {
+  color: var(--button-background);
+  transition: color 0.2s ease;
+}
+.snap-sidebar-cart a:hover {
+  color: rgb(27.5, 66.25, 100);
+  text-decoration: underline;
+}
+
+/**
+ * Estructura base del carrito lateral
+ * 
+ * Define la estructura principal del sidebar, overlays y contenedores
+ */
+.snap-sidebar-cart {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: var(--sidebar-width) !important;
+  max-width: 100%;
+  height: 100%;
+  background-color: var(--sidebar-background);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  transition: right 0.3s ease-in-out;
+  -webkit-transition: right 0.3s ease-in-out;
+  -moz-transition: right 0.3s ease-in-out;
+  -ms-transition: right 0.3s ease-in-out;
+  -o-transition: right 0.3s ease-in-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.snap-sidebar-cart.open {
+  right: 0;
+}
+.snap-sidebar-cart__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999998;
+  display: none;
+  cursor: pointer;
+}
+.snap-sidebar-cart.open ~ .snap-sidebar-cart__overlay, .snap-sidebar-cart.open + .snap-sidebar-cart__overlay, .snap-sidebar-cart.open > .snap-sidebar-cart__overlay {
+  display: block;
+}
+.snap-sidebar-cart-open {
+  overflow: hidden;
+}
+.snap-sidebar-cart__container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+.snap-sidebar-cart__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.snap-sidebar-cart__products {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-sidebar-cart__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  text-align: center;
+}
+.snap-sidebar-cart__empty p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: var(--product-text-color);
+  opacity: 0.8;
+}
+
+/**
+ * Estilos para la cabecera del carrito
+ * 
+ * Define todos los estilos para la parte superior del carrito lateral
+ */
+.snap-sidebar-cart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--header-background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.snap-sidebar-cart__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--header-text-color);
+}
+
+.snap-sidebar-cart__close {
+  background: none;
+  border: none;
+  color: var(--header-text-color);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s, color 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 50%;
+  outline: none;
+}
+.snap-sidebar-cart__close:hover {
+  transform: rotate(90deg);
+  color: var(--remove-color);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.snap-sidebar-cart__close:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+.snap-sidebar-cart__close svg {
+  stroke-width: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+/**
+ * Estilos para el footer del carrito
+ * 
+ * Define todos los estilos para la parte inferior del carrito lateral
+ */
+.snap-sidebar-cart__footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--sidebar-background);
+}
+
+.snap-sidebar-cart__shipping {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--product-text-color);
+}
+
+.snap-sidebar-cart__subtotal {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--product-text-color);
+}
+
+/**
+ * Estilos para los botones
+ * 
+ * Define todos los estilos para los diferentes tipos de botones
+ */
+.snap-sidebar-cart__buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.snap-sidebar-cart__button {
+  flex: 1;
+  padding: 12px 15px;
+  text-align: center;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  font-size: 14px;
+  cursor: pointer;
+}
+.snap-sidebar-cart__button--cart {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+.snap-sidebar-cart__button--cart:hover {
+  background-color: #eee;
+}
+.snap-sidebar-cart__button--checkout {
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+  border: 1px solid var(--button-background);
+}
+.snap-sidebar-cart__button--checkout:hover {
+  background-color: rgb(33, 79.5, 120);
+  border-color: rgb(33, 79.5, 120);
+}
+
+/**
+ * Estilos para los preloaders en el carrito lateral
+ * 
+ * Define todos los estilos para los diferentes tipos de preloaders
+ */
+/* Loader para productos */
+.snap-sidebar-cart__product-loader {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  display: none !important;
+  z-index: 9999 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  pointer-events: all !important;
+}
+
+/* Estilos para cuando el preloader está activo */
+.snap-sidebar-cart__product-loader.active,
+.snap-sidebar-cart__product.updating .snap-sidebar-cart__product-loader,
+.snap-sidebar-cart__product-loader[style*="display: flex"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Estilos para el producto que se está actualizando */
+.snap-sidebar-cart__product.updating {
+  position: relative !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+.snap-sidebar-cart__loader-spinner {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  z-index: 10000;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-circle {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid var(--button-background, #2c6aa0);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.snap-sidebar-cart__loader-spinner.preloader-dots::before, .snap-sidebar-cart__loader-spinner.preloader-dots::after, .snap-sidebar-cart__loader-spinner.preloader-dots span {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: var(--button-background, #2c6aa0);
+  border-radius: 50%;
+  animation: dots 1.4s infinite ease-in-out both;
+}
+.snap-sidebar-cart__loader-spinner.preloader-dots::before {
+  animation-delay: -0.32s;
+}
+.snap-sidebar-cart__loader-spinner.preloader-dots span {
+  animation-delay: -0.16s;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-square {
+  width: 20px;
+  height: 20px;
+  background-color: var(--button-background, #2c6aa0);
+  animation: rotate 1.2s infinite ease-in-out;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner {
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--button-background, #2c6aa0);
+  border-bottom-color: var(--button-background, #2c6aa0);
+  animation: spin 1.5s linear infinite;
+}
+
+.snap-sidebar-cart__container-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100px;
+}
+.snap-sidebar-cart__container-loader .snap-sidebar-cart__loader-spinner {
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes rotate {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}
+/**
+ * Estilos para los productos en el carrito
+ * 
+ * Define todos los estilos relacionados con la visualización de productos
+ */
+/* Lista de productos */
+.snap-sidebar-cart__products-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.snap-sidebar-cart__product {
+  display: flex;
+  position: relative;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s;
+  align-items: center;
+}
+.snap-sidebar-cart__product.new-item {
+  animation: fadeIn var(--animation-duration) ease-out;
+  background-color: rgba(241, 196, 15, 0.1);
+}
+.snap-sidebar-cart__product.removing {
+  animation: fadeOut var(--animation-duration) ease-out;
+}
+.snap-sidebar-cart__product.product-updated {
+  background-color: rgba(241, 196, 15, 0.1);
+  transition: background-color 0.3s;
+}
+.snap-sidebar-cart__product.new-product {
+  animation: slide-in 0.5s ease-in-out;
+}
+
+.snap-sidebar-cart__product-image {
+  width: 100px;
+  min-width: 60px;
+  height: 100%;
+  margin-right: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.snap-sidebar-cart__product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.snap-sidebar-cart__product-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Para que el texto se corte correctamente */
+}
+
+.snap-sidebar-cart__product-header {
+  margin-bottom: 5px;
+}
+
+.snap-sidebar-cart__product-title {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--product-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 20px; /* Espacio para el botón de eliminar */
+}
+
+.snap-sidebar-cart__product-variant {
+  font-size: 12px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.snap-sidebar-cart__product-shipping {
+  font-size: 11px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+}
+
+.snap-sidebar-cart__product-shipping,
+.snap-sidebar-cart__product-variant {
+  line-height: 1.4;
+}
+
+.snap-sidebar-cart__product-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Precios */
+.snap-sidebar-cart__product-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 10px;
+  min-width: 80px;
+  text-align: right;
+}
+
+.snap-sidebar-cart__product-price-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.snap-sidebar-cart__product-regular-price {
+  font-size: 12px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+  text-decoration: line-through;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.snap-sidebar-cart__product-discount {
+  font-size: 12px;
+  font-weight: 500;
+  color: #4caf50;
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.snap-sidebar-cart__product-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--product-text-color);
+  margin-top: 2px;
+}
+
+.snap-sidebar-cart__product-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--remove-color);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+.snap-sidebar-cart__product-remove:hover {
+  opacity: 1;
+}
+.snap-sidebar-cart__product-remove svg {
+  width: 14px;
+  height: 14px;
+}
+
+/**
+ * Estilos para productos relacionados en el carrito lateral
+ * 
+ * Define todos los estilos para la sección de productos relacionados,
+ * incluyendo el soporte para diferentes configuraciones de columnas
+ */
+.snap-sidebar-cart__related-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  position: relative;
+  min-height: 450px;
+}
+
+.snap-sidebar-cart__related-title {
+  margin: 0 0 15px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 20px;
+}
+
+/* Contenedor del slider con botones de navegación */
+.snap-sidebar-cart__related-slider-container {
+  /*position: relative;*/
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Wrapper para el slider */
+.snap-sidebar-cart__related-slider-wrapper {
+  width: 100%;
+  /*position: relative;*/
+  overflow: hidden;
+}
+
+/* Contenedor principal del slider */
+.snap-sidebar-cart__related-slider {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  margin: 0 -5px; /* Compensar el padding de los slides */
+}
+.snap-sidebar-cart__related-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-sidebar-cart__related-slide {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+.snap-sidebar-cart__related-slide .product,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+.snap-sidebar-cart__related-slide .product:hover,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.snap-sidebar-cart__related-slide .product img,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+.snap-sidebar-cart__related-slide .product .woocommerce-loop-product__title,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product .woocommerce-loop-product__title {
+  font-size: 14px;
+  margin: 0 0 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.snap-sidebar-cart__related-slide .product .price,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product .price {
+  font-weight: bold;
+  color: var(--product-text-color);
+  margin-bottom: 10px;
+}
+.snap-sidebar-cart__related-slide .product .button,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product .button {
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-size: 13px;
+  padding: 5px 10px;
+}
+.snap-sidebar-cart__related-slide .product .button:hover,
+.snap-sidebar-cart__related-slide .snap-sidebar-cart__related-product .button:hover {
+  opacity: 0.9;
+}
+
+.snap-sidebar-cart__columns-1 .snap-sidebar-cart__related-slide {
+  width: 100%;
+}
+
+.snap-sidebar-cart__columns-2 .snap-sidebar-cart__related-slide {
+  width: 50%;
+}
+
+.snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide {
+  width: 33.333%;
+}
+
+.snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+  width: 25%;
+}
+
+.snap-sidebar-cart__related-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+.snap-sidebar-cart__related-nav button {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+}
+.snap-sidebar-cart__related-nav button:hover {
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+}
+.snap-sidebar-cart__related-nav button.snap-sidebar-cart__related-prev {
+  margin-left: 5px;
+}
+.snap-sidebar-cart__related-nav button.snap-sidebar-cart__related-next {
+  margin-right: 5px;
+}
+.snap-sidebar-cart__related-nav button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.snap-sidebar-cart__last-chance {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 3px;
+  z-index: 10;
+  background-color: var(--highlight-color);
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide,
+  .snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+    width: 50%;
+  }
+}
+/**
+ * Estilos para las pestañas en el carrito lateral
+ * 
+ * Define todos los estilos para las pestañas de productos relacionados
+ */
+.snap-sidebar-cart__related-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-bottom: 15px;
+  gap: 10px;
+  padding: 0 20px;
+}
+.snap-sidebar-cart__related-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-sidebar-cart__related-tab {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+.snap-sidebar-cart__related-tab.active {
+  color: var(--button-background);
+  border-bottom-color: var(--button-background);
+  font-weight: 500;
+}
+.snap-sidebar-cart__related-tab:hover:not(.active) {
+  color: var(--button-background);
+  opacity: 0.8;
+}
+
+.snap-sidebar-cart__related-container {
+  display: none;
+  padding: 0 20px;
+}
+.snap-sidebar-cart__related-container.active {
+  display: block;
+}
+
+/**
+ * Estilos para el control de cantidad
+ * 
+ * Define todos los estilos relacionados con los controles de cantidad de productos
+ */
+/* Control de cantidad */
+.quantity.buttoned-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 3px;
+  background-color: #fff;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.notabutton {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  color: #666;
+}
+.notabutton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.notabutton.disabled, .notabutton[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.notabutton svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2px;
+}
+
+.cart-item__quantity-input {
+  width: 36px !important;
+  text-align: center;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  background: transparent !important;
+  height: 26px;
+}
+.cart-item__quantity-input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.cart-item__quantity-input::-webkit-outer-spin-button, .cart-item__quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-item__quantity-input.quantity-updated {
+  animation: quantityUpdated var(--animation-duration) ease-out;
+}
+
+/**
+ * Estilos responsivos para Snap Sidebar Cart
+ * 
+ * Define todos los media queries para adaptar el carrito a diferentes tamaños de pantalla
+ */
+@media (max-width: 480px) {
+  .snap-sidebar-cart {
+    width: 100% !important;
+    right: -100%;
+  }
+  .snap-sidebar-cart__related-slide {
+    width: 50%; /* Mantener 2 columnas en móvil */
+  }
+  .snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide,
+  .snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+    width: 50%; /* Forzar 2 columnas en móvil */
+  }
+}
+@media (max-width: 768px) {
+  .snap-sidebar-cart {
+    width: 90% !important;
+  }
+  .snap-sidebar-cart__related-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

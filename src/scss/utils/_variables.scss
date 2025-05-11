@@ -1,0 +1,38 @@
+/**
+ * Variables SCSS para Snap Sidebar Cart
+ * 
+ * Define todas las variables globales utilizadas en el proyecto
+ */
+
+/* Colores principales (personalizables desde el panel de administración) */
+:root {
+  --animation-duration: 300ms;
+  --animation-delay: 200ms;
+  --sidebar-width: 540px;
+  --sidebar-background: #ffffff;
+  --header-background: #f8f8f8;
+  --header-text-color: #333333;
+  --product-text-color: #333333;
+  --button-background: #2c6aa0;
+  --button-text-color: #ffffff;
+  --border-color: #e5e5e5;
+  --remove-color: #e74c3c;
+  --highlight-color: #f1c40f;
+}
+
+/* Breakpoints para responsive */
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+
+/* Espaciado */
+$spacing-xs: 5px;
+$spacing-sm: 10px;
+$spacing-md: 15px;
+$spacing-lg: 20px;
+$spacing-xl: 30px;
+
+/* Bordes y sombras */
+$border-radius: 5px;
+$box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+$box-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.15);

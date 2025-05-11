@@ -1,0 +1,55 @@
+/**
+ * Estilos para la cabecera del carrito
+ * 
+ * Define todos los estilos para la parte superior del carrito lateral
+ */
+
+.snap-sidebar-cart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  background-color: var(--header-background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.snap-sidebar-cart__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--header-text-color);
+}
+
+.snap-sidebar-cart__close {
+  background: none;
+  border: none;
+  color: var(--header-text-color);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s, color 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 50%;
+  outline: none;
+
+  &:hover {
+    transform: rotate(90deg);
+    color: var(--remove-color);
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  }
+
+  svg {
+    stroke-width: 2px;
+    width: 20px;
+    height: 20px;
+  }
+}

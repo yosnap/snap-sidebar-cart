@@ -1,0 +1,107 @@
+/**
+ * Animaciones SCSS para Snap Sidebar Cart
+ * 
+ * Define todas las animaciones utilizadas en el proyecto
+ */
+
+/* Fade In */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade Out */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Quantity Updated */
+@keyframes quantityUpdated {
+  0% {
+    box-shadow: 0 0 0 2px rgba(44, 106, 160, 0.5);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+/* Spinner */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dots */
+@keyframes dots {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* Highlight Background */
+@keyframes highlight-background {
+  0% {
+    background-color: rgba(44, 106, 160, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Highlight Border */
+@keyframes highlight-border {
+  0% {
+    border-color: rgba(44, 106, 160, 0.8);
+    box-shadow: 0 0 0 2px rgba(44, 106, 160, 0.3);
+  }
+  100% {
+    border-color: #ddd;
+    box-shadow: none;
+  }
+}
+
+/* Slide In */
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide Out */
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}

@@ -1,0 +1,43 @@
+/**
+ * Estilos para los botones
+ * 
+ * Define todos los estilos para los diferentes tipos de botones
+ */
+
+.snap-sidebar-cart__buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.snap-sidebar-cart__button {
+  flex: 1;
+  padding: 12px 15px;
+  text-align: center;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  font-size: 14px;
+  cursor: pointer;
+
+  &--cart {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+
+    &:hover {
+      background-color: #eee;
+    }
+  }
+
+  &--checkout {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    border: 1px solid var(--button-background);
+
+    &:hover {
+      background-color: darken(#2c6aa0, 10%);
+      border-color: darken(#2c6aa0, 10%);
+    }
+  }
+}

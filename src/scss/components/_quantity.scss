@@ -1,0 +1,78 @@
+/**
+ * Estilos para el control de cantidad
+ * 
+ * Define todos los estilos relacionados con los controles de cantidad de productos
+ */
+
+/* Control de cantidad */
+.quantity.buttoned-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 3px;
+  background-color: #fff;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.notabutton {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  color: #666;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &.disabled,
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2px;
+  }
+}
+
+.cart-item__quantity-input {
+  width: 36px !important;
+  text-align: center;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  background: transparent !important;
+  height: 26px;
+
+  &:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &.quantity-updated {
+    animation: quantityUpdated var(--animation-duration) ease-out;
+  }
+}

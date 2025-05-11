@@ -38,6 +38,9 @@ define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
 
+// Modo de desarrollo - Cargar tanto scripts originales como los compilados por Webpack
+define( 'SNAP_SIDEBAR_CART_DEV_MODE', true );
+
 // Cargar archivos principales
 require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart.php';
 

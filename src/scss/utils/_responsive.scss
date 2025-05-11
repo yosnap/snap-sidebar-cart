@@ -1,0 +1,32 @@
+/**
+ * Estilos responsivos para Snap Sidebar Cart
+ * 
+ * Define todos los media queries para adaptar el carrito a diferentes tamaños de pantalla
+ */
+
+@media (max-width: $breakpoint-mobile) {
+  .snap-sidebar-cart {
+    width: 100% !important;
+    right: -100%;
+  }
+
+  .snap-sidebar-cart__related-slide {
+    width: 50%; /* Mantener 2 columnas en móvil */
+  }
+
+  .snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide,
+  .snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+    width: 50%; /* Forzar 2 columnas en móvil */
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .snap-sidebar-cart {
+    width: 90% !important;
+  }
+
+  .snap-sidebar-cart__related-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

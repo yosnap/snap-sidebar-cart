@@ -1,17 +1,17 @@
-const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   entry: {
-    'snap-sidebar-cart': './src/index.js',
-    'admin': './src/admin.js'
+    "snap-sidebar-cart": "./src/index.js",
+    admin: "./src/admin.js",
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'assets/js/dist'),
+    filename: "[name].js",
+    path: path.resolve(__dirname, "assets/js/dist"),
   },
   externals: {
-    jquery: 'jQuery'
+    jquery: "jQuery",
   },
   module: {
     rules: [
@@ -19,25 +19,26 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
+            presets: ["@babel/preset-env"],
+          },
+        },
       },
       {
         test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader'
-        ]
-      }
-    ]
+          "css-loader",
+          "postcss-loader",
+          "sass-loader",
+        ],
+      },
+    ],
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '../css/[name].css'
-    })
-  ]
+      filename: "../css/[name].css",
+    }),
+  ],
 };

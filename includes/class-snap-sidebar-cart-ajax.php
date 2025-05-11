@@ -381,11 +381,43 @@ class Snap_Sidebar_Cart_Ajax {
             error_log('No se encontraron productos para mostrar');
         }
         
+        // Obtener configuración de columnas
+        $columns = isset($this->options['related_products']['columns']) ? 
+            intval($this->options['related_products']['columns']) : 2;
+            
+        // Añadir script inline para aplicar estilos según configuración
+        $inline_script = '
+        <script type="text/javascript">
+        (function($) {
+            $(document).ready(function() {
+                // Aplicar configuración de columnas
+                var columnsCount = ' . $columns . ';
+                var productWidth = "calc(" + (100 / columnsCount) + "% - 10px)";
+                
+                // Aplicar estilos a los productos recién cargados
+                $(".snap-sidebar-cart__related-container").addClass("snap-sidebar-cart__columns-" + columnsCount);
+                $(".snap-sidebar-cart__related-container .product, .snap-sidebar-cart__related-container .snap-sidebar-cart__related-product").css({
+                    "width": productWidth,
+                    "flex": "0 0 " + productWidth,
+                    "min-width": productWidth,
+                    "max-width": productWidth,
+                    "margin-right": "10px",
+                    "scroll-snap-align": "start",
+                    "box-sizing": "border-box"
+                });
+            });
+        })(jQuery);
+        </script>';
+        
+        // Añadir el script al HTML
+        $html .= $inline_script;
+        
         error_log('Enviando respuesta JSON con HTML (longitud: ' . strlen($html) . ')');
         wp_send_json_success(array(
             'html' => $html,
             'count' => count($products),
-            'type' => $type
+            'type' => $type,
+            'columns' => $columns
         ));
         
         error_log('=== FIN get_related_products() ===');

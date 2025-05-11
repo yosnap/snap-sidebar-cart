@@ -1,0 +1,175 @@
+/**
+ * Estilos para los productos en el carrito
+ * 
+ * Define todos los estilos relacionados con la visualización de productos
+ */
+
+/* Lista de productos */
+.snap-sidebar-cart__products-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.snap-sidebar-cart__product {
+  display: flex;
+  position: relative;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s;
+  align-items: center;
+
+  &.new-item {
+    animation: fadeIn var(--animation-duration) ease-out;
+    background-color: rgba(241, 196, 15, 0.1);
+  }
+
+  &.removing {
+    animation: fadeOut var(--animation-duration) ease-out;
+  }
+
+  &.product-updated {
+    background-color: rgba(241, 196, 15, 0.1);
+    transition: background-color 0.3s;
+  }
+
+  &.new-product {
+    animation: slide-in 0.5s ease-in-out;
+  }
+}
+
+// Imagen del producto
+.snap-sidebar-cart__product-image {
+  width: 100px;
+  min-width: 60px;
+  height: 100%;
+  margin-right: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// Detalles del producto
+.snap-sidebar-cart__product-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Para que el texto se corte correctamente */
+}
+
+.snap-sidebar-cart__product-header {
+  margin-bottom: 5px;
+}
+
+.snap-sidebar-cart__product-title {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--product-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 20px; /* Espacio para el botón de eliminar */
+}
+
+.snap-sidebar-cart__product-variant {
+  font-size: 12px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.snap-sidebar-cart__product-shipping {
+  font-size: 11px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+}
+
+.snap-sidebar-cart__product-shipping,
+.snap-sidebar-cart__product-variant {
+  line-height: 1.4;
+}
+
+.snap-sidebar-cart__product-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Precios */
+.snap-sidebar-cart__product-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: $spacing-sm;
+  min-width: 80px;
+  text-align: right;
+}
+
+.snap-sidebar-cart__product-price-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.snap-sidebar-cart__product-regular-price {
+  font-size: 12px;
+  color: var(--product-text-color);
+  opacity: 0.7;
+  text-decoration: line-through;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.snap-sidebar-cart__product-discount {
+  font-size: 12px;
+  font-weight: 500;
+  color: #4caf50;
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.snap-sidebar-cart__product-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--product-text-color);
+  margin-top: 2px;
+}
+
+// Botón de eliminar producto
+.snap-sidebar-cart__product-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--remove-color);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}

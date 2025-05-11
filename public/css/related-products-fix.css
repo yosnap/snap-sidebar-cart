@@ -1,0 +1,168 @@
+/**
+ * Estilos para productos relacionados en el carrito lateral
+ * Estos estilos se aplicarán independientemente de la configuración de columnas
+ */
+
+/* Contenedor de productos relacionados */
+.snap-sidebar-cart__related-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Slider de productos relacionados */
+.snap-sidebar-cart__related-slider {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    padding: 5px 0 !important;
+    width: 100% !important;
+}
+
+.snap-sidebar-cart__related-slider::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Productos individuales */
+.snap-sidebar-cart__related-slider .product,
+.snap-sidebar-cart__related-slider .snap-sidebar-cart__related-product {
+    scroll-snap-align: start !important;
+    box-sizing: border-box !important;
+    margin-right: 10px !important;
+    margin-bottom: 10px !important;
+    padding: 10px !important;
+    border: 1px solid #eee !important;
+    border-radius: 5px !important;
+    transition: all 0.3s ease !important;
+}
+
+.snap-sidebar-cart__related-slider .product:hover,
+.snap-sidebar-cart__related-slider .snap-sidebar-cart__related-product:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Clases específicas para diferentes configuraciones de columnas */
+.snap-sidebar-cart__columns-1 .product,
+.snap-sidebar-cart__columns-1 .snap-sidebar-cart__related-product {
+    width: calc(100% - 10px) !important;
+    flex: 0 0 calc(100% - 10px) !important;
+    min-width: calc(100% - 10px) !important;
+    max-width: calc(100% - 10px) !important;
+}
+
+.snap-sidebar-cart__columns-2 .product,
+.snap-sidebar-cart__columns-2 .snap-sidebar-cart__related-product {
+    width: calc(50% - 10px) !important;
+    flex: 0 0 calc(50% - 10px) !important;
+    min-width: calc(50% - 10px) !important;
+    max-width: calc(50% - 10px) !important;
+}
+
+.snap-sidebar-cart__columns-3 .product,
+.snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-product {
+    width: calc(33.333% - 10px) !important;
+    flex: 0 0 calc(33.333% - 10px) !important;
+    min-width: calc(33.333% - 10px) !important;
+    max-width: calc(33.333% - 10px) !important;
+}
+
+.snap-sidebar-cart__columns-4 .product,
+.snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-product {
+    width: calc(25% - 10px) !important;
+    flex: 0 0 calc(25% - 10px) !important;
+    min-width: calc(25% - 10px) !important;
+    max-width: calc(25% - 10px) !important;
+}
+
+/* Estilos para las pestañas */
+.snap-sidebar-cart__tabs {
+    display: flex;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.snap-sidebar-cart__tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.snap-sidebar-cart__tab {
+    padding: 8px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.snap-sidebar-cart__tab.active {
+    border-bottom-color: #2c6aa0;
+    font-weight: bold;
+}
+
+/* Estilos para la etiqueta de última oportunidad */
+.snap-sidebar-cart__last-chance {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 3px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+/* Botones de cantidad */
+.snap-sidebar-cart__quantity-up,
+.snap-sidebar-cart__quantity-down,
+.notabutton.quantity-up,
+.notabutton.quantity-down {
+    cursor: pointer !important;
+    user-select: none !important;
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 3px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.snap-sidebar-cart__quantity-up:hover,
+.snap-sidebar-cart__quantity-down:hover,
+.notabutton.quantity-up:hover,
+.notabutton.quantity-down:hover {
+    background: #eee !important;
+}
+
+/* Preloader */
+.snap-sidebar-cart__preloader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100px;
+}
+
+.snap-sidebar-cart__spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3498db;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

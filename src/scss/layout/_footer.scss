@@ -1,0 +1,28 @@
+/**
+ * Estilos para el footer del carrito
+ * 
+ * Define todos los estilos para la parte inferior del carrito lateral
+ */
+
+.snap-sidebar-cart__footer {
+  padding: $spacing-md $spacing-lg;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--sidebar-background);
+}
+
+.snap-sidebar-cart__shipping {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+  font-size: 14px;
+  color: var(--product-text-color);
+}
+
+.snap-sidebar-cart__subtotal {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--product-text-color);
+}

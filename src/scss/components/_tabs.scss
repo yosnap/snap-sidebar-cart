@@ -1,0 +1,51 @@
+/**
+ * Estilos para las pestañas en el carrito lateral
+ * 
+ * Define todos los estilos para las pestañas de productos relacionados
+ */
+
+.snap-sidebar-cart__related-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-bottom: $spacing-md;
+  gap: $spacing-sm;
+  padding: 0 $spacing-lg;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.snap-sidebar-cart__related-tab {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  @include transition;
+  
+  &.active {
+    color: var(--button-background);
+    border-bottom-color: var(--button-background);
+    font-weight: 500;
+  }
+  
+  &:hover:not(.active) {
+    color: var(--button-background);
+    opacity: 0.8;
+  }
+}
+
+.snap-sidebar-cart__related-container {
+  display: none;
+  padding: 0 $spacing-lg;
+  
+  &.active {
+    display: block;
+  }
+}

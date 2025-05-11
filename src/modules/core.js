@@ -67,8 +67,41 @@ function initSidebarCart() {
     
     // Evento cuando se añade un producto al carrito
     $(document.body).on('added_to_cart', function(event, fragments, cart_hash, $button) {
-        console.log('Producto añadido al carrito');
+        console.log('Producto añadido al carrito', fragments);
         
+        // Actualizar el contenido del carrito con los fragmentos recibidos
+        if (fragments) {
+            $.each(fragments, function(key, value) {
+                $(key).replaceWith(value);
+            });
+            
+            // Actualizar el contenido del carrito lateral
+            if (fragments['div.widget_shopping_cart_content']) {
+                // Extraer productos del fragmento
+                const $content = $(fragments['div.widget_shopping_cart_content']);
+                const $products = $content.find('.cart_list');
+                
+                if ($products.length) {
+                    $('.snap-sidebar-cart__products').html($products);
+                    
+                    // Actualizar totales
+                    if ($content.find('.total').length) {
+                        $('.snap-sidebar-cart__totals').html($content.find('.total').html());
+                    }
+                    
+                    // Actualizar contador
+                    const count = $content.find('.cart-items-count').text() || '0';
+                    $('.snap-sidebar-cart__count').text(count);
+                    $('.cart-contents-count').text(count);
+                    $('.cart-count').text(count);
+                    
+                    // Disparar evento para que otros módulos puedan reaccionar
+                    $(document.body).trigger('snap_sidebar_cart_updated');
+                }
+            }
+        }
+        
+        // Abrir el carrito si está configurado para abrirse automáticamente
         if (snap_sidebar_cart_params && 
             (snap_sidebar_cart_params.auto_open === '1' || 
              snap_sidebar_cart_params.auto_open === true)) {
@@ -82,6 +115,20 @@ function initSidebarCart() {
                 setTimeout(function() {
                     if (window.snap_sidebar_cart.hideGlobalLoader) {
                         window.snap_sidebar_cart.hideGlobalLoader();
+                    }
+                    
+                    // Cargar productos relacionados para el primer producto
+                    const $firstProduct = $('.snap-sidebar-cart__product').first();
+                    if ($firstProduct.length) {
+                        const productId = $firstProduct.data('product-id');
+                        if (productId && window.snap_sidebar_cart.loadRelatedProducts) {
+                            // Obtener el tipo de pestaña activa
+                            const $activeTab = $('.snap-sidebar-cart__tab.active');
+                            const tabType = $activeTab.length ? $activeTab.data('content') : 'related';
+                            
+                            console.log('Cargando productos relacionados para el producto #' + productId + ' (tipo: ' + tabType + ')');
+                            window.snap_sidebar_cart.loadRelatedProducts(productId, tabType);
+                        }
                     }
                 }, 800);
             }

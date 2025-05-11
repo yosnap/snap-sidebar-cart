@@ -1,0 +1,188 @@
+/**
+ * Estilos para productos relacionados en el carrito lateral
+ * 
+ * Define todos los estilos para la sección de productos relacionados,
+ * incluyendo el soporte para diferentes configuraciones de columnas
+ */
+
+.snap-sidebar-cart__related-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  position: relative;
+  min-height: 450px;
+}
+
+.snap-sidebar-cart__related-title {
+  margin: 0 0 15px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 20px;
+}
+
+/* Contenedor del slider con botones de navegación */
+.snap-sidebar-cart__related-slider-container {
+  /*position: relative;*/
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Wrapper para el slider */
+.snap-sidebar-cart__related-slider-wrapper {
+  width: 100%;
+  /*position: relative;*/
+  overflow: hidden;
+}
+
+/* Contenedor principal del slider */
+.snap-sidebar-cart__related-slider {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  margin: 0 -5px; /* Compensar el padding de los slides */
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Cada slide individual
+.snap-sidebar-cart__related-slide {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: 50%; // Por defecto 2 columnas
+  padding: 0 $spacing-xs;
+  box-sizing: border-box;
+
+  .product,
+  .snap-sidebar-cart__related-product {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: $border-radius;
+    padding: $spacing-sm;
+    margin-bottom: $spacing-sm;
+    position: relative;
+    @include transition;
+
+    &:hover {
+      box-shadow: $box-shadow-hover;
+    }
+
+    // Imagen del producto
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: $spacing-sm;
+    }
+
+    // Título del producto
+    .woocommerce-loop-product__title {
+      font-size: 14px;
+      margin: 0 0 $spacing-xs;
+      @include truncate(2);
+    }
+
+    // Precio del producto
+    .price {
+      font-weight: bold;
+      color: var(--product-text-color);
+      margin-bottom: $spacing-sm;
+    }
+
+    // Botón de añadir al carrito
+    .button {
+      @include button-style;
+      width: 100%;
+      font-size: 13px;
+      padding: $spacing-xs $spacing-sm;
+    }
+  }
+}
+
+// Configuraciones de columnas
+.snap-sidebar-cart__columns-1 .snap-sidebar-cart__related-slide {
+  width: 100%;
+}
+
+.snap-sidebar-cart__columns-2 .snap-sidebar-cart__related-slide {
+  width: 50%;
+}
+
+.snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide {
+  width: 33.333%;
+}
+
+.snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+  width: 25%;
+}
+
+// Botones de navegación
+.snap-sidebar-cart__related-nav {
+  @include flex(row, space-between, center);
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 10;
+
+  button {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    @include flex(row, center, center);
+    cursor: pointer;
+    pointer-events: auto;
+    @include transition;
+
+    &:hover {
+      background-color: var(--button-background);
+      color: var(--button-text-color);
+    }
+
+    &.snap-sidebar-cart__related-prev {
+      margin-left: $spacing-xs;
+    }
+
+    &.snap-sidebar-cart__related-next {
+      margin-right: $spacing-xs;
+    }
+
+    &.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Badge de última oportunidad
+.snap-sidebar-cart__last-chance {
+  position: absolute;
+  top: $spacing-xs;
+  right: $spacing-xs;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 3px;
+  z-index: 10;
+  background-color: var(--highlight-color);
+  color: #fff;
+}
+
+// Responsive
+@include mobile {
+  .snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-slide,
+  .snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-slide {
+    width: 50%; // Forzar 2 columnas en móvil
+  }
+}

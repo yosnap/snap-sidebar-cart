@@ -50,14 +50,79 @@ class Snap_Sidebar_Cart_Public {
             }
         }
         
-        // Registrar y cargar el CSS unificado
-        wp_enqueue_style('snap-sidebar-cart-unified', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-unified.css', array(), $version, 'all');
+        // Cargar el CSS generado por Webpack
+        wp_enqueue_style('snap-sidebar-cart-webpack', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart.css', array(), $version, 'all');
+        
+        // Mantener CSS de corrección para productos relacionados como dependencia
+        wp_enqueue_style('snap-sidebar-cart-related-fix', SNAP_SIDEBAR_CART_URL . 'assets/css/related-products-fix.css', array('snap-sidebar-cart-webpack'), $version, 'all');
         
         // Estilos personalizados desde las opciones
         $custom_css = $this->generate_custom_css();
         $preloader_css = $this->generate_preloader_css();
         
-        wp_add_inline_style('snap-sidebar-cart-unified', $custom_css . $preloader_css);
+        // Obtener la configuración de columnas del usuario
+        $columns = isset($this->options['related_products']['columns']) ? 
+            intval($this->options['related_products']['columns']) : 2;
+        
+        // CSS para aplicar la configuración de columnas del usuario
+        $columns_fix_css = "
+            .snap-sidebar-cart__related-slider .product,
+            .snap-sidebar-cart__related-slider .snap-sidebar-cart__related-product {
+                width: calc(" . (100 / $columns) . "% - 10px) !important;
+                flex: 0 0 calc(" . (100 / $columns) . "% - 10px) !important;
+                min-width: calc(" . (100 / $columns) . "% - 10px) !important;
+                max-width: calc(" . (100 / $columns) . "% - 10px) !important;
+                margin-right: 10px !important;
+                scroll-snap-align: start !important;
+            }
+            
+            .snap-sidebar-cart__related-container {
+                position: relative;
+                width: 100%;
+                overflow: hidden;
+            }
+            
+            .snap-sidebar-cart__related-slider {
+                display: flex !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+                padding: 5px 0 !important;
+            }
+            
+            .snap-sidebar-cart__related-slider::-webkit-scrollbar {
+                display: none !important;
+            }
+            
+            /* Clases específicas para diferentes configuraciones de columnas */
+            .snap-sidebar-cart__columns-1 .product,
+            .snap-sidebar-cart__columns-1 .snap-sidebar-cart__related-product {
+                width: calc(100% - 10px) !important;
+                flex: 0 0 calc(100% - 10px) !important;
+            }
+            
+            .snap-sidebar-cart__columns-2 .product,
+            .snap-sidebar-cart__columns-2 .snap-sidebar-cart__related-product {
+                width: calc(50% - 10px) !important;
+                flex: 0 0 calc(50% - 10px) !important;
+            }
+            
+            .snap-sidebar-cart__columns-3 .product,
+            .snap-sidebar-cart__columns-3 .snap-sidebar-cart__related-product {
+                width: calc(33.333% - 10px) !important;
+                flex: 0 0 calc(33.333% - 10px) !important;
+            }
+            
+            .snap-sidebar-cart__columns-4 .product,
+            .snap-sidebar-cart__columns-4 .snap-sidebar-cart__related-product {
+                width: calc(25% - 10px) !important;
+                flex: 0 0 calc(25% - 10px) !important;
+            }
+        ";
+        
+        wp_add_inline_style('snap-sidebar-cart-unified', $custom_css . $preloader_css . $columns_fix_css);
     }
 
     /**
@@ -117,29 +182,172 @@ class Snap_Sidebar_Cart_Public {
                 'quantity_update_delay' => isset($this->options['animations']['quantity_update_delay']) ? intval($this->options['animations']['quantity_update_delay']) : 200,
                 'enabled' => isset($this->options['animations']['enabled']) ? (bool)$this->options['animations']['enabled'] : true
             ),
-            // Opciones para productos relacionados
+            // Opciones para productos relacionados - usar configuración del usuario
             'related' => array(
-                'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2,
+                'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 1,
                 'products_per_page' => isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 7,
                 'columns_count' => isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2,
                 'show_last_chance' => isset($this->options['related_products']['show_last_chance']) ? (bool)$this->options['related_products']['show_last_chance'] : true,
                 'last_chance_stock_limit' => isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5,
                 'last_chance_title' => isset($this->options['related_products']['last_chance_title']) ? $this->options['related_products']['last_chance_title'] : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
                 'last_chance_bg_color' => isset($this->options['related_products']['last_chance_bg_color']) ? $this->options['related_products']['last_chance_bg_color'] : '#e74c3c',
-                'last_chance_text_color' => isset($this->options['related_products']['last_chance_text_color']) ? $this->options['related_products']['last_chance_text_color'] : '#ffffff'
+                'last_chance_text_color' => isset($this->options['related_products']['last_chance_text_color']) ? $this->options['related_products']['last_chance_text_color'] : '#ffffff',
+                'active_tabs' => isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : 'related,cross-sells',
+                'custom_tab_label' => isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : __('Recomendados', 'snap-sidebar-cart'),
+                'custom_query' => isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : ''
             ),
-            // Configuración de Swiper
+            // Configuración de Swiper - usar configuración del usuario
             'swiper' => array(
                 'enabled' => true,
-                'slidesPerView' => 'auto',
+                'slidesPerView' => isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2,
                 'spaceBetween' => 10,
-                'slidesPerGroup' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
+                'slidesPerGroup' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 1
             ),
             // Forzar debug a true
             'debug' => true,
             // Slides a desplazar (redundante pero por compatibilidad)
-            'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
+            'slides_to_scroll' => 1
         );
+        
+        // Cargar estilos principales del carrito
+        wp_enqueue_style(
+            'snap-sidebar-cart-main',
+            SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart.css',
+            array(),
+            $version
+        );
+        
+        // Cargar el archivo CSS para productos relacionados con alta prioridad
+        wp_enqueue_style(
+            'snap-sidebar-cart-related-products-fix',
+            SNAP_SIDEBAR_CART_URL . 'assets/css/related-products-fix.css',
+            array('snap-sidebar-cart-main'),
+            $version
+        );
+        
+        // Cargar el archivo CSS completo de corrección
+        wp_enqueue_style(
+            'snap-sidebar-cart-fix',
+            SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-fix.css',
+            array('snap-sidebar-cart-main', 'snap-sidebar-cart-related-products-fix'),
+            $version
+        );
+        
+        // Agregar estilos CSS inline para asegurar que se apliquen con la máxima prioridad
+        $inline_css = "
+            /* Estilos críticos para productos relacionados */
+            .snap-sidebar-cart__related-slider {
+                display: flex !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+                padding: 5px 0 !important;
+            }
+            
+            .snap-sidebar-cart__related-slider::-webkit-scrollbar {
+                display: none !important;
+            }
+            
+            .snap-sidebar-cart__related-slider .product,
+            .snap-sidebar-cart__related-slider .snap-sidebar-cart__related-product {
+                width: calc(50% - 10px) !important;
+                flex: 0 0 calc(50% - 10px) !important;
+                min-width: calc(50% - 10px) !important;
+                max-width: calc(50% - 10px) !important;
+                margin-right: 10px !important;
+                scroll-snap-align: start !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Botones de cantidad */
+            .snap-sidebar-cart__quantity-up,
+            .snap-sidebar-cart__quantity-down,
+            .notabutton.quantity-up,
+            .notabutton.quantity-down {
+                cursor: pointer !important;
+                user-select: none !important;
+            }
+            
+            /* Pestañas de productos relacionados */
+            .snap-sidebar-cart__related {
+                margin-top: 20px !important;
+                border-top: 1px solid #f0f0f0 !important;
+                padding-top: 15px !important;
+            }
+            
+            .snap-sidebar-cart__related-tabs {
+                display: flex !important;
+                margin-bottom: 15px !important;
+                border-bottom: 1px solid #f0f0f0 !important;
+            }
+            
+            .snap-sidebar-cart__related-tab {
+                padding: 8px 12px !important;
+                cursor: pointer !important;
+                border-bottom: 2px solid transparent !important;
+                margin-right: 10px !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+            }
+            
+            .snap-sidebar-cart__related-tab.active {
+                border-bottom-color: #333 !important;
+            }
+            
+            .snap-sidebar-cart__related-container {
+                display: none !important;
+            }
+            
+            .snap-sidebar-cart__related-container.active {
+                display: block !important;
+            }
+        ";
+        
+        wp_add_inline_style('snap-sidebar-cart-fix', $inline_css);
+        
+        // Cargar los scripts originales si estamos en modo desarrollo
+        if (defined('SNAP_SIDEBAR_CART_DEV_MODE') && SNAP_SIDEBAR_CART_DEV_MODE) {
+            // Cargar scripts originales para mantener compatibilidad
+            wp_enqueue_script(
+                'snap-sidebar-cart-tabs-fix',
+                SNAP_SIDEBAR_CART_URL . 'assets/js/tabs.js',
+                array('jquery'),
+                $version,
+                true
+            );
+            
+            wp_enqueue_script(
+                'snap-sidebar-cart-scroll-snap',
+                SNAP_SIDEBAR_CART_URL . 'assets/js/scroll-snap.js',
+                array('jquery'),
+                $version,
+                true
+            );
+            
+            wp_enqueue_script(
+                'snap-sidebar-cart-quantity-handler',
+                SNAP_SIDEBAR_CART_URL . 'assets/js/quantity-handler.js',
+                array('jquery'),
+                $version,
+                true
+            );
+            
+            wp_enqueue_script(
+                'snap-sidebar-cart-preloader-fix',
+                SNAP_SIDEBAR_CART_URL . 'assets/js/preloader-controller.js',
+                array('jquery'),
+                $version,
+                true
+            );
+            
+            // Localizar todos los scripts originales
+            wp_localize_script('snap-sidebar-cart-tabs-fix', 'snap_sidebar_cart_params', $script_options);
+            wp_localize_script('snap-sidebar-cart-scroll-snap', 'snap_sidebar_cart_params', $script_options);
+            wp_localize_script('snap-sidebar-cart-quantity-handler', 'snap_sidebar_cart_params', $script_options);
+            wp_localize_script('snap-sidebar-cart-preloader-fix', 'snap_sidebar_cart_params', $script_options);
+        }
         
         // Usar la versión compilada por Webpack
         wp_enqueue_script(

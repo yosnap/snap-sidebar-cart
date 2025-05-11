@@ -1,0 +1,122 @@
+/**
+ * Estilos para los preloaders en el carrito lateral
+ * 
+ * Define todos los estilos para los diferentes tipos de preloaders
+ */
+
+/* Loader para productos */
+.snap-sidebar-cart__product-loader {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  display: none !important;
+  z-index: 9999 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  pointer-events: all !important;
+}
+
+/* Estilos para cuando el preloader está activo */
+.snap-sidebar-cart__product-loader.active,
+.snap-sidebar-cart__product.updating .snap-sidebar-cart__product-loader,
+.snap-sidebar-cart__product-loader[style*="display: flex"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Estilos para el producto que se está actualizando */
+.snap-sidebar-cart__product.updating {
+  position: relative !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+// Estilos para el spinner del preloader
+.snap-sidebar-cart__loader-spinner {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  z-index: 10000;
+}
+
+// Estilos para el preloader tipo círculo
+.snap-sidebar-cart__loader-spinner.preloader-circle {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid var(--button-background, #2c6aa0);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+// Estilos para el preloader tipo dots
+.snap-sidebar-cart__loader-spinner.preloader-dots {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &::before,
+  &::after,
+  & span {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: var(--button-background, #2c6aa0);
+    border-radius: 50%;
+    animation: dots 1.4s infinite ease-in-out both;
+  }
+
+  &::before {
+    animation-delay: -0.32s;
+  }
+
+  & span {
+    animation-delay: -0.16s;
+  }
+}
+
+// Estilos para el preloader tipo square
+.snap-sidebar-cart__loader-spinner.preloader-square {
+  width: 20px;
+  height: 20px;
+  background-color: var(--button-background, #2c6aa0);
+  animation: rotate 1.2s infinite ease-in-out;
+}
+
+// Estilos para el preloader tipo spinner
+.snap-sidebar-cart__loader-spinner.preloader-spinner {
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--button-background, #2c6aa0);
+  border-bottom-color: var(--button-background, #2c6aa0);
+  animation: spin 1.5s linear infinite;
+}
+
+// Preloader para contenedores
+.snap-sidebar-cart__container-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100px;
+
+  .snap-sidebar-cart__loader-spinner {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+// Animación para el preloader tipo square
+@keyframes rotate {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}

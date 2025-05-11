@@ -1,0 +1,86 @@
+/**
+ * Mixins SCSS para Snap Sidebar Cart
+ * 
+ * Define mixins reutilizables para el proyecto
+ */
+
+// Flexbox
+@mixin flex($direction: row, $justify: flex-start, $align: stretch, $wrap: nowrap) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  flex-wrap: $wrap;
+}
+
+// Media queries
+@mixin mobile {
+  @media (max-width: $breakpoint-mobile) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: #{$breakpoint-mobile + 1px}) and (max-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: #{$breakpoint-tablet + 1px}) {
+    @content;
+  }
+}
+
+// Transiciones
+@mixin transition($property: all, $duration: 0.3s, $timing: ease) {
+  transition: $property $duration $timing;
+}
+
+// Truncar texto
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Botones
+@mixin button-style($bg-color: var(--button-background), $text-color: var(--button-text-color)) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: none;
+  border-radius: $border-radius;
+  padding: $spacing-sm $spacing-lg;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  @include transition;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Scrollbar personalizado
+@mixin custom-scrollbar($width: 5px, $track-color: #f1f1f1, $thumb-color: #888) {
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: $border-radius;
+  }
+}

@@ -32,7 +32,9 @@ export function updateCartItem(cartItemKey, quantity) {
                 }
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            console.error('Error en la solicitud AJAX:', status, error);
+            console.log('Respuesta del servidor:', xhr.responseText);
             hideAllLoaders();
             alert('Error al comunicarse con el servidor');
         }

@@ -1,0 +1,31 @@
+/**
+ * Main SCSS file for Snap Sidebar Cart
+ * 
+ * Este archivo importa todos los componentes y módulos SCSS
+ * para crear una estructura escalable y mantenible
+ */
+
+// Utilidades y variables
+@import 'utils/variables';
+@import 'utils/mixins';
+@import 'utils/animations';
+
+// Estilos base
+@import 'base/reset';
+@import 'base/typography';
+
+// Layouts
+@import 'layout/sidebar';
+@import 'layout/header';
+@import 'layout/footer';
+
+// Componentes
+@import 'components/buttons';
+@import 'components/preloader';
+@import 'components/products';
+@import 'components/related-products';
+@import 'components/tabs';
+@import 'components/quantity';
+
+// Responsive
+@import 'utils/responsive';
