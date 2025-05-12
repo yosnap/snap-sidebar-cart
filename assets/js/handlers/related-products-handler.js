@@ -457,6 +457,10 @@
                                         // Mostrar solo la imagen válida correspondiente
                                         $galleryImages.eq(targetIndex).css('opacity', '1');
                                         $galleryImages.eq(targetIndex).css('transform', 'translateY(0)');
+                                    } else {
+                                        // Asegurarnos de que la imagen principal sea visible
+                                        $primaryImage.css('opacity', '1');
+                                        $primaryImage.css('transform', 'translateY(0)');
                                     }
                                 } else {
                                     // Si no hay imágenes válidas, mantener la imagen principal visible

@@ -104,7 +104,19 @@ try {
     <a href="<?php echo esc_url($product_permalink); ?>" class="product-card-link">
         <div class="snap-sidebar-cart__related-product-image">
             <div class="primary-image">
-                <?php echo $thumbnail; ?>
+                <?php 
+                // Usar una imagen directa en lugar de confiar en get_image()
+                $thumbnail_id = $related_product->get_image_id();
+                if ($thumbnail_id) {
+                    $image_url = wp_get_attachment_image_url($thumbnail_id, 'woocommerce_thumbnail');
+                    $image_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+                    $image_alt = $image_alt ? $image_alt : esc_attr($product_name);
+                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="primary-product-image">';
+                } else {
+                    // Si no hay imagen, mostrar la imagen por defecto
+                    echo $thumbnail;
+                }
+                ?>
             </div>
             <?php 
             // Mostrar la primera imagen de la galería para el efecto hover
