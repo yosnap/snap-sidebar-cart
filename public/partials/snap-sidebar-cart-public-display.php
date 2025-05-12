@@ -137,7 +137,7 @@ $cart_count = WC()->cart->get_cart_contents_count();
                 </div>
             <?php endif; ?>
             
-            <div class="snap-sidebar-cart__footer">
+            <div class="snap-sidebar-cart__footer" <?php echo empty($cart_items) ? 'style="display:none;"' : ''; ?>>
                 <?php if (isset($this->options['show_shipping']) && $this->options['show_shipping']) : ?>
                     <div class="snap-sidebar-cart__shipping">
                         <span><?php _e('Envío:', 'snap-sidebar-cart'); ?></span>
