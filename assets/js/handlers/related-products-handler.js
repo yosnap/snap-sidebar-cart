@@ -363,11 +363,11 @@
                 console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
                            '- Imágenes de galería válidas:', validGalleryImageCount);
                 
-                // Añadir o quitar la clase has-gallery según corresponda
+                // Marcar productos sin galería válida
                 if (hasValidGalleryImages) {
-                    $product.addClass('has-gallery');
+                    $product.removeClass('no-gallery');
                 } else {
-                    $product.removeClass('has-gallery');
+                    $product.addClass('no-gallery');
                 }
                 
                 if (hasValidGalleryImages) {
@@ -449,12 +449,15 @@
                                     var segmentIndex = Math.min(Math.floor(ratio * validGalleryImagesList.length), validGalleryImagesList.length - 1);
                                     var targetIndex = validGalleryImagesList[segmentIndex];
                                     
-                                    // Ocultar la imagen principal y todas las imágenes de galería
-                                    $primaryImage.css('opacity', '0');
-                                    $galleryImages.css('opacity', '0');
-                                    
-                                    // Mostrar solo la imagen válida correspondiente
-                                    $galleryImages.eq(targetIndex).css('opacity', '1');
+                                    // Solo si el producto no está marcado como sin galería
+                                    if (!$product.hasClass('no-gallery')) {
+                                        // Ocultar la imagen principal y todas las imágenes de galería
+                                        $primaryImage.css('opacity', '0');
+                                        $galleryImages.css('opacity', '0');
+                                        
+                                        // Mostrar solo la imagen válida correspondiente
+                                        $galleryImages.eq(targetIndex).css('opacity', '1');
+                                    }
                                 } else {
                                     // Si no hay imágenes válidas, mantener la imagen principal visible
                                     $primaryImage.css('opacity', '1');

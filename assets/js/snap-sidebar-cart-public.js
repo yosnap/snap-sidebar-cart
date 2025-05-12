@@ -606,9 +606,9 @@
                                 !hoverImageSrc.includes('placeholder') && 
                                 !hoverImageSrc.includes('woocommerce-placeholder');
         
-        // Añadir o quitar la clase has-gallery según corresponda
+        // Marcar productos sin galería válida
         if (hasValidHoverImage) {
-          $product.addClass('has-gallery');
+          $product.removeClass('no-gallery');
           
           // Configurar hover con cambio de imagen
           $product.hover(
@@ -633,8 +633,8 @@
             }
           );
         } else {
-          // Si la imagen de hover no es válida, quitar la clase has-gallery
-          $product.removeClass('has-gallery');
+          // Si la imagen de hover no es válida, marcar como sin galería
+          $product.addClass('no-gallery');
           
           // Solo aplicar efecto de zoom sin cambiar la imagen
           $product.hover(
