@@ -7,14 +7,18 @@
 **Problema:** Al hacer hover sobre un producto que no tiene imágenes de galería válidas, la imagen destacada se ocultaba, dejando un espacio vacío.
 
 **Solución implementada:**
-- Mejorada la función `setupProductGalleryHover` para verificar correctamente si un producto tiene imágenes de galería válidas.
-- Implementada lógica para mantener la imagen principal visible cuando no hay imágenes alternativas.
-- Añadida verificación adicional para evitar que la imagen principal se oculte durante el efecto de mousemove.
+- Reimplementada la estructura HTML de las imágenes en productos relacionados para mayor robustez.
+- Implementada detección de productos sin galería desde el servidor PHP.
+- Desactivado el efecto de cambio de imagen en hover para productos sin galería.
+- Mejorado el efecto de transición con animación de desplazamiento vertical (la imagen principal desaparece hacia arriba y la secundaria aparece desde abajo).
+- Simplificado el JavaScript para depender más del CSS para las transiciones.
 - Mejorado el manejo de imágenes placeholder de WooCommerce.
 
 **Archivos modificados:**
 - `/assets/js/handlers/related-products-handler.js`
 - `/assets/js/snap-sidebar-cart-public.js`
+- `/assets/css/snap-sidebar-cart-public.css`
+- `/public/partials/snap-sidebar-cart-related-product.php`
 
 ### 2. Visualización del Sidebar al Añadir Productos a un Carrito Vacío
 

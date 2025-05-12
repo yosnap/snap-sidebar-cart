@@ -8,6 +8,9 @@
 * **Corrección**: Solucionado problema con la visualización del sidebar al añadir productos a un carrito vacío
 * **Corrección**: Solucionado problema donde la sección de productos relacionados no se ocultaba al eliminar todos los productos del carrito
 * **Corrección**: Corregido comportamiento del efecto hover en imágenes de productos sin galería para evitar espacios vacíos
+* **Mejora**: Implementada detección de productos sin galería desde el servidor para optimizar la experiencia de usuario
+* **Mejora**: Mejorado efecto de transición en hover de productos con animación de desplazamiento vertical
+* **Mejora**: Desactivado efecto de cambio de imagen en hover para productos sin galería
 * **Nuevo**: Añadido soporte para productos virtuales y descargables
 * **Mejora**: Mejorada la accesibilidad del carrito lateral
 * **Mejora**: Implementado manejo consistente del preloader configurado en el backend
