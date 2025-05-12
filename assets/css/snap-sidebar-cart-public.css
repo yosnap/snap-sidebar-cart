@@ -175,8 +175,21 @@
 }
 
 /* Cuando el carrito está vacío, ocultar la sección de productos relacionados */
-.snap-sidebar-cart__empty ~ .snap-sidebar-cart__related-section {
+.snap-sidebar-cart__empty ~ .snap-sidebar-cart__related-section,
+.snap-sidebar-cart__empty + .snap-sidebar-cart__related-section,
+.snap-sidebar-cart.cart-is-empty .snap-sidebar-cart__related-section,
+.snap-sidebar-cart__products:empty ~ .snap-sidebar-cart__related-section,
+.snap-sidebar-cart__products:empty + .snap-sidebar-cart__related-section,
+.snap-sidebar-cart__products .snap-sidebar-cart__empty ~ .snap-sidebar-cart__related-section,
+.snap-sidebar-cart__products .snap-sidebar-cart__empty + .snap-sidebar-cart__related-section {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
 .snap-sidebar-cart__empty p {

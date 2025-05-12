@@ -94,11 +94,25 @@
                         // Verificar si el carrito está vacío y actualizar estado
                         var cartCount = parseInt($('.snap-sidebar-cart__count').text()) || 0;
                         if (cartCount === 0) {
+                            console.log('Carrito vacío después de eliminar producto con botón de papelera');
+                            
                             // Ocultar footer si está vacío
                             $('.snap-sidebar-cart__footer').hide();
                             
+                            // Ocultar la sección de productos relacionados
+                            var $relatedSection = $('.snap-sidebar-cart__related-section');
+                            $relatedSection.hide();
+                            $relatedSection.css('display', 'none');
+                            $relatedSection.attr('style', 'display: none !important');
+                            
+                            // Añadir clase para indicar que el carrito está vacío
+                            $('.snap-sidebar-cart').addClass('cart-is-empty');
+                            
                             // Limpiar productos relacionados
                             $('.snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track').empty();
+                            
+                            // Disparar evento personalizado para notificar que el carrito está vacío
+                            $(document.body).trigger('snap_sidebar_cart_empty');
                         }
                         
                         // Disparar evento personalizado para notificar la actualización

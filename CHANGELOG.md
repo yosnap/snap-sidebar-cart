@@ -5,8 +5,11 @@
 * **Mejora**: Actualizada compatibilidad con WooCommerce 8.5
 * **Corrección**: Solucionado problema con la visualización de productos variables
 * **Corrección**: Arreglado error en el cálculo de descuentos para productos en oferta
+* **Corrección**: Solucionado problema con la visualización del sidebar al añadir productos a un carrito vacío
+* **Corrección**: Solucionado problema donde la sección de productos relacionados no se ocultaba al eliminar todos los productos del carrito
 * **Nuevo**: Añadido soporte para productos virtuales y descargables
 * **Mejora**: Mejorada la accesibilidad del carrito lateral
+* **Mejora**: Implementado manejo consistente del preloader configurado en el backend
 
 ## 1.2.3 - 2025-05-12
 * **Mejora**: Optimizado el manejo de la apertura automática del carrito

@@ -54,18 +54,32 @@
                     if (cartCount === 0) {
                         debugLog("Carrito vacío después de eliminar producto: ocultando footer y sección de productos relacionados");
                         
-                        // Ocultar el footer y la sección de productos relacionados
+                        // Ocultar el footer
                         $(".snap-sidebar-cart__footer").hide();
                         
-                        // Usar múltiples métodos para asegurar que la sección de productos relacionados se oculte
-                        $(".snap-sidebar-cart__related-section").hide();
-                        $(".snap-sidebar-cart__related-section").css("display", "none");
+                        // Forzar la ocultación de la sección de productos relacionados
+                        var $relatedSection = $(".snap-sidebar-cart__related-section");
+                        
+                        // Aplicar múltiples métodos de ocultación
+                        $relatedSection.hide();
+                        $relatedSection.css("display", "none");
+                        $relatedSection.attr("style", "display: none !important");
+                        
+                        // Añadir una clase específica para poder seleccionarla con CSS
+                        $(".snap-sidebar-cart").addClass("cart-is-empty");
+                        
+                        // Eliminar cualquier contenido de la sección de productos relacionados
+                        $relatedSection.find(".snap-sidebar-cart__related-container").empty();
                         
                         // Agregar un pequeño retraso para asegurar que se oculte después de cualquier otra actualización
                         setTimeout(function() {
-                            $(".snap-sidebar-cart__related-section").hide();
-                            $(".snap-sidebar-cart__related-section").css("display", "none");
+                            $relatedSection.hide();
+                            $relatedSection.css("display", "none");
+                            $relatedSection.attr("style", "display: none !important");
                             debugLog("Ocultando sección de productos relacionados con retraso");
+                            
+                            // Forzar un reflow del DOM
+                            $relatedSection[0] && $relatedSection[0].offsetHeight;
                         }, 100);
                         
                         // Disparar un evento personalizado para notificar que el carrito está vacío

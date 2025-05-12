@@ -184,6 +184,15 @@ class Snap_Sidebar_Cart_Public {
             true
         );
         
+        // Cargar el script de corrección para carrito vacío
+        wp_enqueue_script(
+            'snap-sidebar-cart-empty-cart-fix', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/empty-cart-fix.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-remove-button-fix'), 
+            $version, 
+            true
+        );
+        
         // Agregar código inline para asegurar el correcto funcionamiento
         wp_add_inline_script('snap-sidebar-cart-public', "
             jQuery(document).ready(function($) {

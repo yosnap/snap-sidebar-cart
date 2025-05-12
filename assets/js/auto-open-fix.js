@@ -829,6 +829,17 @@ jQuery(document).ready(function($) {
             $(".snap-sidebar-cart__related-section").attr("style", "display: none !important");
         }
         
+        // Verificar nuevamente si el carrito está vacío después de actualizar
+        var finalCartCount = parseInt($(".snap-sidebar-cart__count").text()) || 0;
+        if (finalCartCount === 0) {
+            console.log("Verificación final: carrito vacío después de actualizar");
+            $(".snap-sidebar-cart").addClass("cart-is-empty");
+            $(".snap-sidebar-cart__footer").hide();
+            $(".snap-sidebar-cart__related-section").hide().css("display", "none").attr("style", "display: none !important");
+        } else {
+            $(".snap-sidebar-cart").removeClass("cart-is-empty");
+        }
+        
         // Disparar un evento personalizado
         $(document.body).trigger("snap_sidebar_cart_updated");
     }
