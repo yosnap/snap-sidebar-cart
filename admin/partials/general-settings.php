@@ -94,6 +94,18 @@ $options = get_option('snap_sidebar_cart_options');
 
         <tr>
             <th scope="row">
+                <label for="snap_cart_show_delete_icon_top"><?php echo esc_html__('Icono de eliminación rápida', 'snap-sidebar-cart'); ?></label>
+            </th>
+            <td>
+                <label>
+                    <input type="checkbox" id="snap_cart_show_delete_icon_top" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" <?php checked(isset($options['show_delete_icon_top']) ? $options['show_delete_icon_top'] : true, true); ?>>
+                    <?php echo esc_html__('Mostrar el icono de papelera para eliminación rápida de productos en el carrito.', 'snap-sidebar-cart'); ?>
+                </label>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">
                 <label for="snap_cart_banner_enable"><?php echo esc_html__('Mostrar banner informativo', 'snap-sidebar-cart'); ?></label>
             </th>
             <td>

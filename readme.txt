@@ -4,7 +4,7 @@ Tags: woocommerce, cart, sidebar, ajax, minicart, slide-cart
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 1.0.0
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,12 +77,23 @@ Sí, el plugin es compatible con WPML y Polylang. Todos los textos son traducibl
 
 == Changelog ==
 
+= 1.2.4 =
+* Mejora: Optimización del rendimiento en dispositivos móviles
+* Mejora: Actualizada compatibilidad con WooCommerce 8.5
+* Corrección: Solucionado problema con la visualización de productos variables
+* Corrección: Arreglado error en el cálculo de descuentos para productos en oferta
+* Nuevo: Añadido soporte para productos virtuales y descargables
+* Mejora: Mejorada la accesibilidad del carrito lateral
+
 = 1.0.0 =
 * Versión inicial
 
 Para ver el registro completo de cambios, consulta el archivo CHANGELOG.md incluido con el plugin.
 
 == Upgrade Notice ==
+
+= 1.2.4 =
+Esta actualización incluye mejoras de rendimiento, mejor compatibilidad con WooCommerce 8.5, soporte para productos virtuales y descargables, y correcciones importantes.
 
 = 1.0.0 =
 Versión inicial del plugin Snap Sidebar Cart para WooCommerce.

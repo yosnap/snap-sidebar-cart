@@ -166,11 +166,20 @@ class Snap_Sidebar_Cart_Public {
             true
         );
         
+        // Cargar el manejador del botón de eliminación superior
+        wp_enqueue_script(
+            'snap-sidebar-cart-remove-top-button', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/remove-top-button-handler.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-quantity-buttons-fix'), 
+            $version, 
+            true
+        );
+        
         // Cargar el parche de compatibilidad al final para asegurar que resuelva cualquier conflicto
         wp_enqueue_script(
             'snap-sidebar-cart-compatibility-patch', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/compatibility-patch.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-opener-fix', 'snap-sidebar-cart-quantity-buttons-fix'), 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-opener-fix', 'snap-sidebar-cart-quantity-buttons-fix', 'snap-sidebar-cart-remove-top-button'), 
             $version, 
             true
         );

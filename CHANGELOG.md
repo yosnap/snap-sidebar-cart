@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.4 - 2025-05-12
+* **Mejora**: Optimización del rendimiento en dispositivos móviles
+* **Mejora**: Actualizada compatibilidad con WooCommerce 8.5
+* **Corrección**: Solucionado problema con la visualización de productos variables
+* **Corrección**: Arreglado error en el cálculo de descuentos para productos en oferta
+* **Nuevo**: Añadido soporte para productos virtuales y descargables
+* **Mejora**: Mejorada la accesibilidad del carrito lateral
+
 ## 1.2.3 - 2025-05-12
 * **Mejora**: Optimizado el manejo de la apertura automática del carrito
 * **Mejora**: Añadida configuración más consistente para la posición de nuevos productos

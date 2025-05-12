@@ -204,6 +204,15 @@ class Snap_Sidebar_Cart_Admin {
             'snap_sidebar_cart_general_section'
         );
         
+        // Mostrar icono de eliminación rápida superior
+        add_settings_field(
+            'show_remove_icon_top',
+            __('Mostrar icono de eliminación superior', 'snap-sidebar-cart'),
+            array($this, 'show_remove_icon_top_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
         // Apertura automática al añadir productos
         add_settings_field(
             'auto_open',
@@ -736,6 +745,17 @@ class Snap_Sidebar_Cart_Admin {
     }
 
     /**
+     * Callback para el campo de mostrar icono de eliminación rápida superior.
+     *
+     * @since    1.5.0
+     */
+    public function show_remove_icon_top_callback() {
+        $checked = isset($this->options['show_delete_icon_top']) && $this->options['show_delete_icon_top'] ? 'checked="checked"' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" ' . $checked . '>';
+        echo '<p class="description">' . __('Mostrar un icono de papelera en la parte superior de cada producto del carrito para eliminación rápida.', 'snap-sidebar-cart') . '</p>';
+    }
+
+    /**
      * Callback para el campo de apertura automática.
      *
      * @since    1.0.0
@@ -883,66 +903,25 @@ class Snap_Sidebar_Cart_Admin {
         echo '<input type="number" name="snap_sidebar_cart_options[related_products][count]" value="' . $value . '" class="small-text" min="1" max="12">';
         echo '<p class="description">' . __('Número máximo de productos relacionados a mostrar.', 'snap-sidebar-cart') . '</p>';
     }
-
+    
     /**
-     * Callback para el campo de mostrar banner informativo.
+     * Callback para las columnas de productos relacionados.
      *
-     * @since    1.3.0
+     * @since    1.0.0
      */
-    public function banner_enable_callback() {
-        $checked = isset($this->options['banner_enable']) && $this->options['banner_enable'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" id="snap_cart_banner_enable" name="snap_sidebar_cart_options[banner_enable]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Mostrar un banner informativo personalizado después de la lista de productos.', 'snap-sidebar-cart') . '</p>';
-        
-        // JavaScript para mostrar/ocultar el editor según el estado del checkbox
+    public function related_columns_callback() {
+        $value = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2;
         ?>
-        <script type="text/javascript">
-        jQuery(document).ready(function($) {
-            // Función para mostrar/ocultar el editor WYSIWYG
-            function toggleBannerContent() {
-                if ($('#snap_cart_banner_enable').is(':checked')) {
-                    $('.banner-content-field').show();
-                } else {
-                    $('.banner-content-field').hide();
-                }
-            }
-            
-            // Aplicar al cargar
-            toggleBannerContent();
-            
-            // Aplicar al cambiar el estado del checkbox
-            $('#snap_cart_banner_enable').on('change', function() {
-                toggleBannerContent();
-            });
-        });
-        </script>
+        <select name="snap_sidebar_cart_options[related_products][columns]">
+            <option value="1" <?php selected($value, 1); ?>><?php _e('1 columna', 'snap-sidebar-cart'); ?></option>
+            <option value="2" <?php selected($value, 2); ?>><?php _e('2 columnas', 'snap-sidebar-cart'); ?></option>
+            <option value="3" <?php selected($value, 3); ?>><?php _e('3 columnas', 'snap-sidebar-cart'); ?></option>
+            <option value="4" <?php selected($value, 4); ?>><?php _e('4 columnas', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <p class="description"><?php _e('Número de columnas para mostrar productos relacionados.', 'snap-sidebar-cart'); ?></p>
         <?php
     }
-
-    /**
-     * Callback para el campo de contenido del banner.
-     *
-     * @since    1.3.0
-     */
-    public function banner_content_callback() {
-        $value = isset($this->options['banner_content']) ? $this->options['banner_content'] : '';
-        
-        echo '<div class="banner-content-field" style="' . (isset($this->options['banner_enable']) && $this->options['banner_enable'] ? '' : 'display:none;') . '">';
-        wp_editor(
-            $value,
-            'snap_cart_banner_content',
-            array(
-                'textarea_name' => 'snap_sidebar_cart_options[banner_content]',
-                'media_buttons' => true,
-                'textarea_rows' => 5,
-                'teeny'         => false,
-                'quicktags'     => true,
-            )
-        );
-        echo '<p class="description">' . __('Este contenido se mostrará como un banner después de la lista de productos en el carrito lateral.', 'snap-sidebar-cart') . '</p>';
-        echo '</div>';
-    }
-
+    
     /**
      * Callback para el orden de productos relacionados.
      *
@@ -1189,6 +1168,7 @@ return wp_list_pluck($products, \'ID\');</pre>';
         // Validación de checkboxes
         $output['show_delivery_time'] = isset($input['show_delivery_time']) ? 1 : 0;
         $output['show_shipping'] = isset($input['show_shipping']) ? 1 : 0;
+        $output['show_delete_icon_top'] = isset($input['show_delete_icon_top']) ? 1 : 0;
         $output['auto_open'] = isset($input['auto_open']) ? 1 : 0;
         
         // Validación de estilos

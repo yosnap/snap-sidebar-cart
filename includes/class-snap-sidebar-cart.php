@@ -59,6 +59,8 @@ class Snap_Sidebar_Cart {
             'delivery_time_text' => __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart'),
             'show_delivery_time' => true,
             'show_shipping' => true,
+            'show_delete_icon' => true,
+            'show_delete_icon_top' => true,
             'auto_open' => true,
             'new_product_position' => 'top', // Controla si los productos nuevos se agregan al inicio ('top') o al final ('bottom')
             'styles' => array(
@@ -173,6 +175,14 @@ class Snap_Sidebar_Cart {
         
         if (!isset($this->options['show_shipping'])) {
             $this->options['show_shipping'] = $default_options['show_shipping'];
+        }
+        
+        if (!isset($this->options['show_delete_icon'])) {
+            $this->options['show_delete_icon'] = $default_options['show_delete_icon'];
+        }
+        
+        if (!isset($this->options['show_delete_icon_top'])) {
+            $this->options['show_delete_icon_top'] = $default_options['show_delete_icon_top'];
         }
         
         if (!isset($this->options['auto_open'])) {
