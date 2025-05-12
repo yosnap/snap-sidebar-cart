@@ -1534,33 +1534,38 @@ body.snap-sidebar-cart-open {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
-    transition: opacity 0.5s ease-in-out !important; /* Transición más suave */
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out !important;
 }
 
 .snap-sidebar-cart__related-product-image .primary-image {
     z-index: 1 !important;
+    transform: translateY(0) !important;
 }
 
 .snap-sidebar-cart__related-product-image .product-gallery-image,
 .snap-sidebar-cart__related-product-image .hover-image {
     opacity: 0 !important;
     z-index: 2 !important;
-    transition: opacity 0.5s ease-in-out !important; /* Transición más suave */
+    transform: translateY(20px) !important;
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out !important;
 }
 
 /* Efecto de hover para todos los productos */
 .snap-sidebar-cart__related-product:hover .primary-image {
     opacity: 0 !important;
+    transform: translateY(-20px) !important;
 }
 
 .snap-sidebar-cart__related-product:hover .product-gallery-image,
 .snap-sidebar-cart__related-product:hover .hover-image {
     opacity: 1 !important;
+    transform: translateY(0) !important;
 }
 
 /* Mantener la imagen principal visible cuando no hay galería */
 .snap-sidebar-cart__related-product.no-gallery:hover .primary-image {
     opacity: 1 !important;
+    transform: translateY(0) !important;
 }
 
 /* Badge para Last Chance */

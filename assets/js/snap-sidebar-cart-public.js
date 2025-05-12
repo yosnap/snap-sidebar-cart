@@ -615,19 +615,15 @@
             function() {
               // Mouse enter - verificar que la imagen de hover sea válida antes de mostrarla
               if (hoverImageSrc && hoverImageSrc.trim() !== '' && !hoverImageSrc.includes('placeholder') && !hoverImageSrc.includes('woocommerce-placeholder')) {
-                $primaryImage.stop().animate({opacity: 0}, 400);
-                $hoverImage.stop().animate({opacity: 1}, 400);
+                // CSS se encarga de la animación
               } else {
                 // Si la imagen no es válida, mantener la imagen principal visible
-                $primaryImage.stop().animate({opacity: 1}, 400);
               }
               // Aplicar efecto de zoom
               $product.addClass("hover-active");
             },
             function() {
-              // Mouse leave con animación fade
-              $primaryImage.stop().animate({opacity: 1}, 400);
-              $hoverImage.stop().animate({opacity: 0}, 400);
+              // Mouse leave - CSS se encarga de la animación
               // Quitar efecto de zoom
               $product.removeClass("hover-active");
             }

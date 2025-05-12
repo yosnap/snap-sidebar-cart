@@ -375,22 +375,19 @@
                     // Configurar hover con transiciones suaves
                     $product.hover(
                         function() {
-                            // Mouse enter - mostrar la primera imagen de galería válida con animación fade
+                            // Mouse enter - mostrar la primera imagen de galería válida
                             if (validGalleryImages.length > 0) {
-                                $primaryImage.stop().animate({opacity: 0}, 400);
-                                validGalleryImages[0].stop().animate({opacity: 1}, 400);
+                                // CSS se encarga de la animación
                             } else {
                                 // Si no hay imágenes válidas, mantener la imagen principal visible
-                                $primaryImage.stop().animate({opacity: 1}, 400);
                             }
                             
                             // Aplicar un ligero zoom a la imagen
                             $imageContainer.addClass('hover-active');
                         },
                         function() {
-                            // Mouse leave - restaurar imagen principal con animación fade
-                            $primaryImage.stop().animate({opacity: 1}, 400);
-                            $galleryImages.stop().animate({opacity: 0}, 400);
+                            // Mouse leave - restaurar imagen principal
+                            // CSS se encarga de la animación
                             $imageContainer.removeClass('hover-active');
                         }
                     );
@@ -451,12 +448,15 @@
                                     
                                     // Solo si el producto no está marcado como sin galería
                                     if (!$product.hasClass('no-gallery')) {
-                                        // Ocultar la imagen principal y todas las imágenes de galería con animación
-                                        $primaryImage.stop().animate({opacity: 0}, 300);
-                                        $galleryImages.stop().animate({opacity: 0}, 300);
+                                        // Ocultar la imagen principal y todas las imágenes de galería
+                                        $primaryImage.css('opacity', '0');
+                                        $primaryImage.css('transform', 'translateY(-20px)');
+                                        $galleryImages.css('opacity', '0');
+                                        $galleryImages.css('transform', 'translateY(20px)');
                                         
-                                        // Mostrar solo la imagen válida correspondiente con animación de fade
-                                        $galleryImages.eq(targetIndex).stop().animate({opacity: 1}, 300);
+                                        // Mostrar solo la imagen válida correspondiente
+                                        $galleryImages.eq(targetIndex).css('opacity', '1');
+                                        $galleryImages.eq(targetIndex).css('transform', 'translateY(0)');
                                     }
                                 } else {
                                     // Si no hay imágenes válidas, mantener la imagen principal visible
