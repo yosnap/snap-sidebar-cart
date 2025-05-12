@@ -597,18 +597,62 @@
       var $primaryImage = $product.find(".primary-image");
       var $hoverImage = $product.find(".hover-image");
       
+      // Verificar si hay una imagen de hover válida
       if ($hoverImage.length) {
-        // Configurar hover
+        // Verificar que la imagen de hover tenga un src válido
+        var hoverImageSrc = $hoverImage.attr('src');
+        var hasValidHoverImage = hoverImageSrc && 
+                                hoverImageSrc.trim() !== '' && 
+                                !hoverImageSrc.includes('placeholder');
+        
+        if (hasValidHoverImage) {
+          // Configurar hover con cambio de imagen
+          $product.hover(
+            function() {
+              // Mouse enter - verificar que la imagen de hover sea válida antes de mostrarla
+              if (hoverImageSrc && hoverImageSrc.trim() !== '' && !hoverImageSrc.includes('placeholder') && !hoverImageSrc.includes('woocommerce-placeholder')) {
+                $primaryImage.css("opacity", "0");
+                $hoverImage.css("opacity", "1");
+              } else {
+                // Si la imagen no es válida, mantener la imagen principal visible
+                $primaryImage.css("opacity", "1");
+              }
+              // Aplicar efecto de zoom
+              $product.addClass("hover-active");
+            },
+            function() {
+              // Mouse leave
+              $primaryImage.css("opacity", "1");
+              $hoverImage.css("opacity", "0");
+              // Quitar efecto de zoom
+              $product.removeClass("hover-active");
+            }
+          );
+        } else {
+          // Si la imagen de hover no es válida, solo aplicar efecto de zoom sin cambiar la imagen
+          $product.hover(
+            function() {
+              // Mouse enter - solo aplicar efecto de zoom
+              // IMPORTANTE: Mantener la imagen principal visible
+              $primaryImage.css("opacity", "1");
+              $product.addClass("hover-active");
+            },
+            function() {
+              // Mouse leave - quitar efecto de zoom
+              $product.removeClass("hover-active");
+            }
+          );
+        }
+      } else {
+        // Si no hay imagen de hover, solo aplicar efecto de zoom sin cambiar la imagen
         $product.hover(
           function() {
-            // Mouse enter
-            $primaryImage.css("opacity", "0");
-            $hoverImage.css("opacity", "1");
+            // Mouse enter - solo aplicar efecto de zoom
+            $product.addClass("hover-active");
           },
           function() {
-            // Mouse leave
-            $primaryImage.css("opacity", "1");
-            $hoverImage.css("opacity", "0");
+            // Mouse leave - quitar efecto de zoom
+            $product.removeClass("hover-active");
           }
         );
       }
