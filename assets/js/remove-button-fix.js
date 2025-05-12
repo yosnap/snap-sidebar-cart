@@ -49,6 +49,29 @@
                     $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
                     $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
                     
+                    // Verificar si el carrito está vacío después de eliminar el producto
+                    var cartCount = parseInt(response.data.cart_count) || 0;
+                    if (cartCount === 0) {
+                        debugLog("Carrito vacío después de eliminar producto: ocultando footer y sección de productos relacionados");
+                        
+                        // Ocultar el footer y la sección de productos relacionados
+                        $(".snap-sidebar-cart__footer").hide();
+                        
+                        // Usar múltiples métodos para asegurar que la sección de productos relacionados se oculte
+                        $(".snap-sidebar-cart__related-section").hide();
+                        $(".snap-sidebar-cart__related-section").css("display", "none");
+                        
+                        // Agregar un pequeño retraso para asegurar que se oculte después de cualquier otra actualización
+                        setTimeout(function() {
+                            $(".snap-sidebar-cart__related-section").hide();
+                            $(".snap-sidebar-cart__related-section").css("display", "none");
+                            debugLog("Ocultando sección de productos relacionados con retraso");
+                        }, 100);
+                        
+                        // Disparar un evento personalizado para notificar que el carrito está vacío
+                        $(document.body).trigger("snap_sidebar_cart_empty");
+                    }
+                    
                     debugLog("Cart content updated successfully");
                     
                     // Reiniciar los manejadores de eventos
