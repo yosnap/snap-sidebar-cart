@@ -1534,7 +1534,7 @@ body.snap-sidebar-cart-open {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
-    transition: opacity 0.3s ease !important;
+    transition: opacity 0.5s ease-in-out !important; /* Transición más suave */
 }
 
 .snap-sidebar-cart__related-product-image .primary-image {
@@ -1545,7 +1545,7 @@ body.snap-sidebar-cart-open {
 .snap-sidebar-cart__related-product-image .hover-image {
     opacity: 0 !important;
     z-index: 2 !important;
-    transition: opacity 0.3s ease-in-out !important;
+    transition: opacity 0.5s ease-in-out !important; /* Transición más suave */
 }
 
 /* Efecto de hover para todos los productos */

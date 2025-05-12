@@ -615,19 +615,19 @@
             function() {
               // Mouse enter - verificar que la imagen de hover sea válida antes de mostrarla
               if (hoverImageSrc && hoverImageSrc.trim() !== '' && !hoverImageSrc.includes('placeholder') && !hoverImageSrc.includes('woocommerce-placeholder')) {
-                $primaryImage.css("opacity", "0");
-                $hoverImage.css("opacity", "1");
+                $primaryImage.stop().animate({opacity: 0}, 400);
+                $hoverImage.stop().animate({opacity: 1}, 400);
               } else {
                 // Si la imagen no es válida, mantener la imagen principal visible
-                $primaryImage.css("opacity", "1");
+                $primaryImage.stop().animate({opacity: 1}, 400);
               }
               // Aplicar efecto de zoom
               $product.addClass("hover-active");
             },
             function() {
-              // Mouse leave
-              $primaryImage.css("opacity", "1");
-              $hoverImage.css("opacity", "0");
+              // Mouse leave con animación fade
+              $primaryImage.stop().animate({opacity: 1}, 400);
+              $hoverImage.stop().animate({opacity: 0}, 400);
               // Quitar efecto de zoom
               $product.removeClass("hover-active");
             }
