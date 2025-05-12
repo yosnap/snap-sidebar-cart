@@ -90,7 +90,8 @@ $tabs = array(
             // Mostrar las secciones correspondientes a la pestaña actual
             switch ($current_tab) {
                 case 'general':
-                    do_settings_sections('snap-sidebar-cart-settings-general');
+                    // Usar nuestra plantilla personalizada en lugar de la función do_settings_sections
+                    include_once SNAP_SIDEBAR_CART_PATH . 'admin/partials/general-settings.php';
                     break;
                 case 'styles':
                     do_settings_sections('snap-sidebar-cart-settings-styles');

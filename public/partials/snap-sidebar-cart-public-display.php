@@ -65,6 +65,14 @@ $cart_count = WC()->cart->get_cart_contents_count();
                 ?>
             </div>
             
+            <?php 
+            // Mostrar banner personalizado si está habilitado
+            if (isset($this->options['banner_enable']) && $this->options['banner_enable'] && !empty($this->options['banner_content'])) : ?>
+                <div class="snap-sidebar-cart__banner-container">
+                    <?php echo wp_kses_post(wpautop($this->options['banner_content'])); ?>
+                </div>
+            <?php endif; ?>
+            
             <?php if (isset($this->options['related_products']['show']) && $this->options['related_products']['show'] && !empty($cart_items)) : ?>
                 <div class="snap-sidebar-cart__related-section">
                     <h3 class="snap-sidebar-cart__related-title"><?php echo isset($this->options['related_products']['title']) ? esc_html($this->options['related_products']['title']) : _e('Te puede gustar', 'snap-sidebar-cart'); ?></h3>

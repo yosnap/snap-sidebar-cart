@@ -12,8 +12,6 @@ jQuery(document).ready(function($) {
         // Mostrar loader
         var $product = $('li[data-key="' + cartItemKey + '"]');
         if ($product.length) {
-            var $loader = $product.find('.snap-sidebar-cart__loader-spinner');
-            $loader.show();
             $product.find('.snap-sidebar-cart__product-loader').show();
         }
         
@@ -39,6 +37,17 @@ jQuery(document).ready(function($) {
                     
                     // Volver a aplicar los eventos a los nuevos botones
                     bindDirectEvents();
+                } else {
+                    // Si hay un error, ocultar el loader
+                    if ($product.length) {
+                        $product.find('.snap-sidebar-cart__product-loader').hide();
+                    }
+                }
+            },
+            error: function() {
+                // Ocultar el loader si hay un error
+                if ($product.length) {
+                    $product.find('.snap-sidebar-cart__product-loader').hide();
                 }
             }
         });
@@ -104,6 +113,52 @@ jQuery(document).ready(function($) {
                 updateQuantity(cartItemKey, newVal);
                 
                 return false;
+            });
+        });
+        
+        // Manejar actualización de cantidad con teclado + ENTER
+        $('.cart-item__quantity-input').each(function() {
+            var $input = $(this);
+            // Eliminar eventos previos para evitar duplicados
+            $input.off('keypress.directfix change.directfix');
+            
+            // Evento para tecla ENTER
+            $input.on('keypress.directfix', function(e) {
+                if (e.which === 13) { // Código de tecla ENTER
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var newVal = parseInt($(this).val(), 10) || 0;
+                    var $wrapper = $(this).closest('[data-key]');
+                    var cartItemKey = $wrapper.data('key');
+                    
+                    // Si es 0, aplicar clase para animación
+                    if (newVal === 0) {
+                        $wrapper.addClass('removing');
+                    }
+                    
+                    // Actualizar en el servidor
+                    updateQuantity(cartItemKey, newVal);
+                    
+                    return false;
+                }
+            });
+            
+            // Evento para cambios en el campo (blur)
+            $input.on('change.directfix', function(e) {
+                e.preventDefault();
+                
+                var newVal = parseInt($(this).val(), 10) || 0;
+                var $wrapper = $(this).closest('[data-key]');
+                var cartItemKey = $wrapper.data('key');
+                
+                // Si es 0, aplicar clase para animación
+                if (newVal === 0) {
+                    $wrapper.addClass('removing');
+                }
+                
+                // Actualizar en el servidor
+                updateQuantity(cartItemKey, newVal);
             });
         });
     }

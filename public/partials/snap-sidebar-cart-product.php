@@ -31,8 +31,21 @@ $thumbnail = $product->get_image(array(100, 100));
 $product_variation_data = '';
 if (isset($cart_item['variation']) && is_array($cart_item['variation'])) {
     foreach ($cart_item['variation'] as $name => $value) {
-        $label = wc_attribute_label(str_replace('attribute_', '', $name), $product);
-        $product_variation_data .= '<span class="snap-sidebar-cart__product-variation">' . $label . ': ' . $value . '</span>';
+        $taxonomy = str_replace('attribute_', '', $name);
+        $label = wc_attribute_label($taxonomy, $product);
+        
+        // Intentar convertir el slug del atributo a su nombre
+        $term_name = $value;
+        
+        // Si el atributo es una taxonomía, obtenemos el término real
+        if (taxonomy_exists($taxonomy)) {
+            $term = get_term_by('slug', $value, $taxonomy);
+            if ($term && !is_wp_error($term)) {
+                $term_name = $term->name;
+            }
+        }
+        
+        $product_variation_data .= '<span class="snap-sidebar-cart__product-variation">' . $label . ': ' . $term_name . '</span>';
     }
 }
 

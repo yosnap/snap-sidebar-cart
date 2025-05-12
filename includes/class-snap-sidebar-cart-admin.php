@@ -64,6 +64,12 @@ class Snap_Sidebar_Cart_Admin {
             wp_enqueue_script('code-editor');
         }
         
+        // Cargar scripts para el editor WYSIWYG
+        if ($current_tab === 'general') {
+            wp_enqueue_editor();
+            wp_enqueue_media();
+        }
+        
         wp_enqueue_script('snap-sidebar-cart-admin', SNAP_SIDEBAR_CART_URL . 'admin/js/snap-sidebar-cart-admin.js', array('jquery', 'wp-color-picker'), SNAP_SIDEBAR_CART_VERSION, true);
     }
 
@@ -203,6 +209,24 @@ class Snap_Sidebar_Cart_Admin {
             'auto_open',
             __('Abrir automáticamente al añadir productos', 'snap-sidebar-cart'),
             array($this, 'auto_open_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        // Banner personalizado
+        add_settings_field(
+            'banner_enable',
+            __('Mostrar banner informativo', 'snap-sidebar-cart'),
+            array($this, 'banner_enable_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        // Contenido del banner personalizado
+        add_settings_field(
+            'banner_content',
+            __('Contenido del banner', 'snap-sidebar-cart'),
+            array($this, 'banner_content_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
@@ -861,14 +885,62 @@ class Snap_Sidebar_Cart_Admin {
     }
 
     /**
-     * Callback para las columnas de productos relacionados.
+     * Callback para el campo de mostrar banner informativo.
      *
-     * @since    1.0.0
+     * @since    1.3.0
      */
-    public function related_columns_callback() {
-        $value = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2;
-        echo '<input type="number" name="snap_sidebar_cart_options[related_products][columns]" value="' . $value . '" class="small-text" min="1" max="4">';
-        echo '<p class="description">' . __('Número de columnas para mostrar los productos relacionados.', 'snap-sidebar-cart') . '</p>';
+    public function banner_enable_callback() {
+        $checked = isset($this->options['banner_enable']) && $this->options['banner_enable'] ? 'checked="checked"' : '';
+        echo '<input type="checkbox" id="snap_cart_banner_enable" name="snap_sidebar_cart_options[banner_enable]" value="1" ' . $checked . '>';
+        echo '<p class="description">' . __('Mostrar un banner informativo personalizado después de la lista de productos.', 'snap-sidebar-cart') . '</p>';
+        
+        // JavaScript para mostrar/ocultar el editor según el estado del checkbox
+        ?>
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Función para mostrar/ocultar el editor WYSIWYG
+            function toggleBannerContent() {
+                if ($('#snap_cart_banner_enable').is(':checked')) {
+                    $('.banner-content-field').show();
+                } else {
+                    $('.banner-content-field').hide();
+                }
+            }
+            
+            // Aplicar al cargar
+            toggleBannerContent();
+            
+            // Aplicar al cambiar el estado del checkbox
+            $('#snap_cart_banner_enable').on('change', function() {
+                toggleBannerContent();
+            });
+        });
+        </script>
+        <?php
+    }
+
+    /**
+     * Callback para el campo de contenido del banner.
+     *
+     * @since    1.3.0
+     */
+    public function banner_content_callback() {
+        $value = isset($this->options['banner_content']) ? $this->options['banner_content'] : '';
+        
+        echo '<div class="banner-content-field" style="' . (isset($this->options['banner_enable']) && $this->options['banner_enable'] ? '' : 'display:none;') . '">';
+        wp_editor(
+            $value,
+            'snap_cart_banner_content',
+            array(
+                'textarea_name' => 'snap_sidebar_cart_options[banner_content]',
+                'media_buttons' => true,
+                'textarea_rows' => 5,
+                'teeny'         => false,
+                'quicktags'     => true,
+            )
+        );
+        echo '<p class="description">' . __('Este contenido se mostrará como un banner después de la lista de productos en el carrito lateral.', 'snap-sidebar-cart') . '</p>';
+        echo '</div>';
     }
 
     /**
@@ -1105,6 +1177,13 @@ return wp_list_pluck($products, \'ID\');</pre>';
         // Validación del texto de tiempo de entrega
         if (isset($input['delivery_time_text'])) {
             $output['delivery_time_text'] = sanitize_text_field($input['delivery_time_text']);
+        }
+        
+        // Validación de campos del banner
+        $output['banner_enable'] = isset($input['banner_enable']) ? 1 : 0;
+        
+        if (isset($input['banner_content'])) {
+            $output['banner_content'] = wp_kses_post($input['banner_content']);
         }
         
         // Validación de checkboxes
