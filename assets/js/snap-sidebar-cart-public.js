@@ -315,8 +315,9 @@
     } else {
       $(".snap-sidebar-cart__buttons").remove();
 
-      // Si no hay productos, limpiar los productos relacionados
+      // Si no hay productos, limpiar los productos relacionados y ocultar la sección
       $(".snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track").empty();
+      $(".snap-sidebar-cart__related-section").hide();
     }
 
     // Disparar un evento personalizado
@@ -729,16 +730,18 @@
   var $footer = $(".snap-sidebar-cart__footer");
   var addingProduct = false;
   
-  // Función para actualizar la visibilidad del footer según el estado del carrito
+  // Función para actualizar la visibilidad del footer y la sección de productos relacionados según el estado del carrito
   function updateFooterVisibility(cartCount) {
     if (cartCount === 0) {
-      // Ocultar el footer cuando el carrito está vacío
+      // Ocultar el footer y la sección de productos relacionados cuando el carrito está vacío
       $footer.hide();
-      console.log("Carrito vacío: ocultando footer");
+      $(".snap-sidebar-cart__related-section").hide();
+      console.log("Carrito vacío: ocultando footer y productos relacionados");
     } else {
-      // Mostrar el footer cuando hay productos
+      // Mostrar el footer y la sección de productos relacionados cuando hay productos
       $footer.show();
-      console.log("Carrito con productos: mostrando footer");
+      $(".snap-sidebar-cart__related-section").show();
+      console.log("Carrito con productos: mostrando footer y productos relacionados");
     }
   }
   
