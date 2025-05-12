@@ -269,8 +269,11 @@
 
     // Actualizar botones según el estado del carrito
     if (data.cart_count > 0) {
-      // Actualizar la visibilidad del footer
-      updateFooterVisibility(data.cart_count);
+      // Mostrar el footer y la sección de productos relacionados si estaban ocultos
+      $(".snap-sidebar-cart__footer").show();
+      $(".snap-sidebar-cart__related-section").show();
+      
+      console.log("Carrito con productos: mostrando footer y productos relacionados");
       
       if ($(".snap-sidebar-cart__buttons").length === 0) {
         var buttonsHtml =
@@ -1025,9 +1028,38 @@
         console.log("Valor de auto_open:", autoOpenValue, "Tipo:", typeof autoOpenValue);
         console.log("¿Debería abrirse automáticamente?", shouldAutoOpen);
         
+        // Verificar si el carrito estaba vacío antes de agregar este producto
+        var cartCount = parseInt($(".snap-sidebar-cart__count").text()) || 0;
+        var wasCartEmpty = cartCount <= 1; // Si es 1, significa que acabamos de agregar el primer producto
+        console.log("¿El carrito estaba vacío?", wasCartEmpty ? "Sí" : "No", "Conteo actual:", cartCount);
+        
         // Solo abrir el sidebar si la apertura automática está habilitada
         if (shouldAutoOpen) {
             console.log("Abriendo sidebar automáticamente después de añadir al carrito");
+            
+            // Si el carrito estaba vacío, asegurarnos de que el footer y la sección de productos relacionados sean visibles
+            if (wasCartEmpty) {
+                console.log("El carrito estaba vacío, asegurando que el footer y productos relacionados sean visibles");
+                $(".snap-sidebar-cart__footer").show();
+                $(".snap-sidebar-cart__related-section").show();
+                
+                // Asegurarnos de que los botones estén presentes
+                if ($(".snap-sidebar-cart__buttons").length === 0) {
+                    var buttonsHtml =
+                      '<div class="snap-sidebar-cart__buttons">' +
+                      '<a href="' +
+                      wc_cart_fragments_params.cart_url +
+                      '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">' +
+                      "Ver carrito</a>" +
+                      '<a href="' +
+                      wc_cart_fragments_params.checkout_url +
+                      '" class="snap-sidebar-cart__button snap-sidebar-cart__button--checkout">' +
+                      "Finalizar pedido</a>" +
+                      "</div>";
+                    $(".snap-sidebar-cart__footer").append(buttonsHtml);
+                }
+            }
+            
             // Usar la función global para abrir el sidebar de manera definitiva
             if (window.openSidebarDefinitive) {
                 window.openSidebarDefinitive();
@@ -1037,36 +1069,46 @@
             
             // Esperar a que el sidebar esté abierto para verificar productos relacionados
             setTimeout(function() {
+                // Verificar nuevamente si hay pestañas activas
                 var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                
+                // Si no hay pestaña activa pero hay pestañas disponibles, activar la primera
+                if (!$activeTab.length && $('.snap-sidebar-cart__related-tab').length > 0) {
+                    console.log('No hay pestaña activa, activando la primera');
+                    $activeTab = $('.snap-sidebar-cart__related-tab').first();
+                    $activeTab.addClass('active');
+                }
+                
                 var activeTabType = $activeTab.length ? $activeTab.data('tab') : null;
+                
+                // Activar el contenedor correspondiente
+                if (activeTabType) {
+                    $('.snap-sidebar-cart__related-container').removeClass('active');
+                    $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]').addClass('active');
+                }
+                
                 var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
                 var $productsWrapper = $activeContainer.find('.swiper-wrapper');
                 
-                // Si no hay productos cargados en el contenedor activo
-                if ($productsWrapper.length && 
-                    ($productsWrapper.children().length === 0 || 
-                     $productsWrapper.find('.snap-sidebar-cart__loading-products').length > 0)) {
-                    
-                    console.log("Cargando productos relacionados después de añadir al carrito");
-                    
-                    // Obtener el producto añadido (si es posible) o el primer producto del carrito
-                    var productId = null;
-                    
-                    if ($button && $button.data("product_id")) {
-                        productId = $button.data("product_id");
-                        console.log("Usando ID del producto añadido:", productId);
-                    } else {
-                        var $firstProduct = $('.snap-sidebar-cart__product').first();
-                        if ($firstProduct.length) {
-                            productId = $firstProduct.data("product-id");
-                            console.log("Usando ID del primer producto en carrito:", productId);
-                        }
+                console.log("Cargando productos relacionados después de añadir al carrito");
+                
+                // Obtener el producto añadido (si es posible) o el primer producto del carrito
+                var productId = null;
+                
+                if ($button && $button.data("product_id")) {
+                    productId = $button.data("product_id");
+                    console.log("Usando ID del producto añadido:", productId);
+                } else {
+                    var $firstProduct = $('.snap-sidebar-cart__product').first();
+                    if ($firstProduct.length) {
+                        productId = $firstProduct.data("product-id");
+                        console.log("Usando ID del primer producto en carrito:", productId);
                     }
-                    
-                    if (productId && activeTabType) {
-                        console.log("Cargando productos relacionados para ID:", productId, "tipo:", activeTabType);
-                        loadRelatedProducts(productId, activeTabType);
-                    }
+                }
+                
+                if (productId && activeTabType) {
+                    console.log("Cargando productos relacionados para ID:", productId, "tipo:", activeTabType);
+                    loadRelatedProducts(productId, activeTabType);
                 }
             }, 600);
         } else {
