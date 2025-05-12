@@ -26,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Definir constantes
-define( 'SNAP_SIDEBAR_CART_VERSION', '1.2.1' );
+define( 'SNAP_SIDEBAR_CART_VERSION', '1.2.3' );
 define( 'SNAP_SIDEBAR_CART_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNAP_SIDEBAR_CART_BASENAME', plugin_basename( __FILE__ ) );
@@ -82,6 +82,8 @@ function snap_sidebar_cart_activate() {
         'title' => __('Carrito de compra', 'snap-sidebar-cart'),
         'container_selector' => 'sidebar-cart-container',
         'activation_selectors' => '.add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart',
+        'delivery_time_text' => __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart'),
+        'show_delivery_time' => true,
         'show_shipping' => true,
         'auto_open' => true,
         'styles' => array(

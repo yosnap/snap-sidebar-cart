@@ -850,6 +850,69 @@
       $("body").addClass("snap-sidebar-cart-open");
       
       console.log("Sidebar forzado a abrir:", $sidebar.length > 0 ? "Encontrado" : "No encontrado");
+      
+      // Hacer que el sidebar sea visible también en móviles
+      if ($(window).width() < 768) {
+        $sidebar.css({
+          "width": "100%",
+          "max-width": "100%"
+        });
+      }
+      
+      // Asegurarnos de que se carguen los productos relacionados
+      setTimeout(function() {
+        // Verificar si hay pestaña activa
+        var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+        
+        if ($activeTab.length) {
+          var activeTabType = $activeTab.data('tab');
+          console.log("Verificando productos relacionados para pestaña activa:", activeTabType);
+          
+          var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
+          var $productsWrapper = $activeContainer.find('.swiper-wrapper');
+          
+          if ($productsWrapper.length && ($productsWrapper.children().length === 0 || $productsWrapper.find('.snap-sidebar-cart__loading-products').length > 0)) {
+            console.log("Contenedor activo vacío, intentando cargar productos relacionados");
+            
+            // Obtener el primer producto del carrito
+            var $firstProduct = $('.snap-sidebar-cart__product').first();
+            if ($firstProduct.length) {
+              var productId = $firstProduct.data('product-id');
+              if (productId) {
+                console.log("Cargando productos relacionados para ID:", productId);
+                if (window.snapSidebarCartSlider && typeof window.snapSidebarCartSlider.loadRelatedProducts === 'function') {
+                  window.snapSidebarCartSlider.loadRelatedProducts(productId, activeTabType);
+                } else if (typeof loadRelatedProducts === 'function') {
+                  loadRelatedProducts(productId, activeTabType);
+                }
+              }
+            }
+          }
+        } else if ($('.snap-sidebar-cart__related-tab').length > 0) {
+          // No hay pestaña activa pero hay pestañas disponibles
+          console.log("No hay pestaña activa, activando la primera");
+          var $firstTab = $('.snap-sidebar-cart__related-tab').first();
+          $firstTab.addClass('active');
+          var tabType = $firstTab.data('tab');
+          var $container = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]');
+          $container.addClass('active');
+          
+          // Cargar productos relacionados para esta pestaña
+          var $firstProduct = $('.snap-sidebar-cart__product').first();
+          if ($firstProduct.length) {
+            var productId = $firstProduct.data('product-id');
+            if (productId) {
+              console.log("Cargando productos relacionados para la primera pestaña:", tabType);
+              if (window.snapSidebarCartSlider && typeof window.snapSidebarCartSlider.loadRelatedProducts === 'function') {
+                window.snapSidebarCartSlider.loadRelatedProducts(productId, tabType);
+              } else if (typeof loadRelatedProducts === 'function') {
+                loadRelatedProducts(productId, tabType);
+              }
+            }
+          }
+        }
+      }, 500); // Esperar a que el sidebar esté completamente abierto
+      
     } catch (error) {
       console.error("Error al forzar apertura del sidebar:", error);
     }
@@ -949,6 +1012,41 @@
             } else {
                 forceOpenSidebar();
             }
+            
+            // Esperar a que el sidebar esté abierto para verificar productos relacionados
+            setTimeout(function() {
+                var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                var activeTabType = $activeTab.length ? $activeTab.data('tab') : null;
+                var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
+                var $productsWrapper = $activeContainer.find('.swiper-wrapper');
+                
+                // Si no hay productos cargados en el contenedor activo
+                if ($productsWrapper.length && 
+                    ($productsWrapper.children().length === 0 || 
+                     $productsWrapper.find('.snap-sidebar-cart__loading-products').length > 0)) {
+                    
+                    console.log("Cargando productos relacionados después de añadir al carrito");
+                    
+                    // Obtener el producto añadido (si es posible) o el primer producto del carrito
+                    var productId = null;
+                    
+                    if ($button && $button.data("product_id")) {
+                        productId = $button.data("product_id");
+                        console.log("Usando ID del producto añadido:", productId);
+                    } else {
+                        var $firstProduct = $('.snap-sidebar-cart__product').first();
+                        if ($firstProduct.length) {
+                            productId = $firstProduct.data("product-id");
+                            console.log("Usando ID del primer producto en carrito:", productId);
+                        }
+                    }
+                    
+                    if (productId && activeTabType) {
+                        console.log("Cargando productos relacionados para ID:", productId, "tipo:", activeTabType);
+                        loadRelatedProducts(productId, activeTabType);
+                    }
+                }
+            }, 600);
         } else {
             console.log("Apertura automática deshabilitada:", autoOpenValue);
         }
@@ -1127,20 +1225,71 @@
       forceOpenSidebar();
       
       try {
-        // Cargar productos relacionados si el contenedor activo está vacío
-        var $activeContainer = $(".snap-sidebar-cart__related-container.active .swiper-wrapper");
+        // Verificar si hay pestaña activa
+        var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+        var activeTabType = $activeTab.length ? $activeTab.data('tab') : null;
         
-        if ($activeContainer.length && $activeContainer.children().length === 0) {
-          console.log("Contenedor activo vacío, cargando productos relacionados");
+        // Si no hay pestaña activa pero hay pestañas, activar la primera
+        if (!activeTabType && $('.snap-sidebar-cart__related-tab').length > 0) {
+          console.log('No hay pestaña activa, activando la primera');
+          $activeTab = $('.snap-sidebar-cart__related-tab').first();
+          $activeTab.addClass('active');
+          activeTabType = $activeTab.data('tab');
+          $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]').addClass('active');
+        }
+        
+        // Obtener el contenedor activo
+        var $activeContainer = $(".snap-sidebar-cart__related-container.active");
+        var $productsWrapper = $activeContainer.find(".swiper-wrapper");
+        
+        console.log("Contenedor activo:", $activeContainer.length ? "Encontrado" : "No encontrado");
+        console.log("Wrapper de productos:", $productsWrapper.length ? "Encontrado" : "No encontrado");
+        
+        // Determinar si necesitamos cargar productos relacionados
+        var shouldLoadRelated = false;
+        
+        if ($productsWrapper.length) {
+          if ($productsWrapper.children().length === 0) {
+            console.log("Contenedor activo vacío, cargando productos relacionados");
+            shouldLoadRelated = true;
+          } else if ($productsWrapper.find('.snap-sidebar-cart__loading-products').length > 0) {
+            console.log("Solo hay preloader, cargando productos relacionados");
+            shouldLoadRelated = true;
+          }
+        }
+        
+        if (shouldLoadRelated) {
+          // Obtener el primer producto del carrito para cargar sus relacionados
           var firstProduct = $(".snap-sidebar-cart__product").first();
           
           if (firstProduct.length) {
             var productId = firstProduct.data("product-id");
-            if (productId) {
-              console.log("Cargando productos relacionados para ID:", productId);
-              loadRelatedProducts(productId);
+            
+            // Si no se encuentra con data-product-id, intentar obtenerlo de otras formas
+            if (!productId) {
+              var hrefAttr = firstProduct.find("a").first().attr("href");
+              if (hrefAttr) {
+                productId = hrefAttr.split("/").filter(Boolean).pop();
+              }
             }
+            
+            if (productId) {
+              console.log("Cargando productos relacionados para ID:", productId, "tipo:", activeTabType);
+              loadRelatedProducts(productId, activeTabType);
+            } else {
+              console.log("No se pudo obtener ID del producto");
+            }
+          } else {
+            console.log("No hay productos en el carrito");
           }
+        } else {
+          console.log("No es necesario cargar productos relacionados");
+        }
+        
+        // Asegurarse de que los sliders existentes estén inicializados
+        if (typeof initSliders === 'function') {
+          console.log("Inicializando sliders existentes");
+          initSliders();
         }
         
         // Verificar el estado del carrito y actualizar la visibilidad del footer
@@ -1148,22 +1297,6 @@
         updateFooterVisibility(cartCount);
       } catch (error) {
         console.error("Error al cargar productos relacionados:", error);
-      }
-      if ($activeContainer.length && $activeContainer.children().length === 0) {
-        // Obtener el primer producto del carrito para cargar sus relacionados
-        var firstProduct = $(".snap-sidebar-cart__product").first();
-        if (firstProduct.length) {
-          var productId = firstProduct
-            .find("a")
-            .first()
-            .attr("href")
-            .split("/")
-            .filter(Boolean)
-            .pop();
-          if (productId) {
-            loadRelatedProducts(productId, currentRelatedProductTab);
-          }
-        }
       }
     }
 

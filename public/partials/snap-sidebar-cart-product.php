@@ -94,9 +94,165 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                     </div>
                 <?php endif; ?>
                 
+                <?php
+                // Mostrar campos personalizados del carrito (como Grabado)
+                if (!empty($cart_item) && is_array($cart_item)) :
+                    // Verificar si existe el campo de grabado directamente en el item del carrito
+                    if (isset($cart_item['grabado'])) : ?>
+                        <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                            <strong><?php esc_html_e('Grabado:', 'snap-sidebar-cart'); ?></strong> 
+                            <?php echo esc_html($cart_item['grabado']); ?>
+                        </div>
+                    <?php elseif (isset($cart_item['Grabado'])) : ?>
+                        <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                            <strong><?php esc_html_e('Grabado:', 'snap-sidebar-cart'); ?></strong> 
+                            <?php echo esc_html($cart_item['Grabado']); ?>
+                        </div>
+                    <?php endif;
+                    
+                    // Buscar en cualquier campo personalizado que pueda contener la palabra "grabado"
+                    foreach ($cart_item as $key => $value) :
+                        if (is_string($key) && is_string($value) && 
+                            !empty($value) && 
+                            (strtolower($key) === 'grabado' || 
+                             strpos(strtolower($key), 'grabado') !== false ||
+                             strpos(strtolower($key), 'engraving') !== false ||
+                             strpos(strtolower($key), 'custom_text') !== false ||
+                             strpos(strtolower($key), 'personalización') !== false)) :
+                            
+                            // Formatear el nombre del campo para mostrar
+                            $display_key = $key;
+                            
+                            // Si es un campo tipo engraving_text, mostrar solo "Grabado"
+                            if (strpos(strtolower($key), 'engraving_text') !== false) {
+                                $display_key = __('Grabado', 'snap-sidebar-cart');
+                            } else if (strpos(strtolower($key), 'engraving') !== false) {
+                                $display_key = __('Grabado', 'snap-sidebar-cart');
+                            } else {
+                                // Conservar el nombre original pero formatearlo mejor
+                                $display_key = ucfirst(str_replace('_', ' ', $key));
+                            }
+                    ?>
+                            <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                                <strong><?php echo esc_html($display_key); ?>:</strong> 
+                                <?php echo esc_html($value); ?>
+                            </div>
+                    <?php
+                        endif;
+                    endforeach;
+                    
+                    // Buscar en campos de metadata de WooCommerce
+                    if (isset($cart_item['data']) && is_object($cart_item['data'])) :
+                        $metadata = $cart_item['data']->get_meta_data();
+                        foreach ($metadata as $meta) :
+                            $data = $meta->get_data();
+                            if (isset($data['key']) && isset($data['value']) && 
+                                !empty($data['value']) && 
+                                (strtolower($data['key']) === 'grabado' || 
+                                 strpos(strtolower($data['key']), 'grabado') !== false ||
+                                 strpos(strtolower($data['key']), 'engraving') !== false)) :
+                                
+                                // Formatear el nombre del campo para mostrar
+                                $display_key = $data['key'];
+                                
+                                // Si es un campo tipo engraving_text, mostrar solo "Grabado"
+                                if (strpos(strtolower($data['key']), 'engraving_text') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else if (strpos(strtolower($data['key']), 'engraving') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else {
+                                    // Conservar el nombre original pero formatearlo mejor
+                                    $display_key = ucfirst(str_replace('_', ' ', $data['key']));
+                                }
+                    ?>
+                                <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                                    <strong><?php echo esc_html($display_key); ?>:</strong> 
+                                    <?php echo is_string($data['value']) ? esc_html($data['value']) : esc_html(print_r($data['value'], true)); ?>
+                                </div>
+                    <?php
+                            endif;
+                        endforeach;
+                    endif;
+                    
+                    // Verificar en _product_options
+                    if (isset($cart_item['_product_options']) && is_array($cart_item['_product_options'])) :
+                        foreach ($cart_item['_product_options'] as $option_key => $option_value) :
+                            if (is_string($option_key) && !empty($option_value) && 
+                                (strtolower($option_key) === 'grabado' || 
+                                 strpos(strtolower($option_key), 'grabado') !== false ||
+                                 strpos(strtolower($option_key), 'engraving') !== false)) :
+                                
+                                // Formatear el nombre del campo para mostrar
+                                $display_key = $option_key;
+                                
+                                // Si es un campo tipo engraving_text, mostrar solo "Grabado"
+                                if (strpos(strtolower($option_key), 'engraving_text') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else if (strpos(strtolower($option_key), 'engraving') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else {
+                                    // Conservar el nombre original pero formatearlo mejor
+                                    $display_key = ucfirst(str_replace('_', ' ', $option_key));
+                                }
+                    ?>
+                                <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                                    <strong><?php echo esc_html($display_key); ?>:</strong> 
+                                    <?php echo is_string($option_value) ? esc_html($option_value) : esc_html(print_r($option_value, true)); ?>
+                                </div>
+                    <?php
+                            endif;
+                        endforeach;
+                    endif;
+                    
+                    // Verificar en campos _custom_options (usado por algunos plugins)
+                    if (isset($cart_item['_custom_options']) && is_array($cart_item['_custom_options'])) :
+                        foreach ($cart_item['_custom_options'] as $option_key => $option_value) :
+                            if (is_string($option_key) && !empty($option_value) && 
+                                (strtolower($option_key) === 'grabado' || 
+                                 strpos(strtolower($option_key), 'grabado') !== false ||
+                                 strpos(strtolower($option_key), 'engraving') !== false)) :
+                                
+                                // Formatear el nombre del campo para mostrar
+                                $display_key = $option_key;
+                                
+                                // Si es un campo tipo engraving_text, mostrar solo "Grabado"
+                                if (strpos(strtolower($option_key), 'engraving_text') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else if (strpos(strtolower($option_key), 'engraving') !== false) {
+                                    $display_key = __('Grabado', 'snap-sidebar-cart');
+                                } else {
+                                    // Conservar el nombre original pero formatearlo mejor
+                                    $display_key = ucfirst(str_replace('_', ' ', $option_key));
+                                }
+                    ?>
+                                <div class="snap-sidebar-cart__product-custom-field snap-sidebar-cart__product-engraving">
+                                    <strong><?php echo esc_html($display_key); ?>:</strong> 
+                                    <?php echo is_string($option_value) ? esc_html($option_value) : esc_html(print_r($option_value, true)); ?>
+                                </div>
+                    <?php
+                            endif;
+                        endforeach;
+                    endif;
+                endif;
+                ?>
+                
+                <?php
+                // Mostrar el tiempo de entrega solo si está habilitado
+                $show_delivery_time = isset($this->options['show_delivery_time']) ? $this->options['show_delivery_time'] : true;
+                if ($show_delivery_time) : ?>
                 <div class="snap-sidebar-cart__product-shipping">
-                    <?php printf(__('Entrega en 1-%d días hábiles', 'snap-sidebar-cart'), $shipping_days); ?>
+                    <?php
+                    // Si tenemos la función disponible, la usamos
+                    if (method_exists($this, 'get_delivery_time_text')) {
+                        echo esc_html($this->get_delivery_time_text($product_id));
+                    } else {
+                        // Fallback por si acaso
+                        $delivery_text = isset($this->options['delivery_time_text']) ? $this->options['delivery_time_text'] : __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart');
+                        echo esc_html($delivery_text);
+                    }
+                    ?>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
 

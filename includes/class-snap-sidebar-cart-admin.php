@@ -23,6 +23,9 @@ class Snap_Sidebar_Cart_Admin {
      */
     public function __construct($options) {
         $this->options = $options;
+        
+        // Cargar campos personalizados para productos
+        require_once SNAP_SIDEBAR_CART_PATH . 'admin/includes/class-snap-sidebar-cart-product-fields.php';
     }
 
     /**
@@ -77,6 +80,16 @@ class Snap_Sidebar_Cart_Admin {
             'snap-sidebar-cart-settings',
             array($this, 'display_plugin_setup_page')
         );
+        
+        // Añadir página de diagnóstico
+        add_submenu_page(
+            'options-general.php',
+            __('Diagnóstico de Snap Sidebar Cart', 'snap-sidebar-cart'),
+            __('Diagnóstico de Carrito', 'snap-sidebar-cart'),
+            'manage_options',
+            'snap-sidebar-cart-diagnostics',
+            array($this, 'display_plugin_diagnostics_page')
+        );
     }
 
     /**
@@ -99,6 +112,15 @@ class Snap_Sidebar_Cart_Admin {
      */
     public function display_plugin_setup_page() {
         include_once SNAP_SIDEBAR_CART_PATH . 'admin/partials/snap-sidebar-cart-admin-display.php';
+    }
+    
+    /**
+     * Renderiza la página de diagnóstico del plugin.
+     *
+     * @since    1.2.3
+     */
+    public function display_plugin_diagnostics_page() {
+        include_once SNAP_SIDEBAR_CART_PATH . 'admin/diagnostics.php';
     }
 
     /**
@@ -145,6 +167,24 @@ class Snap_Sidebar_Cart_Admin {
             'activation_selectors',
             __('Selectores de activación', 'snap-sidebar-cart'),
             array($this, 'activation_selectors_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        // Texto de tiempo de entrega
+        add_settings_field(
+            'delivery_time_text',
+            __('Texto de tiempo de entrega', 'snap-sidebar-cart'),
+            array($this, 'delivery_time_text_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        // Mostrar tiempo de entrega
+        add_settings_field(
+            'show_delivery_time',
+            __('Mostrar tiempo de entrega', 'snap-sidebar-cart'),
+            array($this, 'show_delivery_time_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
@@ -681,6 +721,28 @@ class Snap_Sidebar_Cart_Admin {
         echo '<input type="checkbox" name="snap_sidebar_cart_options[auto_open]" value="1" ' . $checked . '>';
         echo '<p class="description">' . __('Abrir automáticamente el carrito lateral cuando se añade un producto.', 'snap-sidebar-cart') . '</p>';
     }
+    
+    /**
+     * Callback para el campo de texto de tiempo de entrega.
+     *
+     * @since    1.2.2
+     */
+    public function delivery_time_text_callback() {
+        $value = isset($this->options['delivery_time_text']) ? esc_attr($this->options['delivery_time_text']) : __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart');
+        echo '<input type="text" name="snap_sidebar_cart_options[delivery_time_text]" value="' . $value . '" class="regular-text">';
+        echo '<p class="description">' . __('Texto que se mostrará debajo de cada producto indicando el tiempo de entrega. Puedes usar %dias% como variable para mostrarlo dinámicamente.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de mostrar tiempo de entrega.
+     *
+     * @since    1.2.2
+     */
+    public function show_delivery_time_callback() {
+        $checked = isset($this->options['show_delivery_time']) && $this->options['show_delivery_time'] ? 'checked="checked"' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delivery_time]" value="1" ' . $checked . '>';
+        echo '<p class="description">' . __('Mostrar el texto de tiempo de entrega debajo de cada producto. Desmarca esta opción para ocultar esta información.', 'snap-sidebar-cart') . '</p>';
+    }
 
     /**
      * Callback para el ancho del sidebar.
@@ -1040,7 +1102,13 @@ return wp_list_pluck($products, \'ID\');</pre>';
             $output['activation_selectors'] = sanitize_text_field($input['activation_selectors']);
         }
         
+        // Validación del texto de tiempo de entrega
+        if (isset($input['delivery_time_text'])) {
+            $output['delivery_time_text'] = sanitize_text_field($input['delivery_time_text']);
+        }
+        
         // Validación de checkboxes
+        $output['show_delivery_time'] = isset($input['show_delivery_time']) ? 1 : 0;
         $output['show_shipping'] = isset($input['show_shipping']) ? 1 : 0;
         $output['auto_open'] = isset($input['auto_open']) ? 1 : 0;
         

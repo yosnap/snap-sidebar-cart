@@ -1,0 +1,623 @@
+/**
+ * Corrección definitiva para el carrito lateral
+ * Este script tiene prioridad sobre todos los demás para garantizar que las funcionalidades clave funcionen:
+ * - Apertura automática del carrito
+ * - Posición de nuevos productos
+ * - Animación de eliminación
+ * - Preloader configurado
+ */
+jQuery(document).ready(function($) {
+    'use strict';
+    
+    console.log('=== CORRECCIÓN DEFINITIVA DEL CARRITO CARGADA ===');
+    console.log('Configuración inicial:', snap_sidebar_cart_params);
+
+    // Variables globales para usar en todo el script
+    var $sidebar = $('.snap-sidebar-cart');
+    var $overlay = $('.snap-sidebar-cart__overlay');
+    var $body = $('body');
+    var $productsContainer = $('.snap-sidebar-cart__products-list');
+    var addingProduct = false;
+    
+    // 1. APERTURA Y CIERRE DEL CARRITO
+    // Función definitiva para abrir el sidebar
+    function openSidebarDefinitive() {
+        console.log('Ejecutando apertura definitiva del sidebar');
+        
+        // Asegurarnos de que el sidebar existe
+        if (!$sidebar.length) {
+            console.error('No se encontró el sidebar, intentando con un selector diferente');
+            $sidebar = $('#' + snap_sidebar_cart_params.container_selector);
+            
+            if (!$sidebar.length) {
+                console.error('No se pudo encontrar el sidebar. Abortando apertura.');
+                return;
+            }
+        }
+        
+        // Refrescar las referencias si es necesario
+        if (!$overlay.length) {
+            $overlay = $('.snap-sidebar-cart__overlay');
+        }
+        
+        // Forzar apertura con múltiples enfoques para garantizar compatibilidad
+        $sidebar.addClass('open');
+        $sidebar.css({
+            'display': 'block',
+            'visibility': 'visible',
+            'opacity': '1',
+            'transform': 'translateX(0)',
+            'right': '0'
+        });
+        
+        $overlay.css({
+            'display': 'block',
+            'opacity': '1'
+        });
+        
+        $body.addClass('snap-sidebar-cart-open');
+        
+        console.log('Sidebar abierto con éxito');
+        
+        // Cargar productos relacionados (si corresponde)
+        maybeLoadRelatedProducts();
+    }
+    
+    // Función definitiva para cerrar el sidebar
+    function closeSidebarDefinitive() {
+        console.log('Cerrando sidebar (versión definitiva)');
+        
+        $sidebar.removeClass('open');
+        $sidebar.css({
+            'transform': 'translateX(100%)'
+        });
+        
+        $overlay.css({
+            'display': 'none',
+            'opacity': '0'
+        });
+        
+        $body.removeClass('snap-sidebar-cart-open');
+    }
+    
+    // 2. CONFIGURACIÓN DEL PRELOADER
+    // Función para configurar y mostrar el preloader
+    function setupAndShowPreloader($container) {
+        if (!$container || !$container.length) {
+            console.error('No se puede mostrar el preloader: Contenedor no válido');
+            return;
+        }
+        
+        // Verificar si el contenedor ya tiene un preloader
+        var $loader = $container.find('.snap-sidebar-cart__loader-spinner');
+        var $productLoader = $container.find('.snap-sidebar-cart__product-loader');
+        
+        // Si no existe, crear el preloader
+        if (!$productLoader.length) {
+            $productLoader = $('<div class="snap-sidebar-cart__product-loader"></div>');
+            $container.append($productLoader);
+        }
+        
+        if (!$loader.length) {
+            $loader = $('<div class="snap-sidebar-cart__loader-spinner"></div>');
+            $productLoader.append($loader);
+        }
+        
+        // Obtener las opciones del preloader
+        var preloaderOptions = snap_sidebar_cart_params.preloader || {};
+        var preloaderType = preloaderOptions.type || 'circle';
+        var preloaderPosition = preloaderOptions.position || 'center';
+        
+        // Limpiar clases anteriores
+        $loader.attr('class', 'snap-sidebar-cart__loader-spinner');
+        
+        // Añadir clases según la configuración
+        $loader.addClass('preloader-' + preloaderType);
+        $loader.addClass('preloader-position-' + preloaderPosition);
+        
+        // Crear el HTML interno según el tipo de preloader
+        if (preloaderType === 'dots') {
+            $loader.html("<span></span><span></span><span></span>");
+        } else {
+            $loader.html("");
+        }
+        
+        // Mostrar el loader
+        $productLoader.css('display', 'flex');
+        
+        console.log('Preloader mostrado con tipo:', preloaderType, 'posición:', preloaderPosition);
+    }
+    
+    // 3. MANEJO DE APERTURA AUTOMÁTICA
+    // Manejador directo para el evento added_to_cart con prioridad
+    $(document.body).on('added_to_cart', function(event, fragments, cart_hash, $button) {
+        console.log('Evento added_to_cart detectado (manejador definitivo)');
+        
+        // Verificar auto_open de múltiples formas para garantizar compatibilidad
+        var autoOpenValue = snap_sidebar_cart_params.auto_open;
+        var shouldAutoOpen = (autoOpenValue === true || 
+                             autoOpenValue === "true" || 
+                             autoOpenValue === 1 || 
+                             autoOpenValue === "1");
+        
+        console.log('Valor de auto_open:', autoOpenValue, '| Tipo:', typeof autoOpenValue);
+        console.log('¿Debería abrirse automáticamente?', shouldAutoOpen);
+        
+        // Si auto_open está habilitado, abrir el sidebar
+        if (shouldAutoOpen) {
+            console.log('Auto-open habilitado, abriendo sidebar...');
+            setTimeout(function() {
+                openSidebarDefinitive();
+            }, 100); // Pequeño retraso para asegurar que no sea bloqueado por otros scripts
+        } else {
+            console.log('Auto-open deshabilitado, no se abrirá el sidebar');
+        }
+        
+        // No importa si se abrió o no el sidebar, manejar la adición del producto
+        handleAddedProduct($button);
+    });
+    
+    // 4. MANEJO DE POSICIÓN DE NUEVOS PRODUCTOS
+    // Función para manejar un producto recién añadido al carrito
+    function handleAddedProduct($button) {
+        console.log('Manejando producto recién añadido');
+        
+        // Actualizar las referencias de los contenedores
+        if (!$productsContainer || !$productsContainer.length) {
+            $productsContainer = $('.snap-sidebar-cart__products-list');
+            console.log('Actualizando referencia al contenedor de productos');
+        }
+        
+        if (!$productsContainer.length) {
+            console.error('No se encontró el contenedor de productos');
+            return;
+        }
+        
+        // Verificar si es una actualización de un producto existente
+        var isProductUpdate = false;
+        var productId = null;
+        
+        if ($button && $button.data && $button.data('product_id')) {
+            productId = $button.data('product_id');
+            
+            // Usar la función global para comprobar si el producto ya está en el carrito
+            if (window.isProductInCart && typeof window.isProductInCart === 'function') {
+                isProductUpdate = window.isProductInCart(productId);
+            } else {
+                // Fallback: comprobar directamente
+                isProductUpdate = $('.snap-sidebar-cart__product[data-product-id="' + productId + '"]').length > 0;
+            }
+            
+            console.log('Producto ID:', productId, '| Ya en carrito:', isProductUpdate ? 'Sí' : 'No');
+        }
+        
+        // Si es una actualización y no una adición, manejarlo diferente
+        if (isProductUpdate) {
+            console.log('Actualizando producto existente en el carrito');
+            
+            // Actualizar contenido sin animación especial de nuevo producto
+            getCartContent(function(response) {
+                if (response.success) {
+                    // Actualizar el contenido del carrito
+                    updateCartContent(response.data);
+                    
+                    // Mostrar animación de actualización en el producto
+                    highlightExistingProduct(productId);
+                }
+            });
+        } else {
+            // Para nuevos productos, seguir con el comportamiento configurado
+            console.log('Agregando nuevo producto al carrito');
+            
+            // Obtener posición configurada para nuevos productos
+            var newProductPosition = getNewProductPosition();
+            console.log('Posición para nuevos productos:', newProductPosition);
+            
+            // Crear un espacio para el nuevo producto con un preloader
+            if ($productsContainer.length) {
+                var $newItemPlaceholder = $('<li class="snap-sidebar-cart__product placeholder-animation"></li>');
+                
+                // Agregar al inicio o al final según configuración
+                if (newProductPosition === 'top') {
+                    console.log('Insertando placeholder al inicio del contenedor');
+                    $productsContainer.prepend($newItemPlaceholder);
+                } else {
+                    console.log('Insertando placeholder al final del contenedor');
+                    $productsContainer.append($newItemPlaceholder);
+                }
+                
+                // Mostrar preloader en el placeholder
+                setupAndShowPreloader($newItemPlaceholder);
+                
+                // Actualizar carrito mediante AJAX para obtener el contenido real
+                setTimeout(function() {
+                    getCartContent(function(response) {
+                        if (response.success) {
+                            console.log('Contenido del carrito actualizado via AJAX');
+                            
+                            // Eliminar el placeholder
+                            if ($newItemPlaceholder && $newItemPlaceholder.length) {
+                                console.log('Eliminando placeholder');
+                                $newItemPlaceholder.remove();
+                            } else {
+                                console.log('No se encontró placeholder para eliminar');
+                            }
+                            
+                            // Actualizar el contenido del carrito
+                            updateCartContent(response.data);
+                            
+                            // Agregar clase para la animación al nuevo producto
+                            var $newItem;
+                            if (newProductPosition === 'top') {
+                                $newItem = $('.snap-sidebar-cart__product:first-child');
+                            } else {
+                                $newItem = $('.snap-sidebar-cart__product:last-child');
+                            }
+                            
+                            if ($newItem.length) {
+                                $newItem.addClass('new-item');
+                                
+                                // Eliminar la clase después de la animación
+                                setTimeout(function() {
+                                    $newItem.removeClass('new-item');
+                                }, getAnimationDuration());
+                            }
+                            
+                            // Si tenemos el producto ID, obtener los productos relacionados
+                            if (productId) {
+                                loadRelatedProducts(productId);
+                            }
+                        }
+                    });
+                }, getAnimationDuration() / 3);
+            }
+        }
+    }
+    
+    // 5. MANEJO DE CANTIDAD Y ELIMINACIÓN
+    // Mejorar los manejadores de eventos para los botones de cantidad
+    $(document).on('click', '.notabutton.quantity-up, .snap-sidebar-cart__quantity-up', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var $button = $(this);
+        var $product = $button.closest('.snap-sidebar-cart__product');
+        var $input = $product.find('input.cart-item__quantity-input, input.snap-sidebar-cart__quantity-input');
+        var cartItemKey = $product.data('key');
+        
+        if (!cartItemKey) {
+            console.error('No se pudo encontrar la clave del producto');
+            return;
+        }
+        
+        // Obtener el valor actual y calcular el nuevo valor
+        var currentVal = parseInt($input.val(), 10);
+        if (isNaN(currentVal)) currentVal = 0;
+        var newVal = currentVal + 1;
+        
+        // Actualizar valor de input
+        $input.val(newVal);
+        
+        // Mostrar preloader mientras se actualiza
+        setupAndShowPreloader($product);
+        
+        // Actualizar carrito
+        updateCartItemQuantity(cartItemKey, newVal, currentVal);
+    });
+    
+    $(document).on('click', '.notabutton.quantity-down, .snap-sidebar-cart__quantity-down', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var $button = $(this);
+        var $product = $button.closest('.snap-sidebar-cart__product');
+        var $input = $product.find('input.cart-item__quantity-input, input.snap-sidebar-cart__quantity-input');
+        var cartItemKey = $product.data('key');
+        
+        if (!cartItemKey) {
+            console.error('No se pudo encontrar la clave del producto');
+            return;
+        }
+        
+        // Obtener el valor actual y calcular el nuevo valor
+        var currentVal = parseInt($input.val(), 10);
+        if (isNaN(currentVal)) currentVal = 0;
+        var newVal = currentVal > 1 ? currentVal - 1 : 0;
+        
+        // Actualizar valor de input
+        $input.val(newVal);
+        
+        // Si la nueva cantidad es 0, añadir clase para animación de eliminación
+        if (newVal === 0) {
+            console.log('Eliminando producto del carrito (cantidad 0)');
+            $product.addClass('removing');
+        }
+        
+        // Mostrar preloader mientras se actualiza
+        setupAndShowPreloader($product);
+        
+        // Actualizar carrito después de un breve retraso para permitir la animación
+        setTimeout(function() {
+            updateCartItemQuantity(cartItemKey, newVal, currentVal);
+        }, newVal === 0 ? getAnimationDuration() / 2 : 0);
+    });
+    
+    // 6. UTILIDADES
+    // Función para obtener la duración de animación configurada
+    function getAnimationDuration() {
+        if (snap_sidebar_cart_params.animations && 
+            snap_sidebar_cart_params.animations.duration !== undefined) {
+            return parseInt(snap_sidebar_cart_params.animations.duration, 10);
+        }
+        return 300; // Valor por defecto
+    }
+    
+    // Función para obtener la posición de nuevos productos configurada
+    function getNewProductPosition() {
+        // Verificar primero en el nivel raíz (por retrocompatibilidad)
+        if (snap_sidebar_cart_params.new_product_position !== undefined) {
+            return snap_sidebar_cart_params.new_product_position;
+        }
+        
+        // Verificar en animations si existe
+        if (snap_sidebar_cart_params.animations && 
+            snap_sidebar_cart_params.animations.new_product_position !== undefined) {
+            return snap_sidebar_cart_params.animations.new_product_position;
+        }
+        
+        return 'top'; // Valor por defecto
+    }
+    
+    // Función para cargar productos relacionados si es necesario
+    function maybeLoadRelatedProducts() {
+        // Verificar si hay pestaña activa
+        var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+        if (!$activeTab.length && $('.snap-sidebar-cart__related-tab').length > 0) {
+            // Si no hay pestaña activa pero hay pestañas, activar la primera
+            $activeTab = $('.snap-sidebar-cart__related-tab').first();
+            $activeTab.addClass('active');
+            var tabType = $activeTab.data('tab');
+            $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]').addClass('active');
+        }
+        
+        if ($activeTab.length) {
+            var tabType = $activeTab.data('tab');
+            var $container = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]');
+            var $productsWrapper = $container.find('.swiper-wrapper');
+            
+            // Si el contenedor está vacío o solo tiene el preloader
+            if ($productsWrapper.length && 
+                ($productsWrapper.children().length === 0 || 
+                 $productsWrapper.find('.snap-sidebar-cart__loading-products').length > 0)) {
+                 
+                // Buscar el primer producto en el carrito
+                var $firstProduct = $('.snap-sidebar-cart__product').first();
+                if ($firstProduct.length) {
+                    var productId = $firstProduct.data('product-id');
+                    if (productId) {
+                        console.log('Cargando productos relacionados para ID:', productId);
+                        loadRelatedProducts(productId, tabType);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Función para cargar productos relacionados
+    function loadRelatedProducts(productId, type) {
+        // Si no se proporciona tipo, usar el tab activo
+        if (!type) {
+            var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+            type = $activeTab.length ? $activeTab.data('tab') : 'related';
+        }
+        
+        console.log('Cargando productos relacionados para ID:', productId, 'tipo:', type);
+        
+        if (window.loadRelatedProducts && typeof window.loadRelatedProducts === 'function') {
+            // Usar la función existente si está disponible
+            window.loadRelatedProducts(productId, type);
+        } else if (window.snapSidebarCartSlider && 
+                   typeof window.snapSidebarCartSlider.loadRelatedProducts === 'function') {
+            // Alternativamente, usar la función del objeto slider
+            window.snapSidebarCartSlider.loadRelatedProducts(productId, type);
+        } else {
+            // Implementación mínima como fallback
+            var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + type + '"] .swiper-wrapper');
+            
+            if ($targetContainer.length) {
+                // Mostrar preloader
+                $targetContainer.html(
+                    '<div class="snap-sidebar-cart__loading-products">' +
+                    '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
+                    '<span>Cargando productos...</span>' +
+                    '</div>'
+                );
+                
+                // Realizar la petición AJAX
+                $.ajax({
+                    type: "POST",
+                    url: snap_sidebar_cart_params.ajax_url,
+                    data: {
+                        action: "snap_sidebar_cart_get_related",
+                        nonce: snap_sidebar_cart_params.nonce,
+                        product_id: productId,
+                        type: type
+                    },
+                    success: function(response) {
+                        if (response.success && response.data && response.data.html) {
+                            $targetContainer.html(response.data.html);
+                        } else {
+                            $targetContainer.html('<div class="snap-sidebar-cart__no-products">No se encontraron productos relacionados.</div>');
+                        }
+                    },
+                    error: function() {
+                        $targetContainer.html('<div class="snap-sidebar-cart__no-products">Error al cargar productos relacionados.</div>');
+                    }
+                });
+            }
+        }
+    }
+    
+    // Función para obtener el contenido del carrito vía AJAX
+    function getCartContent(callback) {
+        $.ajax({
+            type: "POST",
+            url: snap_sidebar_cart_params.ajax_url,
+            data: {
+                action: "snap_sidebar_cart_get_content",
+                nonce: snap_sidebar_cart_params.nonce
+            },
+            success: function(response) {
+                if (typeof callback === 'function') {
+                    callback(response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error al obtener contenido del carrito:", error);
+                if (typeof callback === 'function') {
+                    callback({success: false, error: error});
+                }
+            }
+        });
+    }
+    
+    // Función para actualizar la cantidad de un item en el carrito
+    function updateCartItemQuantity(cartItemKey, quantity, oldQuantity) {
+        if (!cartItemKey) {
+            console.error("Error: Clave de producto no válida para actualizar cantidad");
+            $('.snap-sidebar-cart__product-loader').hide();
+            return;
+        }
+        
+        console.log("Enviando actualización para clave:", cartItemKey, "cantidad:", quantity);
+        
+        // Si es solo una actualización de cantidad y no eliminación
+        var isQuantityUpdate = quantity > 0 && oldQuantity > 0;
+        
+        $.ajax({
+            type: "POST",
+            url: snap_sidebar_cart_params.ajax_url,
+            data: {
+                action: "snap_sidebar_cart_update",
+                nonce: snap_sidebar_cart_params.nonce,
+                cart_item_key: cartItemKey,
+                quantity: quantity,
+            },
+            success: function(response) {
+                console.log("Respuesta de actualización:", response);
+                if (response.success) {
+                    // Actualizar el contenido del carrito
+                    updateCartContent(response.data);
+                } else {
+                    if (response.data && response.data.message) {
+                        alert(response.data.message);
+                    }
+                    // Ocultar loader en caso de error
+                    $('.snap-sidebar-cart__product-loader').hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error de AJAX:", error);
+                alert("Error de comunicación con el servidor");
+                // Ocultar loader en caso de error
+                $('.snap-sidebar-cart__product-loader').hide();
+            }
+        });
+    }
+    
+    // Función para resaltar un producto existente 
+    function highlightExistingProduct(productId) {
+        if (!productId) return;
+        
+        // Buscar el producto en el carrito
+        var $product = $(
+            ".snap-sidebar-cart__product[data-product-id='" + productId + "']"
+        );
+        
+        if ($product.length) {
+            // Primero, asegurarse de que el producto sea visible (scroll hacia él)
+            var $container = $(".snap-sidebar-cart__products");
+            var productOffset =
+                $product.offset().top -
+                $container.offset().top +
+                $container.scrollTop();
+            $container.animate(
+                {
+                    scrollTop: productOffset,
+                },
+                300
+            );
+            
+            // Añadir clase para destacar el elemento completo
+            $product.addClass("product-updated");
+            
+            // Buscar el input de cantidad para ese producto
+            var $quantityInput = $product.find(".cart-item__quantity-input");
+            if ($quantityInput.length) {
+                $quantityInput.addClass("quantity-updated");
+                
+                // Remover las clases después de la animación
+                setTimeout(function() {
+                    $product.removeClass("product-updated");
+                    $quantityInput.removeClass("quantity-updated");
+                }, getAnimationDuration());
+            }
+        }
+    }
+    
+    // Función para actualizar el contenido del carrito
+    function updateCartContent(data) {
+        // Actualizar el HTML del carrito
+        if (data.cart_html) {
+            $(".snap-sidebar-cart__products").html(data.cart_html);
+        }
+        
+        // Actualizar el contador
+        if (data.cart_count !== undefined) {
+            $(".snap-sidebar-cart__count").text(data.cart_count);
+        }
+        
+        // Actualizar los totales
+        if (data.shipping_total) {
+            $(".snap-sidebar-cart__shipping-price").html(data.shipping_total);
+        }
+        if (data.subtotal) {
+            $(".snap-sidebar-cart__subtotal-price").html(data.subtotal);
+        }
+        
+        // Actualizar visibilidad del footer según si hay productos
+        if (data.cart_count > 0) {
+            $(".snap-sidebar-cart__footer").show();
+            
+            // Si no hay botones, añadirlos
+            if ($(".snap-sidebar-cart__buttons").length === 0) {
+                var buttonsHtml =
+                    '<div class="snap-sidebar-cart__buttons">' +
+                    '<a href="' + wc_cart_fragments_params.cart_url + '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">' +
+                    "Ver carrito</a>" +
+                    '<a href="' + wc_cart_fragments_params.checkout_url + '" class="snap-sidebar-cart__button snap-sidebar-cart__button--checkout">' +
+                    "Finalizar pedido</a>" +
+                    "</div>";
+                $(".snap-sidebar-cart__footer").append(buttonsHtml);
+            }
+        } else {
+            // Si no hay productos, ocultar el footer
+            $(".snap-sidebar-cart__footer").hide();
+        }
+        
+        // Disparar un evento personalizado
+        $(document.body).trigger("snap_sidebar_cart_updated");
+    }
+    
+    // 7. REEMPLAZAR FUNCIONES GLOBALES PARA GARANTIZAR COMPATIBILIDAD
+    // Reemplazar las funciones existentes para asegurar que nuestra versión sea la que se usa
+    window.openSidebarDefinitive = openSidebarDefinitive;
+    window.forceOpenSidebar = openSidebarDefinitive;
+    window.openSidebar = openSidebarDefinitive;
+    window.closeSidebar = closeSidebarDefinitive;
+    window.highlightExistingProduct = highlightExistingProduct;
+    window.updateCartItemQuantity = updateCartItemQuantity;
+    window.setupAndShowPreloader = setupAndShowPreloader;
+    
+    console.log('Corrección definitiva para el carrito instalada correctamente');
+});

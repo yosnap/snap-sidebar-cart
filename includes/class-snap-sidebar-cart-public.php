@@ -41,6 +41,9 @@ class Snap_Sidebar_Cart_Public {
         wp_deregister_style('snap-sidebar-cart-public');
         wp_enqueue_style('snap-sidebar-cart-public', SNAP_SIDEBAR_CART_URL . 'assets/css/snap-sidebar-cart-public.css', array(), $version, 'all');
         
+        // Cargar los estilos mejorados para animaciones
+        wp_enqueue_style('snap-sidebar-cart-enhanced-animations', SNAP_SIDEBAR_CART_URL . 'assets/css/enhanced-animations.css', array('snap-sidebar-cart-public'), $version, 'all');
+        
         // Ya no necesitamos cargar slider-fix.css porque sus estilos están en snap-sidebar-cart-public.css
         wp_deregister_style('snap-sidebar-cart-slider-fix');
         
@@ -88,6 +91,33 @@ class Snap_Sidebar_Cart_Public {
         // Cargar jQuery explícitamente
         wp_enqueue_script('jquery');
         
+        // Cargar el manejador AJAX del carrito primero
+        wp_enqueue_script(
+            'snap-sidebar-cart-ajax-handler', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-ajax-handler.js', 
+            array('jquery'), 
+            $version, 
+            true
+        );
+        
+        // Cargar el manejador de posición de nuevos productos
+        wp_enqueue_script(
+            'snap-sidebar-cart-product-position', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/product-position-handler.js', 
+            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
+            $version, 
+            true
+        );
+        
+        // Cargar la corrección definitiva para auto-open y animaciones
+        wp_enqueue_script(
+            'snap-sidebar-cart-auto-open-fix', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/auto-open-fix.js', 
+            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
+            $version, 
+            true
+        );
+        
         // Ya no cargamos Swiper.js, usamos CSS Scroll Snap en su lugar
         // Los estilos necesarios están incluidos en snap-sidebar-cart-public.css
         
@@ -95,7 +125,7 @@ class Snap_Sidebar_Cart_Public {
         wp_enqueue_script(
             'snap-sidebar-cart-public', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
-            array('jquery'), 
+            array('jquery', 'snap-sidebar-cart-auto-open-fix'), 
             $version, 
             true
         );
@@ -122,7 +152,7 @@ class Snap_Sidebar_Cart_Public {
         wp_enqueue_script(
             'snap-sidebar-cart-opener-fix', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/sidebar-opener-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public'), 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix'), 
             $version, 
             true
         );
@@ -132,6 +162,15 @@ class Snap_Sidebar_Cart_Public {
             'snap-sidebar-cart-quantity-buttons-fix', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/quantity-buttons-fix.js', 
             array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-opener-fix'), 
+            $version, 
+            true
+        );
+        
+        // Cargar el parche de compatibilidad al final para asegurar que resuelva cualquier conflicto
+        wp_enqueue_script(
+            'snap-sidebar-cart-compatibility-patch', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/compatibility-patch.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-opener-fix', 'snap-sidebar-cart-quantity-buttons-fix'), 
             $version, 
             true
         );
@@ -163,7 +202,7 @@ class Snap_Sidebar_Cart_Public {
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('snap-sidebar-cart-nonce'),
             'activation_selectors' => $this->options['activation_selectors'],
-            'auto_open' => isset($this->options['auto_open']) ? $this->options['auto_open'] : false,
+            'auto_open' => isset($this->options['auto_open']) ? (bool)$this->options['auto_open'] : false,
             'new_product_position' => isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'top',
             // Opciones de preloader
             'preloader' => array(
@@ -352,6 +391,30 @@ class Snap_Sidebar_Cart_Public {
                 color: " . esc_attr($styles['product_text_color'] ?? '#333333') . ";
             }
             
+            /* Estilos para campos personalizados como Grabado */
+            .snap-sidebar-cart__product-custom-field {
+                font-size: 0.85em;
+                margin-top: 2px;
+                margin-bottom: 4px;
+                color: #666;
+                line-height: 1.4;
+            }
+            
+            .snap-sidebar-cart__product-engraving {
+                font-style: italic;
+                padding: 2px 0;
+                color: #555;
+                background-color: rgba(0,0,0,0.02);
+                border-left: 2px solid #ddd;
+                padding-left: 8px;
+                margin: 4px 0 6px;
+            }
+            
+            .snap-sidebar-cart__product-engraving strong {
+                font-weight: 600;
+                color: #444;
+            }
+            
             .snap-sidebar-cart__button--checkout {
                 background-color: " . esc_attr($styles['button_background'] ?? '#2c6aa0') . ";
                 color: " . esc_attr($styles['button_text_color'] ?? '#ffffff') . ";
@@ -513,6 +576,34 @@ class Snap_Sidebar_Cart_Public {
                 color: #000;
                 font-weight: bold;
                 margin-right: 8px;
+            }
+            
+            /* Estilos para el tiempo de entrega en productos relacionados */
+            .snap-sidebar-cart__related-product-delivery-time {
+                font-size: 0.85em;
+                color: #666;
+                margin-top: 4px;
+                margin-bottom: 6px;
+                display: block;
+            }
+            
+            /* Estilos para el grabado en productos relacionados */
+            .snap-sidebar-cart__related-product-engraving {
+                font-size: 0.85em;
+                font-style: italic;
+                padding: 2px 0;
+                color: #555;
+                background-color: rgba(0,0,0,0.02);
+                border-left: 2px solid #ddd;
+                padding-left: 8px;
+                margin: 4px 0 6px;
+                line-height: 1.4;
+                display: block;
+            }
+            
+            .snap-sidebar-cart__related-product-engraving strong {
+                font-weight: 600;
+                color: #444;
             }
             
             .snap-sidebar-cart__related-product-discount {
@@ -734,5 +825,26 @@ class Snap_Sidebar_Cart_Public {
         // Incluir el sidebar en todas las páginas del sitio
         // Esto permite que el trigger funcione en cualquier página
         include_once SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-public-display.php';
+    }
+    
+    /**
+     * Obtiene el texto de tiempo de entrega para un producto específico
+     *
+     * @since    1.2.2
+     * @param    int       $product_id    ID del producto
+     * @return   string                   Texto de tiempo de entrega
+     */
+    public function get_delivery_time_text($product_id) {
+        // Obtener el texto de tiempo de entrega configurado
+        $delivery_text = isset($this->options['delivery_time_text']) ? $this->options['delivery_time_text'] : __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart');
+        
+        // Si el producto tiene un campo personalizado con el tiempo de entrega, usarlo
+        $product_delivery_days = get_post_meta($product_id, '_delivery_time_days', true);
+        $shipping_days = !empty($product_delivery_days) ? intval($product_delivery_days) : 3;
+        
+        // Reemplazar la variable %dias% en el texto con el valor real
+        $delivery_text = str_replace('%dias%', $shipping_days, $delivery_text);
+        
+        return $delivery_text;
     }
 }

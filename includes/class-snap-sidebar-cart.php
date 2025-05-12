@@ -35,9 +35,14 @@ class Snap_Sidebar_Cart {
      * @access   private
      */
     private function load_dependencies() {
+        require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-logger.php';
         require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-admin.php';
         require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-public.php';
         require_once SNAP_SIDEBAR_CART_PATH . 'includes/class-snap-sidebar-cart-ajax.php';
+        
+        // Inicializar el sistema de logging
+        Snap_Sidebar_Cart_Logger::init();
+        Snap_Sidebar_Cart_Logger::info('Plugin inicializado - Versión ' . SNAP_SIDEBAR_CART_VERSION);
     }
 
     /**
@@ -51,6 +56,8 @@ class Snap_Sidebar_Cart {
             'title' => __('Carrito de compra', 'snap-sidebar-cart'),
             'container_selector' => 'sidebar-cart-container',
             'activation_selectors' => '.add_to_cart_button:not(.product_type_variable), .ti-shopping-cart, i.ti-shopping-cart',
+            'delivery_time_text' => __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart'),
+            'show_delivery_time' => true,
             'show_shipping' => true,
             'auto_open' => true,
             'new_product_position' => 'top', // Controla si los productos nuevos se agregan al inicio ('top') o al final ('bottom')
@@ -62,29 +69,88 @@ class Snap_Sidebar_Cart {
                 'product_text_color' => '#333333',
                 'button_background' => '#2c6aa0',
                 'button_text_color' => '#ffffff',
+                'products_background' => '#ffffff',
+                'related_section_background' => '#f9f9f9',
+                'footer_background' => '#f8f8f8',
             ),
             'related_products' => array(
                 'show' => true,
                 'count' => 4,
                 'columns' => 2,
                 'orderby' => 'rand',
+                'slides_to_scroll' => 2,
+                'show_last_chance' => true,
+                'last_chance_stock_limit' => 5,
+                'last_chance_title' => __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
+                'last_chance_bg_color' => '#e74c3c',
+                'last_chance_text_color' => '#ffffff',
+            ),
+            'preloader' => array(
+                'type' => 'circle',
+                'size' => '40px',
+                'color' => '#3498db',
+                'color2' => '#e74c3c',
+                'position' => 'center',
+            ),
+            'animations' => array(
+                'duration' => 300,
+                'quantity_update_delay' => 200,
+                'new_product_position' => 'top',
             ),
         );
 
         // Obtenemos las opciones guardadas
         $saved_options = get_option('snap_sidebar_cart_options', array());
         
-        // Combinamos las opciones por defecto con las guardadas
-        $this->options = wp_parse_args($saved_options, $default_options);
+        // Combinamos las opciones por defecto con las guardadas de manera recursiva
+        $this->options = $this->array_merge_recursive_distinct($default_options, $saved_options);
         
-        // Aseguramos que el array de styles exista
+        // Aseguramos que el array de styles exista y tenga todos los valores por defecto
         if (!isset($this->options['styles']) || !is_array($this->options['styles'])) {
             $this->options['styles'] = $default_options['styles'];
+        } else {
+            // Asegurar que cada estilo tenga un valor por defecto si no está definido
+            foreach ($default_options['styles'] as $style_key => $style_value) {
+                if (!isset($this->options['styles'][$style_key])) {
+                    $this->options['styles'][$style_key] = $style_value;
+                }
+            }
         }
         
-        // Aseguramos que el array de related_products exista
+        // Aseguramos que el array de related_products exista y tenga todos los valores por defecto
         if (!isset($this->options['related_products']) || !is_array($this->options['related_products'])) {
             $this->options['related_products'] = $default_options['related_products'];
+        } else {
+            // Asegurar que cada opción tenga un valor por defecto si no está definida
+            foreach ($default_options['related_products'] as $rel_key => $rel_value) {
+                if (!isset($this->options['related_products'][$rel_key])) {
+                    $this->options['related_products'][$rel_key] = $rel_value;
+                }
+            }
+        }
+        
+        // Aseguramos que el array de preloader exista y tenga todos los valores por defecto
+        if (!isset($this->options['preloader']) || !is_array($this->options['preloader'])) {
+            $this->options['preloader'] = $default_options['preloader'];
+        } else {
+            // Asegurar que cada opción tenga un valor por defecto si no está definida
+            foreach ($default_options['preloader'] as $preloader_key => $preloader_value) {
+                if (!isset($this->options['preloader'][$preloader_key])) {
+                    $this->options['preloader'][$preloader_key] = $preloader_value;
+                }
+            }
+        }
+        
+        // Aseguramos que el array de animations exista y tenga todos los valores por defecto
+        if (!isset($this->options['animations']) || !is_array($this->options['animations'])) {
+            $this->options['animations'] = $default_options['animations'];
+        } else {
+            // Asegurar que cada opción tenga un valor por defecto si no está definida
+            foreach ($default_options['animations'] as $anim_key => $anim_value) {
+                if (!isset($this->options['animations'][$anim_key])) {
+                    $this->options['animations'][$anim_key] = $anim_value;
+                }
+            }
         }
         
         // Aseguramos que ciertos valores críticos nunca estén vacíos
@@ -95,6 +161,47 @@ class Snap_Sidebar_Cart {
         if (empty($this->options['activation_selectors'])) {
             $this->options['activation_selectors'] = $default_options['activation_selectors'];
         }
+        
+        if (empty($this->options['delivery_time_text'])) {
+            $this->options['delivery_time_text'] = $default_options['delivery_time_text'];
+        }
+        
+        // Asegurar que las opciones booleanas tengan un valor por defecto
+        if (!isset($this->options['show_delivery_time'])) {
+            $this->options['show_delivery_time'] = $default_options['show_delivery_time'];
+        }
+        
+        if (!isset($this->options['show_shipping'])) {
+            $this->options['show_shipping'] = $default_options['show_shipping'];
+        }
+        
+        if (!isset($this->options['auto_open'])) {
+            $this->options['auto_open'] = $default_options['auto_open'];
+        }
+    }
+    
+    /**
+     * Fusion recursiva de arrays, diferente de la función array_merge_recursive().
+     * Los arrays se fusionan recursivamente, pero los valores con el mismo string key en arrays asociativos
+     * se sobrescriben en lugar de combinarse en un array.
+     *
+     * @since    1.2.2
+     * @param    array    $array1    Array base.
+     * @param    array    $array2    Array a fusionar.
+     * @return   array                El array resultante.
+     */
+    private function array_merge_recursive_distinct(array $array1, array $array2) {
+        $merged = $array1;
+        
+        foreach ($array2 as $key => $value) {
+            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+                $merged[$key] = $this->array_merge_recursive_distinct($merged[$key], $value);
+            } else {
+                $merged[$key] = $value;
+            }
+        }
+        
+        return $merged;
     }
 
     /**

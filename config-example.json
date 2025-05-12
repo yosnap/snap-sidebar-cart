@@ -1,0 +1,48 @@
+{
+  "title": "Carrito de compra",
+  "container_selector": "sidebar-cart-container",
+  "activation_selectors": ".add_to_cart_button, .ti-shopping-cart, i.ti-shopping-cart, .cart-contents",
+  "delivery_time_text": "Entrega en 1-3 días hábiles",
+  "show_delivery_time": true,
+  "show_shipping": true,
+  "auto_open": true,
+  "new_product_position": "top",
+  "styles": {
+    "sidebar_width": "400px",
+    "sidebar_background": "#ffffff",
+    "header_background": "#f8f8f8",
+    "header_text_color": "#333333",
+    "product_text_color": "#333333",
+    "button_background": "#2c6aa0",
+    "button_text_color": "#ffffff",
+    "products_background": "#ffffff",
+    "related_section_background": "#f9f9f9",
+    "footer_background": "#f8f8f8"
+  },
+  "preloader": {
+    "type": "circle",
+    "size": "40px",
+    "color": "#3498db",
+    "color2": "#e74c3c",
+    "position": "center"
+  },
+  "animations": {
+    "duration": 300,
+    "quantity_update_delay": 200,
+    "new_product_position": "top"
+  },
+  "related_products": {
+    "show": true,
+    "count": 4,
+    "columns": 2,
+    "orderby": "rand",
+    "slides_to_scroll": 2,
+    "show_last_chance": true,
+    "last_chance_stock_limit": 5,
+    "last_chance_title": "ÚLTIMA OPORTUNIDAD",
+    "last_chance_bg_color": "#e74c3c",
+    "last_chance_text_color": "#ffffff",
+    "active_tabs": "upsells,crosssells,related,bestsellers,featured",
+    "custom_tab_label": "Recomendados"
+  }
+}

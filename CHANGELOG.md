@@ -1,56 +1,53 @@
 # Changelog
 
-## 1.2.1 - 2025-05-12
-### Cambios Importantes
-- **Disponibilidad global del sidebar**: Ahora el sidebar está disponible en todas las páginas del sitio, no solo en páginas de WooCommerce
-- **Corrección de errores en sidebar-opener-fix.js**: Mejorada la robustez del código para evitar errores cuando el sidebar no se encuentra
-- **Mejoras de compatibilidad en CSS**: Añadidas propiedades estándar para mejor compatibilidad entre navegadores
+## 1.2.3 - 2025-05-12
+* **Mejora**: Optimizado el manejo de la apertura automática del carrito
+* **Mejora**: Añadida configuración más consistente para la posición de nuevos productos
+* **Mejora**: Mejoradas las animaciones de agregado y eliminación de productos
+* **Corrección**: Solucionados problemas de apertura automática del carrito
+* **Corrección**: Solucionados problemas con la posición de nuevos productos
+* **Nuevo**: Añadido sistema de logging para facilitar la depuración
+* **Nuevo**: Añadida página de diagnóstico para ayudar a solucionar problemas
+* **Mejora**: Implementado mejor manejo de preloaders durante operaciones AJAX
 
-### Correcciones
-- Solucionado problema que impedía abrir el sidebar desde páginas que no son de WooCommerce
-- Corregidos errores de JavaScript relacionados con el método `closest()` y `offsetHeight`
-- Añadida mejor gestión de errores para evitar fallos en la consola
+## 1.2.2 - 2024-12-10
+* **Mejora**: Implementado soporte para tiempos de entrega personalizados por producto
+* **Mejora**: Optimización de rendimiento general
+* **Corrección**: Solucionados problemas de compatibilidad con WooCommerce 8.x
 
-## 1.2.0 - 2025-05-11
-### Cambios Importantes
-- **Reemplazo de Swiper.js con CSS Scroll Snap**: Mejora significativa en rendimiento y experiencia de usuario
-- **Corrección de apertura del sidebar**: Ahora respeta correctamente la configuración guardada en el backend
-- **Mejora en botones de cantidad**: Funcionan correctamente incrementando/decrementando de 1 en 1
-- **Actualización de precios con AJAX**: El precio total se actualiza correctamente sin recargar la página
+## 1.2.1 - 2024-10-15
+* **Corrección**: Solucionado problema de compatibilidad con versiones recientes de WooCommerce
+* **Mejora**: Mejoras en la usabilidad y accesibilidad
+* **Corrección**: Solucionado problema con productos duplicados en el carrito
+* **Mejora**: Rendimiento optimizado en la carga de productos relacionados
 
-### Mejoras
-- Optimización general de rendimiento
-- Reducción de dependencias externas
-- Transiciones más suaves en la interfaz de usuario
-- Mejor compatibilidad con dispositivos móviles
+## 1.2.0 - 2024-08-20
+* **Nuevo**: Añadido soporte para pestañas en productos relacionados
+* **Nuevo**: Implementada función de "Última oportunidad" para productos con stock limitado
+* **Mejora**: Optimizaciones en el CSS para mejor compatibilidad con temas
+* **Corrección**: Solucionados problemas de compatibilidad con WooCommerce 7.x
 
-### Correcciones
-- Solucionado problema con la apertura automática del sidebar
-- Corregida la actualización del precio total al cambiar cantidades
-- Solucionado problema con la carga de productos en las pestañas
-- Mejorada la navegación entre pestañas
+## 1.1.5 - 2024-06-15
+* **Nuevo**: Añadida opción para configurar el número de slides a desplazar
+* **Mejora**: Mejorado el sistema de navegación de productos relacionados
+* **Corrección**: Solucionado problema con la carga de productos relacionados
 
-### Archivos Modificados
-- `snap-sidebar-cart-public.js`: Actualización de funciones principales
-- `scroll-snap-init.js`: Nuevo archivo para inicializar Scroll Snap
-- `sidebar-opener-fix.js`: Solución para la apertura del sidebar
-- `quantity-buttons-fix.js`: Solución para los botones de cantidad
-- `snap-sidebar-cart-public.css`: Actualización de estilos para Scroll Snap
+## 1.1.0 - 2024-04-10
+* **Nuevo**: Implementadas pestañas para productos relacionados (upsells, crosssells, misma categoría)
+* **Nuevo**: Añadida opción para productos destacados
+* **Mejora**: Optimizado el rendimiento general
 
-## 1.1.0 - 2025-04-15
-### Características
-- Implementación inicial de Swiper.js para sliders de productos
-- Soporte para pestañas de productos relacionados
-- Funcionalidad de apertura automática del sidebar
+## 1.0.9 - 2024-02-25
+* **Mejora**: Implementada carga optimizada del carrito
+* **Corrección**: Solucionado problema con el contador de productos
 
-### Mejoras
-- Interfaz de usuario mejorada
-- Soporte para dispositivos móviles
-- Opciones de configuración en el backend
+## 1.0.8 - 2024-01-20
+* **Nuevo**: Añadido timestamp a los productos para controlar el orden
+* **Mejora**: Mejorada la gestión de productos idénticos
 
-## 1.0.0 - 2025-03-01
-### Lanzamiento inicial
-- Funcionalidad básica del sidebar de carrito
-- Integración con WooCommerce
-- Soporte para productos relacionados
-- Opciones de personalización
+## 1.0.6 - 2023-11-15
+* **Nuevo**: Añadidas configuraciones para duración de animaciones
+* **Mejora**: Convertir colores hexadecimales a RGB para animaciones
+
+## 1.0.0 - 2023-10-01
+* Versión inicial del plugin

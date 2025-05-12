@@ -139,6 +139,32 @@ try {
                     <?php echo esc_html($color); ?>
                 </div>
             <?php endif; ?>
+            
+            <?php 
+            // Verificar si el producto tiene metadatos de grabado
+            $has_engraving = false;
+            $engraving_text = '';
+            
+            // Comprobar en metadatos del producto
+            $product_meta = $related_product->get_meta_data();
+            foreach ($product_meta as $meta) {
+                $meta_data = $meta->get_data();
+                if (isset($meta_data['key']) && isset($meta_data['value']) && 
+                    (strtolower($meta_data['key']) === 'grabado' || 
+                    strpos(strtolower($meta_data['key']), 'grabado') !== false)) {
+                    $has_engraving = true;
+                    $engraving_text = is_string($meta_data['value']) ? $meta_data['value'] : print_r($meta_data['value'], true);
+                    break;
+                }
+            }
+            
+            // Si tiene grabado, mostrarlo
+            if ($has_engraving && !empty($engraving_text)) : ?>
+                <div class="snap-sidebar-cart__related-product-engraving">
+                    <strong><?php esc_html_e('Grabado:', 'snap-sidebar-cart'); ?></strong> 
+                    <?php echo esc_html($engraving_text); ?>
+                </div>
+            <?php endif; ?>
 
             <?php if (!empty($product_price)) : ?>
                 <div class="snap-sidebar-cart__related-product-price-container">
@@ -153,6 +179,24 @@ try {
             <?php endif; ?>
 
             <?php 
+            // Mostrar el tiempo de entrega solo si está habilitado
+            $show_delivery_time = isset($this->options['show_delivery_time']) ? $this->options['show_delivery_time'] : true;
+            if ($show_delivery_time) {
+                // Mostrar el tiempo de entrega si está disponible
+                if (method_exists($this, 'get_delivery_time_text')) {
+                    echo '<div class="snap-sidebar-cart__related-product-delivery-time">';
+                    echo esc_html($this->get_delivery_time_text($related_product->get_id()));
+                    echo '</div>';
+                } else {
+                    // Obtener el tiempo de entrega para este producto
+                    $product_delivery_days = get_post_meta($related_product->get_id(), '_delivery_time_days', true);
+                    $shipping_days = !empty($product_delivery_days) ? intval($product_delivery_days) : 3;
+                    echo '<div class="snap-sidebar-cart__related-product-delivery-time">';
+                    echo esc_html(sprintf(__('Entrega en 1-%d días hábiles', 'snap-sidebar-cart'), $shipping_days));
+                    echo '</div>';
+                }
+            }
+            
             // Mostrar calificación/estrellas del producto si está disponible
             $average_rating = $related_product->get_average_rating();
             $review_count = $related_product->get_review_count();

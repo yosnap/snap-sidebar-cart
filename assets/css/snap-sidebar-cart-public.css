@@ -214,6 +214,19 @@
     margin-bottom: 5px;
 }
 
+/* Estilo para campos personalizados como Grabado */
+.snap-sidebar-cart__product-custom-field {
+    font-size: 12px;
+    color: var(--product-text-color);
+    opacity: 0.8;
+    margin-top: 4px;
+    margin-bottom: 5px;
+    padding: 2px 5px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+    display: inline-block;
+}
+
 .snap-sidebar-cart__product-shipping {
     font-size: 12px;
     color: var(--product-text-color);

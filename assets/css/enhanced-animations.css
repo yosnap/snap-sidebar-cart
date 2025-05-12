@@ -1,0 +1,255 @@
+/**
+ * Estilos mejorados para las animaciones del carrito
+ */
+
+/* Animaciones para productos nuevos */
+.snap-sidebar-cart__product.new-item {
+    animation: fadeIn var(--animation-duration, 300ms) ease-out;
+    transform-origin: top center;
+}
+
+/* Animación para cambio de cantidad */
+.cart-item__quantity-input.quantity-updated,
+.snap-sidebar-cart__quantity-input.quantity-updated {
+    animation: quantityUpdated var(--animation-duration, 300ms) ease-out;
+}
+
+/* Animación para productos que se eliminan */
+.snap-sidebar-cart__product.removing {
+    animation: fadeOut var(--animation-duration, 300ms) ease-out forwards;
+}
+
+/* Clase para destacar productos actualizados */
+.snap-sidebar-cart__product.product-updated {
+    animation: productHighlight var(--animation-duration, 300ms) ease-out;
+}
+
+/* Keyframes para las animaciones */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes fadeOut {
+    from { 
+        opacity: 1; 
+        transform: translateY(0); 
+        max-height: 150px;
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(20px); 
+        max-height: 0;
+        padding: 0;
+        margin: 0;
+        border-width: 0;
+    }
+}
+
+@keyframes quantityUpdated {
+    0% { 
+        background-color: rgba(52, 152, 219, 0.1); 
+    }
+    50% { 
+        background-color: rgba(52, 152, 219, 0.3); 
+    }
+    100% { 
+        background-color: transparent; 
+    }
+}
+
+@keyframes productHighlight {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.5);
+        background-color: rgba(52, 152, 219, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5);
+        background-color: rgba(52, 152, 219, 0.2);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+        background-color: transparent;
+    }
+}
+
+/* Estilos para el preloader */
+.snap-sidebar-cart__product-loader {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    display: none !important;
+    z-index: 10 !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.snap-sidebar-cart__product-loader[style*='display: flex'] {
+    display: flex !important;
+}
+
+/* Ajuste para la lista de productos */
+.snap-sidebar-cart__products-list {
+    position: relative;
+    transition: min-height 0.3s ease;
+}
+
+/* Asegurar que el carrito lateral sea visible cuando está abierto */
+.snap-sidebar-cart.open {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    right: 0 !important;
+}
+
+/* Asegurar que el overlay sea visible */
+.snap-sidebar-cart__overlay {
+    transition: opacity 0.3s ease;
+}
+
+body.snap-sidebar-cart-open .snap-sidebar-cart__overlay {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+/* Estilos para diferentes tipos de preloader */
+.snap-sidebar-cart__loader-spinner.preloader-circle {
+    border-radius: 50%;
+    width: var(--preloader-size, 40px);
+    height: var(--preloader-size, 40px);
+    animation: spin 1.2s linear infinite;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--preloader-color, #3498db);
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span {
+    display: inline-block;
+    width: calc(var(--preloader-size, 40px) / 4);
+    height: calc(var(--preloader-size, 40px) / 4);
+    border-radius: 50%;
+    background-color: var(--preloader-color, #3498db);
+    animation: dots 1.4s infinite ease-in-out both;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-square {
+    width: var(--preloader-size, 40px);
+    height: var(--preloader-size, 40px);
+    animation: spin 1.2s linear infinite;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--preloader-color, #3498db);
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner {
+    width: var(--preloader-size, 40px);
+    height: var(--preloader-size, 40px);
+    position: relative;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner:before,
+.snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    animation: spin 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner:before {
+    border: 3px solid transparent;
+    border-top-color: var(--preloader-color, #3498db);
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-spinner:after {
+    border: 3px solid transparent;
+    border-bottom-color: var(--preloader-color2, #e74c3c);
+    animation-delay: -1s;
+}
+
+/* Animaciones de los preloaders */
+@keyframes spin {
+    0% { 
+        transform: rotate(0deg); 
+    }
+    100% { 
+        transform: rotate(360deg); 
+    }
+}
+
+@keyframes dots {
+    0%, 80%, 100% { 
+        transform: scale(0);
+    }
+    40% { 
+        transform: scale(1);
+    }
+}
+
+/* Posicionamiento del preloader */
+.snap-sidebar-cart__loader-spinner.preloader-position-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.snap-sidebar-cart__loader-spinner.preloader-position-bottom-right {
+    bottom: 10px;
+    right: 10px;
+}
+
+/* Correcciones para el overlay y visibilidad general */
+.snap-sidebar-cart {
+    transition: transform var(--animation-duration, 300ms) ease, 
+                opacity var(--animation-duration, 300ms) ease,
+                visibility var(--animation-duration, 300ms) ease;
+}
+
+.snap-sidebar-cart__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+}
