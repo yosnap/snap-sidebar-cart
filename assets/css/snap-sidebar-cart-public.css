@@ -1575,6 +1575,24 @@ body.snap-sidebar-cart-open {
     transform: translateY(0) !important;
 }
 
+/* Test temporal: Fondos aleatorios para productos sin galería */
+.snap-sidebar-cart__related-product.no-gallery {
+    position: relative;
+}
+
+.snap-sidebar-cart__related-product.no-gallery::before {
+    content: "Sin galería";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 3px;
+    z-index: 10;
+}
+
 /* Badge para Last Chance */
 .snap-sidebar-cart__product-badge.last-chance {
     position: absolute !important;

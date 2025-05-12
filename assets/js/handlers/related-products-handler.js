@@ -6,6 +6,15 @@
  * - Manejar el slider de productos relacionados
  * - Mostrar imágenes alternas de la galería al hacer hover
  */
+
+// Función para generar colores aleatorios en formato HSL (colores pastel)
+function getRandomColor() {
+    // Generamos colores pastel para que sean más agradables visualmente
+    var hue = Math.floor(Math.random() * 360);
+    var pastelSaturation = 25 + Math.floor(Math.random() * 40); // 25-65%
+    var pastelLightness = 75 + Math.floor(Math.random() * 15);  // 75-90%
+    return 'hsl(' + hue + ', ' + pastelSaturation + '%, ' + pastelLightness + '%)';
+}
 (function ($) {
     'use strict';
 
@@ -361,6 +370,13 @@
                     $product.removeClass('no-gallery');
                 } else {
                     $product.addClass('no-gallery');
+                    
+                    // Test temporal: Asignar un color de fondo aleatorio
+                    var randomColor = getRandomColor();
+                    $product.css('background-color', randomColor);
+                    
+                    // Añadir un log para verificar
+                    console.log('Producto sin galería:', $product.find('.snap-sidebar-cart__related-product-title').text(), '- Color asignado:', randomColor);
                 }
                 
                 // Configurar hover para todos los productos
