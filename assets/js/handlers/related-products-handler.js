@@ -12,6 +12,76 @@
     'use strict';
 
     /**
+     * Genera el HTML del preloader según la configuración del plugin
+     * @param {boolean} isContainer - Si es true, genera el preloader para el contenedor, si es false, para un producto individual
+     * @param {string} loadingText - Texto opcional para mostrar debajo del preloader (solo para contenedor)
+     * @returns {string} - HTML del preloader
+     */
+    function generatePreloaderHTML(isContainer, loadingText) {
+        // Obtener configuración del preloader desde los parámetros globales
+        var preloaderType = 'circle';
+        var preloaderPosition = 'center';
+        var preloaderColor = '#3498db';
+        var preloaderColor2 = '#e74c3c';
+        var preloaderSize = '40px';
+        
+        // Si existen los parámetros, usarlos
+        if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
+            preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
+            preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
+            preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
+            preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
+            preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
+        }
+        
+        // Crear clases del preloader
+        var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
+                              'preloader-' + preloaderType + ' ' +
+                              'preloader-position-' + preloaderPosition;
+        
+        // Crear estilos inline para el preloader
+        var inlineStyles = '';
+        
+        // Aplicar estilos según el tipo de preloader
+        if (preloaderType === 'circle') {
+            inlineStyles = 'width: ' + preloaderSize + '; ' +
+                          'height: ' + preloaderSize + '; ' +
+                          'border-color: ' + preloaderColor + '; ' +
+                          'border-top-color: ' + preloaderColor2 + ';';
+        } else {
+            inlineStyles = 'width: ' + preloaderSize + '; ' +
+                          'height: ' + preloaderSize + ';';
+        }
+        
+        // Crear el HTML del preloader con estilos inline
+        var preloaderHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '"';
+        
+        // Añadir contenido específico según el tipo de preloader
+        if (preloaderType === 'dots') {
+            preloaderHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
+                           '<span style="background-color: ' + preloaderColor + ';"></span>' +
+                           '<span style="background-color: ' + preloaderColor + ';"></span>';
+        } else {
+            preloaderHTML += '>';
+        }
+        
+        // Cerrar la etiqueta div
+        preloaderHTML += '</div>';
+        
+        // Si es para el contenedor, incluir el texto de carga
+        if (isContainer) {
+            return '<div class="snap-sidebar-cart__loading-products">' +
+                   preloaderHTML +
+                   '<span>' + (loadingText || 'Cargando productos...') + '</span>' +
+                   '</div>';
+        } else {
+            return '<div class="snap-sidebar-cart__product-loader" style="display:block;">' + 
+                   preloaderHTML + 
+                   '</div>';
+        }
+    }
+
+    /**
      * Controlador de productos relacionados
      * 
      * @class RelatedProductsHandler
@@ -203,13 +273,8 @@
                 return;
             }
             
-            // Mostrar preloader
-            $targetContainer.html(
-                '<div class="snap-sidebar-cart__loading-products">' +
-                '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
-                '<span>Cargando productos...</span>' +
-                '</div>'
-            );
+            // Mostrar preloader usando la función auxiliar
+            $targetContainer.html(generatePreloaderHTML(true, 'Cargando productos...'));
             
             // Obtener ID del primer producto en el carrito
             var productIds = [];
@@ -473,8 +538,8 @@
                     $productsContainer.append($newItemPlaceholder);
                 }
                 
-                // Añadir preloader
-                var $preloader = $('<div class="snap-sidebar-cart__product-loader" style="display:block;"><div class="snap-sidebar-cart__loader-spinner preloader-circle"></div></div>');
+                // Añadir preloader usando la función auxiliar
+                var $preloader = $(generatePreloaderHTML(false));
                 $newItemPlaceholder.append($preloader);
                 
                 // Añadir mediante AJAX
