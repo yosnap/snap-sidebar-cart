@@ -7,14 +7,7 @@
  * - Mostrar imágenes alternas de la galería al hacer hover
  */
 
-// Función para generar colores aleatorios en formato HSL (colores pastel)
-function getRandomColor() {
-    // Generamos colores pastel para que sean más agradables visualmente
-    var hue = Math.floor(Math.random() * 360);
-    var pastelSaturation = 25 + Math.floor(Math.random() * 40); // 25-65%
-    var pastelLightness = 75 + Math.floor(Math.random() * 15);  // 75-90%
-    return 'hsl(' + hue + ', ' + pastelSaturation + '%, ' + pastelLightness + '%)';
-}
+// Esta función ya no es necesaria, se ha eliminado la funcionalidad de test
 (function ($) {
     'use strict';
 
@@ -365,29 +358,19 @@ function getRandomColor() {
                 console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
                            '- Imagen hover válida:', hasValidHoverImage);
                 
-                // Marcar productos sin imagen hover válida
-                if (hasValidHoverImage) {
-                    $product.removeClass('no-gallery');
-                } else {
-                    $product.addClass('no-gallery');
-                    
-                    // Test temporal: Asignar un color de fondo aleatorio
-                    var randomColor = getRandomColor();
-                    $product.css('background-color', randomColor);
-                    
-                    // Añadir un log para verificar
-                    console.log('Producto sin galería:', $product.find('.snap-sidebar-cart__related-product-title').text(), '- Color asignado:', randomColor);
-                }
+                // Ya no necesitamos marcar los productos desde JS, ahora se hace desde el servidor
+                // Solo verificamos si el producto ya tiene la clase no-gallery-server
+                var hasGalleryFromServer = !$product.hasClass('no-gallery-server');
                 
-                // Configurar hover para todos los productos
+                // Configurar hover solo para productos con galería
+                // El efecto de zoom se aplica a todos los productos, pero el cambio de imagen solo a los que tienen galería
                 $product.hover(
                     function() {
-                        // Mouse enter - CSS se encarga de la animación
-                        // Aplicar un ligero zoom a la imagen
+                        // Mouse enter - Aplicar un ligero zoom a la imagen
                         $imageContainer.addClass('hover-active');
                     },
                     function() {
-                        // Mouse leave - CSS se encarga de la animación
+                        // Mouse leave - Quitar el zoom
                         $imageContainer.removeClass('hover-active');
                     }
                 );

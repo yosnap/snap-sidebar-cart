@@ -1558,42 +1558,21 @@ body.snap-sidebar-cart-open {
     transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out !important;
 }
 
-/* Efecto de hover para todos los productos */
-.snap-sidebar-cart__related-product:hover .primary-image {
+/* Efecto de hover solo para productos con galería */
+.snap-sidebar-cart__related-product:not(.no-gallery-server):hover .primary-image {
     opacity: 0 !important;
     transform: translateY(-20px) !important;
 }
 
-.snap-sidebar-cart__related-product:hover .hover-image {
+.snap-sidebar-cart__related-product:not(.no-gallery-server):hover .hover-image {
     opacity: 1 !important;
     transform: translateY(0) !important;
 }
 
-/* Mantener la imagen principal visible cuando no hay galería */
-.snap-sidebar-cart__related-product.no-gallery:hover .primary-image,
+/* Productos sin galería no tienen efecto hover en la imagen */
 .snap-sidebar-cart__related-product.no-gallery-server:hover .primary-image {
     opacity: 1 !important;
     transform: translateY(0) !important;
-}
-
-/* Test temporal: Fondos aleatorios para productos sin galería */
-.snap-sidebar-cart__related-product.no-gallery,
-.snap-sidebar-cart__related-product.no-gallery-server {
-    position: relative;
-}
-
-.snap-sidebar-cart__related-product.no-gallery::before,
-.snap-sidebar-cart__related-product.no-gallery-server::before {
-    content: "Sin galería";
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 2px 6px;
-    font-size: 10px;
-    border-radius: 3px;
-    z-index: 10;
 }
 
 /* Badge para Last Chance */
