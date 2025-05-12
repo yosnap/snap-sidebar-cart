@@ -1548,13 +1548,18 @@ body.snap-sidebar-cart-open {
     transition: opacity 0.3s ease-in-out !important;
 }
 
-/* Efecto de hover */
-.snap-sidebar-cart__related-product:hover .primary-image {
+/* Efecto de hover - solo aplicar cuando hay imágenes de galería */
+.snap-sidebar-cart__related-product.has-gallery:hover .primary-image {
     opacity: 0 !important;
 }
 
-.snap-sidebar-cart__related-product:hover .product-gallery-image,
-.snap-sidebar-cart__related-product:hover .hover-image {
+.snap-sidebar-cart__related-product.has-gallery:hover .product-gallery-image,
+.snap-sidebar-cart__related-product.has-gallery:hover .hover-image {
+    opacity: 1 !important;
+}
+
+/* Mantener la imagen principal visible cuando no hay galería */
+.snap-sidebar-cart__related-product:not(.has-gallery):hover .primary-image {
     opacity: 1 !important;
 }
 

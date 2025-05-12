@@ -603,9 +603,13 @@
         var hoverImageSrc = $hoverImage.attr('src');
         var hasValidHoverImage = hoverImageSrc && 
                                 hoverImageSrc.trim() !== '' && 
-                                !hoverImageSrc.includes('placeholder');
+                                !hoverImageSrc.includes('placeholder') && 
+                                !hoverImageSrc.includes('woocommerce-placeholder');
         
+        // Añadir o quitar la clase has-gallery según corresponda
         if (hasValidHoverImage) {
+          $product.addClass('has-gallery');
+          
           // Configurar hover con cambio de imagen
           $product.hover(
             function() {
@@ -629,7 +633,10 @@
             }
           );
         } else {
-          // Si la imagen de hover no es válida, solo aplicar efecto de zoom sin cambiar la imagen
+          // Si la imagen de hover no es válida, quitar la clase has-gallery
+          $product.removeClass('has-gallery');
+          
+          // Solo aplicar efecto de zoom sin cambiar la imagen
           $product.hover(
             function() {
               // Mouse enter - solo aplicar efecto de zoom

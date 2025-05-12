@@ -363,6 +363,13 @@
                 console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
                            '- Imágenes de galería válidas:', validGalleryImageCount);
                 
+                // Añadir o quitar la clase has-gallery según corresponda
+                if (hasValidGalleryImages) {
+                    $product.addClass('has-gallery');
+                } else {
+                    $product.removeClass('has-gallery');
+                }
+                
                 if (hasValidGalleryImages) {
                     // Solo mostrar imágenes de galería en hover si hay al menos una imagen válida
                     // Configurar hover con transiciones suaves
@@ -402,14 +409,6 @@
                         }
                     );
                 }
-                    $product.hover(
-                        function() {
-                            $imageContainer.addClass('hover-active');
-                        },
-                        function() {
-                            $imageContainer.removeClass('hover-active');
-                        }
-                    );
                     
                     // Manejar movimiento del ratón para cambiar entre imágenes
                     // Solo aplicar si hay múltiples imágenes válidas en la galería
