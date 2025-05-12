@@ -84,6 +84,13 @@ try {
     
     error_log('Producto relacionado listo para renderizar');
     
+    // Depuración: Obtener la imagen directamente para ver qué está pasando
+    $thumbnail_id = $related_product->get_image_id();
+    $thumbnail_url = wp_get_attachment_image_url($thumbnail_id, 'woocommerce_thumbnail');
+    error_log('ID de imagen destacada: ' . $thumbnail_id);
+    error_log('URL de imagen destacada: ' . ($thumbnail_url ? $thumbnail_url : 'No disponible'));
+    error_log('HTML de imagen generado por WooCommerce: ' . htmlspecialchars($thumbnail));
+    
 } catch (Exception $e) {
     error_log('ERROR al procesar producto relacionado: ' . $e->getMessage());
 }
@@ -103,42 +110,55 @@ try {
     
     <a href="<?php echo esc_url($product_permalink); ?>" class="product-card-link">
         <div class="snap-sidebar-cart__related-product-image">
-            <div class="primary-image">
-                <?php 
-                // Usar una imagen directa en lugar de confiar en get_image()
-                $thumbnail_id = $related_product->get_image_id();
-                if ($thumbnail_id) {
-                    $image_url = wp_get_attachment_image_url($thumbnail_id, 'woocommerce_thumbnail');
-                    $image_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
-                    $image_alt = $image_alt ? $image_alt : esc_attr($product_name);
-                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="primary-product-image">';
-                } else {
-                    // Si no hay imagen, mostrar la imagen por defecto
-                    echo $thumbnail;
-                }
-                ?>
-            </div>
-            <?php 
-            // Mostrar la primera imagen de la galería para el efecto hover
-            if (!empty($gallery_images)) : 
-                $image_id = reset($gallery_images);
-                $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
-                if ($image_url) : 
-                    $image_alt = get_post_meta($image_id, '_wp_attachment_image_alt', true);
-                    $image_alt = $image_alt ? $image_alt : sprintf('%s - %s', 
+            <?php
+            // Obtener la imagen destacada del producto
+            $thumbnail_id = $related_product->get_image_id();
+            $placeholder_image = wc_placeholder_img_src('woocommerce_thumbnail');
+            
+            // URL de la imagen principal
+            $main_image_url = $thumbnail_id ? 
+                wp_get_attachment_image_url($thumbnail_id, 'woocommerce_thumbnail') : 
+                $placeholder_image;
+                
+            // Alt text para la imagen principal
+            $main_image_alt = '';
+            if ($thumbnail_id) {
+                $main_image_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+            }
+            $main_image_alt = $main_image_alt ? $main_image_alt : esc_attr($product_name);
+            
+            // Imagen de galería para hover
+            $hover_image_url = '';
+            $hover_image_alt = '';
+            $has_gallery = false;
+            
+            if (!empty($gallery_images)) {
+                $gallery_image_id = reset($gallery_images);
+                $gallery_image_url = wp_get_attachment_image_url($gallery_image_id, 'woocommerce_thumbnail');
+                
+                if ($gallery_image_url && $gallery_image_url != $placeholder_image) {
+                    $hover_image_url = $gallery_image_url;
+                    $hover_image_alt = get_post_meta($gallery_image_id, '_wp_attachment_image_alt', true);
+                    $hover_image_alt = $hover_image_alt ? $hover_image_alt : sprintf('%s - %s', 
                         esc_attr($product_name), 
                         __('Imagen alternativa', 'snap-sidebar-cart')
                     );
-                    ?>
-                    <div class="product-gallery-image hover-image">
-                        <img src="<?php echo esc_url($image_url); ?>" 
-                            alt="<?php echo esc_attr($image_alt); ?>"
-                            loading="lazy">
-                    </div>
-                    <?php
-                endif;
-            endif;
+                    $has_gallery = true;
+                }
+            }
             ?>
+            
+            <!-- Imagen Principal -->
+            <img src="<?php echo esc_url($main_image_url); ?>" 
+                 alt="<?php echo esc_attr($main_image_alt); ?>" 
+                 class="primary-image" />
+                 
+            <?php if ($has_gallery) : ?>
+            <!-- Imagen de Hover -->
+            <img src="<?php echo esc_url($hover_image_url); ?>" 
+                 alt="<?php echo esc_attr($hover_image_alt); ?>" 
+                 class="hover-image" />
+            <?php endif; ?>
         </div>
 
         <div class="snap-sidebar-cart__related-product-details">

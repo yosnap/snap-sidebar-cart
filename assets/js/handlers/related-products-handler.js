@@ -339,137 +339,44 @@
             $('.snap-sidebar-cart__related-product').each(function() {
                 var $product = $(this);
                 var $primaryImage = $product.find('.primary-image');
-                var $galleryImages = $product.find('.product-gallery-image');
+                var $hoverImage = $product.find('.hover-image');
                 var $imageContainer = $product.find('.snap-sidebar-cart__related-product-image');
                 
-                // Verificar si hay imágenes de galería y si son válidas
-                var hasValidGalleryImages = false;
-                var validGalleryImageCount = 0;
-                var validGalleryImages = [];
+                // Verificar si hay una imagen de hover válida
+                var hasValidHoverImage = false;
                 
-                // Verificar cada imagen de la galería para asegurarse de que sea válida
-                if ($galleryImages.length > 0) {
-                    $galleryImages.each(function(index) {
-                        var src = $(this).attr('src');
-                        if (src && src.trim() !== '' && !src.includes('placeholder') && !src.includes('woocommerce-placeholder')) {
-                            validGalleryImageCount++;
-                            validGalleryImages.push($(this));
-                        }
-                    });
-                    
-                    hasValidGalleryImages = validGalleryImageCount > 0;
+                // Verificar que la imagen de hover sea válida
+                if ($hoverImage.length > 0) {
+                    var hoverSrc = $hoverImage.attr('src');
+                    if (hoverSrc && hoverSrc.trim() !== '' && !hoverSrc.includes('placeholder') && !hoverSrc.includes('woocommerce-placeholder')) {
+                        hasValidHoverImage = true;
+                    }
                 }
                 
                 console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
-                           '- Imágenes de galería válidas:', validGalleryImageCount);
+                           '- Imagen hover válida:', hasValidHoverImage);
                 
-                // Marcar productos sin galería válida
-                if (hasValidGalleryImages) {
+                // Marcar productos sin imagen hover válida
+                if (hasValidHoverImage) {
                     $product.removeClass('no-gallery');
                 } else {
                     $product.addClass('no-gallery');
                 }
                 
-                if (hasValidGalleryImages) {
-                    // Solo mostrar imágenes de galería en hover si hay al menos una imagen válida
-                    // Configurar hover con transiciones suaves
-                    $product.hover(
-                        function() {
-                            // Mouse enter - mostrar la primera imagen de galería válida
-                            if (validGalleryImages.length > 0) {
-                                // CSS se encarga de la animación
-                            } else {
-                                // Si no hay imágenes válidas, mantener la imagen principal visible
-                            }
-                            
-                            // Aplicar un ligero zoom a la imagen
-                            $imageContainer.addClass('hover-active');
-                        },
-                        function() {
-                            // Mouse leave - restaurar imagen principal
-                            // CSS se encarga de la animación
-                            $imageContainer.removeClass('hover-active');
-                        }
-                    );
-                } else {
-                    // Si no hay imágenes válidas, solo aplicar el efecto de zoom sin cambiar la imagen
-                    // IMPORTANTE: No ocultar la imagen principal
-                    $product.hover(
-                        function() {
-                            // Mantener la imagen principal visible
-                            $primaryImage.css('opacity', '1');
-                            // Solo aplicar el efecto de zoom
-                            $imageContainer.addClass('hover-active');
-                        },
-                        function() {
-                            $imageContainer.removeClass('hover-active');
-                        }
-                    );
-                }
-                    
-                    // Manejar movimiento del ratón para cambiar entre imágenes
-                    // Solo aplicar si hay múltiples imágenes válidas en la galería
-                    if ($galleryImages.length > 1) {
-                        // Verificar que las imágenes de la galería sean válidas
-                        var validGalleryImages = 0;
-                        var validGalleryImagesList = [];
-                        
-                        $galleryImages.each(function(index) {
-                            var src = $(this).attr('src');
-                            if (src && src.trim() !== '' && !src.includes('placeholder') && !src.includes('woocommerce-placeholder')) {
-                                validGalleryImages++;
-                                validGalleryImagesList.push(index);
-                            }
-                        });
-                        
-                        console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
-                                   '- Imágenes válidas para mousemove:', validGalleryImages);
-                        
-                        // Solo aplicar el efecto si hay al menos 2 imágenes válidas
-                        if (validGalleryImages > 1) {
-                            $product.on('mousemove', function(e) {
-                                if (!$imageContainer.hasClass('hover-active')) return;
-                                
-                                // Calcular proporción de la posición horizontal del ratón
-                                var offset = $imageContainer.offset();
-                                var width = $imageContainer.width();
-                                var relativeX = e.pageX - offset.left;
-                                var ratio = relativeX / width;
-                                
-                                // Determinar qué imagen mostrar basado en la posición del ratón
-                                var imageCount = validGalleryImages;
-                                var imageIndex = Math.min(Math.floor(ratio * imageCount), imageCount - 1);
-                                
-                                // Verificar que realmente tengamos imágenes válidas
-                                if (validGalleryImagesList.length > 0) {
-                                    // Usar la lista de índices de imágenes válidas que creamos anteriormente
-                                    var segmentIndex = Math.min(Math.floor(ratio * validGalleryImagesList.length), validGalleryImagesList.length - 1);
-                                    var targetIndex = validGalleryImagesList[segmentIndex];
-                                    
-                                    // Solo si el producto no está marcado como sin galería
-                                    if (!$product.hasClass('no-gallery')) {
-                                        // Ocultar la imagen principal y todas las imágenes de galería
-                                        $primaryImage.css('opacity', '0');
-                                        $primaryImage.css('transform', 'translateY(-20px)');
-                                        $galleryImages.css('opacity', '0');
-                                        $galleryImages.css('transform', 'translateY(20px)');
-                                        
-                                        // Mostrar solo la imagen válida correspondiente
-                                        $galleryImages.eq(targetIndex).css('opacity', '1');
-                                        $galleryImages.eq(targetIndex).css('transform', 'translateY(0)');
-                                    } else {
-                                        // Asegurarnos de que la imagen principal sea visible
-                                        $primaryImage.css('opacity', '1');
-                                        $primaryImage.css('transform', 'translateY(0)');
-                                    }
-                                } else {
-                                    // Si no hay imágenes válidas, mantener la imagen principal visible
-                                    $primaryImage.css('opacity', '1');
-                                    $galleryImages.css('opacity', '0');
-                                }
-                            });
-                        }
+                // Configurar hover para todos los productos
+                $product.hover(
+                    function() {
+                        // Mouse enter - CSS se encarga de la animación
+                        // Aplicar un ligero zoom a la imagen
+                        $imageContainer.addClass('hover-active');
+                    },
+                    function() {
+                        // Mouse leave - CSS se encarga de la animación
+                        $imageContainer.removeClass('hover-active');
                     }
+                );
+                    // Ya no necesitamos el efecto de mousemove con la nueva estructura
+                    // El CSS se encarga de la animación de hover
                 }
             });
         },
