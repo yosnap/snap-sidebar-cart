@@ -1570,17 +1570,20 @@ body.snap-sidebar-cart-open {
 }
 
 /* Mantener la imagen principal visible cuando no hay galería */
-.snap-sidebar-cart__related-product.no-gallery:hover .primary-image {
+.snap-sidebar-cart__related-product.no-gallery:hover .primary-image,
+.snap-sidebar-cart__related-product.no-gallery-server:hover .primary-image {
     opacity: 1 !important;
     transform: translateY(0) !important;
 }
 
 /* Test temporal: Fondos aleatorios para productos sin galería */
-.snap-sidebar-cart__related-product.no-gallery {
+.snap-sidebar-cart__related-product.no-gallery,
+.snap-sidebar-cart__related-product.no-gallery-server {
     position: relative;
 }
 
-.snap-sidebar-cart__related-product.no-gallery::before {
+.snap-sidebar-cart__related-product.no-gallery::before,
+.snap-sidebar-cart__related-product.no-gallery-server::before {
     content: "Sin galería";
     position: absolute;
     top: 5px;

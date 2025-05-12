@@ -96,7 +96,24 @@ try {
 }
 ?>
 
-<div class="snap-sidebar-cart__related-product">
+<?php 
+// Determinar si el producto tiene imágenes de galería
+$has_gallery = !empty($gallery_images);
+$product_classes = 'snap-sidebar-cart__related-product';
+if (!$has_gallery) {
+    $product_classes .= ' no-gallery-server';
+    // Generar un color aleatorio para productos sin galería (solo para pruebas)
+    $hue = rand(0, 360);
+    $saturation = rand(25, 65);
+    $lightness = rand(75, 90);
+    $random_color = "hsl($hue, $saturation%, $lightness%)";
+    error_log("Producto sin galería: $product_name - Color asignado: $random_color");
+}
+?>
+<div class="<?php echo esc_attr($product_classes); ?>"
+<?php if (!$has_gallery): ?>
+     style="background-color: <?php echo esc_attr($random_color); ?>;"
+<?php endif; ?>
     <?php if ($is_last_chance) : ?>
         <div class="snap-sidebar-cart__product-badge last-chance">
             <?php 
