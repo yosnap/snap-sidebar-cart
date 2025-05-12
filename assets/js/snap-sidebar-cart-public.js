@@ -123,6 +123,23 @@
     var preloaderPosition = snap_sidebar_cart_params.preloader
       ? snap_sidebar_cart_params.preloader.position || "center"
       : "center";
+    var preloaderColor = snap_sidebar_cart_params.preloader
+      ? snap_sidebar_cart_params.preloader.color || "#3498db"
+      : "#3498db";
+    var preloaderColor2 = snap_sidebar_cart_params.preloader
+      ? snap_sidebar_cart_params.preloader.color2 || "#e74c3c"
+      : "#e74c3c";
+    var preloaderSize = snap_sidebar_cart_params.preloader
+      ? snap_sidebar_cart_params.preloader.size || "40px"
+      : "40px";
+
+    console.log('setupAndShowLoader - Configuración del preloader:', {
+      type: preloaderType,
+      position: preloaderPosition,
+      color: preloaderColor,
+      color2: preloaderColor2,
+      size: preloaderSize
+    });
 
     // Preparar el preloader según el tipo
     var $loader = $product.find(".snap-sidebar-cart__loader-spinner");
@@ -134,9 +151,34 @@
     $loader.addClass("preloader-" + preloaderType);
     $loader.addClass("preloader-position-" + preloaderPosition);
 
+    // Aplicar estilos inline para colores y tamaño
+    var inlineStyles = {};
+    
+    // Aplicar estilos según el tipo de preloader
+    if (preloaderType === "circle") {
+      inlineStyles = {
+        "width": preloaderSize,
+        "height": preloaderSize,
+        "border-color": preloaderColor,
+        "border-top-color": preloaderColor2
+      };
+    } else {
+      inlineStyles = {
+        "width": preloaderSize,
+        "height": preloaderSize
+      };
+    }
+    
+    // Aplicar estilos inline
+    $loader.css(inlineStyles);
+
     // Crear el HTML interno según el tipo de preloader
     if (preloaderType === "dots") {
-      $loader.html("<span></span><span></span><span></span>");
+      $loader.html(
+        '<span style="background-color: ' + preloaderColor + ';"></span>' +
+        '<span style="background-color: ' + preloaderColor + ';"></span>' +
+        '<span style="background-color: ' + preloaderColor + ';"></span>'
+      );
     } else {
       $loader.html("");
     }
@@ -362,9 +404,68 @@
 
     // Mostrar un preloader mientras se cargan los productos
     console.log("Mostrando preloader en el contenedor");
+    
+    // Obtener configuración del preloader desde los parámetros globales
+    var preloaderType = 'circle';
+    var preloaderPosition = 'center';
+    var preloaderColor = '#3498db';
+    var preloaderColor2 = '#e74c3c';
+    var preloaderSize = '40px';
+    
+    // Si existen los parámetros, usarlos
+    if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
+        preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
+        preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
+        preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
+        preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
+        preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
+    }
+    
+    console.log('Configuración del preloader:', {
+        type: preloaderType,
+        position: preloaderPosition,
+        color: preloaderColor,
+        color2: preloaderColor2,
+        size: preloaderSize
+    });
+    
+    // Crear clases del preloader
+    var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
+                          'preloader-' + preloaderType + ' ' +
+                          'preloader-position-' + preloaderPosition;
+    
+    // Crear estilos inline para el preloader
+    var inlineStyles = '';
+    
+    // Aplicar estilos según el tipo de preloader
+    if (preloaderType === 'circle') {
+        inlineStyles = 'width: ' + preloaderSize + '; ' +
+                      'height: ' + preloaderSize + '; ' +
+                      'border-color: ' + preloaderColor + '; ' +
+                      'border-top-color: ' + preloaderColor2 + ';';
+    } else {
+        inlineStyles = 'width: ' + preloaderSize + '; ' +
+                      'height: ' + preloaderSize + ';';
+    }
+    
+    // Crear el HTML del preloader
+    var preloaderHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '"';
+    
+    // Añadir contenido específico según el tipo de preloader
+    if (preloaderType === 'dots') {
+        preloaderHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
+                       '<span style="background-color: ' + preloaderColor + ';"></span>' +
+                       '<span style="background-color: ' + preloaderColor + ';"></span>';
+    } else {
+        preloaderHTML += '>';
+    }
+    
+    // Cerrar la etiqueta div
+    preloaderHTML += '</div>';
+    
     $targetContainer.html(
       '<div class="snap-sidebar-cart__loading-products">' +
-      '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
+      preloaderHTML +
       '<span>Cargando productos...</span>' +
       '</div>'
     );
@@ -1575,9 +1676,68 @@
 
       // Mostrar un preloader mientras se cargan los productos
       console.log("Mostrando preloader en el contenedor");
+      
+      // Obtener configuración del preloader desde los parámetros globales
+      var preloaderType = 'circle';
+      var preloaderPosition = 'center';
+      var preloaderColor = '#3498db';
+      var preloaderColor2 = '#e74c3c';
+      var preloaderSize = '40px';
+      
+      // Si existen los parámetros, usarlos
+      if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
+          preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
+          preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
+          preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
+          preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
+          preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
+      }
+      
+      console.log('Preloader en contenedor - Configuración:', {
+          type: preloaderType,
+          position: preloaderPosition,
+          color: preloaderColor,
+          color2: preloaderColor2,
+          size: preloaderSize
+      });
+      
+      // Crear clases del preloader
+      var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
+                            'preloader-' + preloaderType + ' ' +
+                            'preloader-position-' + preloaderPosition;
+      
+      // Crear estilos inline para el preloader
+      var inlineStyles = '';
+      
+      // Aplicar estilos según el tipo de preloader
+      if (preloaderType === 'circle') {
+          inlineStyles = 'width: ' + preloaderSize + '; ' +
+                        'height: ' + preloaderSize + '; ' +
+                        'border-color: ' + preloaderColor + '; ' +
+                        'border-top-color: ' + preloaderColor2 + ';';
+      } else {
+          inlineStyles = 'width: ' + preloaderSize + '; ' +
+                        'height: ' + preloaderSize + ';';
+      }
+      
+      // Crear el HTML del preloader
+      var preloaderHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '"';
+      
+      // Añadir contenido específico según el tipo de preloader
+      if (preloaderType === 'dots') {
+          preloaderHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
+                         '<span style="background-color: ' + preloaderColor + ';"></span>' +
+                         '<span style="background-color: ' + preloaderColor + ';"></span>';
+      } else {
+          preloaderHTML += '>';
+      }
+      
+      // Cerrar la etiqueta div
+      preloaderHTML += '</div>';
+      
       $targetContainer.html(
         '<div class="snap-sidebar-cart__loading-products">' +
-        '<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>' +
+        preloaderHTML +
         '<span>Cargando productos...</span>' +
         '</div>'
       );
@@ -1786,8 +1946,66 @@
             $productsContainer.append($newItemPlaceholder);
           }
           
+          // Obtener configuración del preloader desde los parámetros globales
+          var preloaderType = 'circle';
+          var preloaderPosition = 'center';
+          var preloaderColor = '#3498db';
+          var preloaderColor2 = '#e74c3c';
+          var preloaderSize = '40px';
+          
+          // Si existen los parámetros, usarlos
+          if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
+              preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
+              preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
+              preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
+              preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
+              preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
+          }
+          
+          console.log('Nuevo producto - Configuración del preloader:', {
+              type: preloaderType,
+              position: preloaderPosition,
+              color: preloaderColor,
+              color2: preloaderColor2,
+              size: preloaderSize
+          });
+          
+          // Crear clases del preloader
+          var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
+                                'preloader-' + preloaderType + ' ' +
+                                'preloader-position-' + preloaderPosition;
+          
+          // Crear estilos inline para el preloader
+          var spinnerStyles = '';
+          
+          // Aplicar estilos según el tipo de preloader
+          if (preloaderType === 'circle') {
+              spinnerStyles = 'width: ' + preloaderSize + '; ' +
+                            'height: ' + preloaderSize + '; ' +
+                            'border-color: ' + preloaderColor + '; ' +
+                            'border-top-color: ' + preloaderColor2 + ';';
+          } else {
+              spinnerStyles = 'width: ' + preloaderSize + '; ' +
+                            'height: ' + preloaderSize + ';';
+          }
+          
+          // Crear el HTML del preloader
+          var spinnerHTML = '<div class="' + preloaderClasses + '" style="' + spinnerStyles + '"';
+          
+          // Añadir contenido específico según el tipo de preloader
+          if (preloaderType === 'dots') {
+              spinnerHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
+                           '<span style="background-color: ' + preloaderColor + ';"></span>' +
+                           '<span style="background-color: ' + preloaderColor + ';"></span>';
+          } else {
+              spinnerHTML += '>';
+          }
+          
+          // Cerrar la etiqueta div
+          spinnerHTML += '</div>';
+          
           // Mostrar preloader
-          var $preloader = $('<div class="snap-sidebar-cart__product-loader" style="display:block;"><div class="snap-sidebar-cart__loader-spinner preloader-circle"></div></div>');
+          var $preloader = $('<div class="snap-sidebar-cart__product-loader" style="display:block;">' + spinnerHTML + '</div>');
           $newItemPlaceholder.append($preloader);
         }
 

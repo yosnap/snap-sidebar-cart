@@ -39,15 +39,22 @@ Snap Sidebar Cart mejora la experiencia de compra en tu tienda WooCommerce añad
 * **Colores de botones**: Personaliza los colores de los botones principales.
 
 ### Configuración del Preloader
-* **Tipo de preloader**: Elige entre diferentes estilos visuales (círculo, cuadrado, puntos, espiral).
-* **Tamaño**: Define el tamaño del preloader.
-* **Colores**: Personaliza los colores principal y secundario.
-* **Posición**: Selecciona dónde aparecerá el preloader dentro del contenedor.
+* **Tipo de preloader**: Elige entre diferentes estilos visuales (círculo, puntos).
+* **Tamaño**: Define el tamaño del preloader en px, em o rem.
+* **Colores**: Personaliza los colores principal y secundario con selector de color.
+* **Posición**: Selecciona dónde aparecerá el preloader dentro del contenedor (centro, arriba, abajo).
+* **Aplicación global**: La configuración del preloader se aplica automáticamente en todos los lugares donde se utiliza (productos relacionados, carga de productos, actualizaciones AJAX).
 
 ### Configuración de Animaciones
 * **Duración de la animación**: Define la velocidad de las animaciones en milisegundos.
 * **Delay de actualización**: Tiempo de espera antes de mostrar cambios de cantidad.
 * **Posición de nuevos productos**: Decide si los nuevos productos se añaden al inicio o al final de la lista.
+
+### Configuración del Icono de Eliminación Rápida
+* **Tipo de icono**: Elige entre diferentes estilos (papelera, X, menos).
+* **Color**: Personaliza el color del icono con selector de color.
+* **Tamaño**: Define el tamaño del icono (pequeño, mediano, grande).
+* **Posición**: Selecciona la ubicación del icono en el producto (superior derecha, superior izquierda, inferior derecha, inferior izquierda).
 
 ### Productos Relacionados
 * **Mostrar productos relacionados**: Activa/desactiva la sección de productos relacionados.

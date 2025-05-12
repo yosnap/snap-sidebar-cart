@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.5 - 2025-05-12
+* **Corrección**: Aplicada configuración del preloader desde el admin en todos los lugares donde se usa
+* **Mejora**: Unificado el sistema de preloader para usar siempre la configuración del panel de administración
+* **Corrección**: Eliminadas todas las referencias hardcodeadas al preloader de tipo círculo
+* **Mejora**: Implementada aplicación de estilos inline para el preloader según configuración (color, tamaño, tipo)
+* **Mejora**: Añadido soporte para diferentes tipos de preloader (círculo, puntos) en todas las partes del plugin
+* **Mejora**: Mejorada la personalización del icono de eliminación rápida (tipo, color, tamaño, posición)
+
 ## 1.2.4 - 2025-05-12
 * **Mejora**: Optimización del rendimiento en dispositivos móviles
 * **Mejora**: Actualizada compatibilidad con WooCommerce 8.5

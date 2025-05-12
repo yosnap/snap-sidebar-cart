@@ -133,9 +133,68 @@ jQuery(document).ready(function($) {
         // Mostrar un preloader global si existe
         if ($('.snap-sidebar-cart').length) {
             var $preloaderContainer = $('<div class="global-preloader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:9999; display:flex; justify-content:center; align-items:center;"></div>');
-            var $spinner = $('<div class="snap-sidebar-cart__loader-spinner preloader-circle"></div>');
+            
+            // Obtener configuración del preloader desde los parámetros globales
+            var preloaderType = 'circle';
+            var preloaderPosition = 'center';
+            var preloaderColor = '#3498db';
+            var preloaderColor2 = '#e74c3c';
+            var preloaderSize = '40px';
+            
+            // Si existen los parámetros, usarlos
+            if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
+                preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
+                preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
+                preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
+                preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
+                preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
+            }
+            
+            // Crear clases del preloader
+            var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
+                                  'preloader-' + preloaderType + ' ' +
+                                  'preloader-position-' + preloaderPosition;
+            
+            // Crear estilos inline para el preloader
+            var inlineStyles = '';
+            
+            // Aplicar estilos según el tipo de preloader
+            if (preloaderType === 'circle') {
+                inlineStyles = 'width: ' + preloaderSize + '; ' +
+                              'height: ' + preloaderSize + '; ' +
+                              'border-color: ' + preloaderColor + '; ' +
+                              'border-top-color: ' + preloaderColor2 + ';';
+            } else {
+                inlineStyles = 'width: ' + preloaderSize + '; ' +
+                              'height: ' + preloaderSize + ';';
+            }
+            
+            // Crear el HTML del preloader
+            var spinnerHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '"';
+            
+            // Añadir contenido específico según el tipo de preloader
+            if (preloaderType === 'dots') {
+                spinnerHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
+                             '<span style="background-color: ' + preloaderColor + ';"></span>' +
+                             '<span style="background-color: ' + preloaderColor + ';"></span>';
+            } else {
+                spinnerHTML += '>';
+            }
+            
+            // Cerrar la etiqueta div
+            spinnerHTML += '</div>';
+            
+            var $spinner = $(spinnerHTML);
             $preloaderContainer.append($spinner);
             $('body').append($preloaderContainer);
+            
+            console.log('Preloader configurado:', {
+                type: preloaderType,
+                position: preloaderPosition,
+                color: preloaderColor,
+                color2: preloaderColor2,
+                size: preloaderSize
+            });
         }
         
         $.ajax({
