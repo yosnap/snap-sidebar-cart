@@ -276,6 +276,19 @@ class Snap_Sidebar_Cart_Ajax {
         $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
             explode(',', $this->options['related_products']['active_tabs']) : 
             array('upsells', 'crosssells', 'related', 'bestsellers', 'featured', 'custom');
+            
+        // Añadir pestañas personalizadas adicionales si existen
+        if (isset($this->options['related_products']['custom_queries']) && is_array($this->options['related_products']['custom_queries'])) {
+            foreach ($this->options['related_products']['custom_queries'] as $index => $query) {
+                if (!empty($query['name'])) {
+                    // Usar 'custom_X' como identificador para cada query personalizada adicional
+                    $custom_tab_id = 'custom_' . $index;
+                    if (!in_array($custom_tab_id, $active_tabs)) {
+                        $active_tabs[] = $custom_tab_id;
+                    }
+                }
+            }
+        }
         
         error_log('Pestañas activas configuradas: ' . implode(', ', $active_tabs));
         
@@ -309,12 +322,19 @@ class Snap_Sidebar_Cart_Ajax {
                 $products = $this->get_featured_products($count);
                 break;
             case 'custom':
-                error_log('Llamando a get_custom_products()');
+                error_log('Llamando a get_custom_products() - query personalizada principal');
                 $products = $this->get_custom_products($product, $count);
                 break;
             default:
-                error_log('Tipo no reconocido, usando get_same_category_products() como fallback');
-                $products = $this->get_same_category_products($product, $count);
+                // Verificar si es una query personalizada adicional (custom_X)
+                if (strpos($type, 'custom_') === 0) {
+                    $custom_index = intval(substr($type, 7)); // Extraer el índice después de 'custom_'
+                    error_log('Llamando a get_custom_products() con índice personalizado ' . $custom_index);
+                    $products = $this->get_custom_products($product, $count, $custom_index);
+                } else {
+                    error_log('Tipo no reconocido, usando get_same_category_products() como fallback');
+                    $products = $this->get_same_category_products($product, $count);
+                }
                 break;
         }
         
@@ -951,17 +971,39 @@ class Snap_Sidebar_Cart_Ajax {
      * @param    int           $count      Número de productos a mostrar.
      * @return   array                     Lista de productos personalizados.
      */
-    private function get_custom_products($product, $count = null) {
+    private function get_custom_products($product, $count = null, $custom_query_index = null) {
         error_log('=== INICIO get_custom_products() ===');
         error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
         error_log('Límite de productos relacionados: ' . $related_limit);
         
-        $custom_query = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
+        // Obtener la query personalizada según el índice proporcionado
+        $custom_query_code = '';
+        
+        // Determinar qué query personalizada usar
+        if ($custom_query_index !== null) {
+            // Si se proporciona un índice específico, intentar usar esa query personalizada adicional
+            if (isset($this->options['related_products']['custom_queries']) && 
+                is_array($this->options['related_products']['custom_queries']) && 
+                isset($this->options['related_products']['custom_queries'][$custom_query_index]['code']) &&
+                !empty($this->options['related_products']['custom_queries'][$custom_query_index]['code'])) {
+                
+                $custom_query_code = $this->options['related_products']['custom_queries'][$custom_query_index]['code'];
+                error_log('Usando query personalizada adicional #' . $custom_query_index . ' para productos relacionados');
+            }
+        } else {
+            // Si no se proporciona índice, usar la query personalizada principal
+            if (isset($this->options['related_products']['custom_query']) && !empty($this->options['related_products']['custom_query'])) {
+                $custom_query_code = $this->options['related_products']['custom_query'];
+                error_log('Usando query personalizada principal para productos relacionados');
+            }
+        }
         
         // Si no hay consulta personalizada, devolvemos productos aleatorios como fallback
-        if (empty($custom_query)) {
+        if (empty($custom_query_code)) {
+            error_log('No se encontró ninguna query personalizada, usando fallback de productos aleatorios');
+            
             // Filtrar productos que ya están en el carrito
             $cart_product_ids = array();
             foreach (WC()->cart->get_cart() as $cart_item) {
@@ -996,7 +1038,7 @@ class Snap_Sidebar_Cart_Ajax {
         // Ejecutar el código personalizado con seguridad
         try {
             // Las variables están disponibles para el código personalizado
-            $result = eval($custom_query);
+            $result = eval($custom_query_code);
             
             // Si el código devuelve una array de IDs de productos
             if (is_array($result) && !empty($result)) {

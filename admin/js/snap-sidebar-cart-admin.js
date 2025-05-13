@@ -65,6 +65,66 @@
         
         // Actualizar cuando cambia el checkbox
         $('#snap_cart_show_delete_icon_top').on('change', toggleDeleteIcon);
+        
+        // Gestión de queries personalizadas para productos relacionados
+        var customQueriesContainer = $('#custom-queries-container');
+        var customQueryTemplate = $('#custom-query-template').html();
+        
+        // Añadir nueva query personalizada
+        $('#add-custom-query').on('click', function() {
+            var newIndex = customQueriesContainer.find('.custom-query-item').length;
+            var newItem = customQueryTemplate.replace(/\{\{index\}\}/g, newIndex);
+            customQueriesContainer.append(newItem);
+            
+            // Inicializar cualquier componente en la nueva query (si es necesario)
+            customQueriesContainer.find('.custom-query-item:last-child .snap-sidebar-cart-color-picker').wpColorPicker();
+        });
+        
+        // Eliminar query personalizada
+        customQueriesContainer.on('click', '.remove-custom-query', function() {
+            $(this).closest('.custom-query-item').remove();
+            
+            // Reindexar los elementos restantes para mantener índices consecutivos
+            customQueriesContainer.find('.custom-query-item').each(function(index) {
+                var $item = $(this);
+                $item.attr('data-index', index);
+                
+                // Actualizar nombres de los campos
+                $item.find('.custom-query-name').attr('name', 'snap_sidebar_cart_options[related_products][custom_queries][' + index + '][name]');
+                $item.find('.custom-query-code').attr('name', 'snap_sidebar_cart_options[related_products][custom_queries][' + index + '][code]');
+            });
+        });
+        
+        // Actualizar el campo oculto de pestañas activas cuando cambian los checkboxes
+        $('input[name="snap_sidebar_cart_options[related_products][active_tabs_arr][]"]').on('change', function() {
+            updateActiveTabsField();
+        });
+        
+        // Actualizar las pestañas activas cuando se cambian los nombres de las queries personalizadas
+        customQueriesContainer.on('change', '.custom-query-name', function() {
+            updateActiveTabsField();
+        });
+        
+        // Función para actualizar el campo de pestañas activas
+        function updateActiveTabsField() {
+            var activeTabs = [];
+            
+            // Recopilar pestañas seleccionadas
+            $('input[name="snap_sidebar_cart_options[related_products][active_tabs_arr][]"]:checked').each(function() {
+                activeTabs.push($(this).val());
+            });
+            
+            // Añadir pestañas personalizadas adicionales
+            customQueriesContainer.find('.custom-query-item').each(function(index) {
+                var name = $(this).find('.custom-query-name').val();
+                if (name) {
+                    activeTabs.push('custom_' + index);
+                }
+            });
+            
+            // Actualizar el campo oculto con las pestañas activas
+            $('#active_tabs_hidden').val(activeTabs.join(','));
+        }
     });
 
 })(jQuery);

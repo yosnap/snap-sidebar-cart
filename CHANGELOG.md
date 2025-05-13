@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.7 - 2025-05-13
+* **Nuevo**: Implementada funcionalidad para añadir múltiples queries personalizadas en productos relacionados
+* **Mejora**: Interfaz dinámica para añadir/eliminar queries personalizadas con etiquetas propias
+* **Mejora**: Cada query personalizada aparece como una pestaña independiente en el carrito lateral
+* **Mejora**: Restauradas pestañas estándar (Más vendidos, Destacados, etc.) en la configuración
+* **Mejora**: Eliminado campo redundante de etiqueta de pestaña personalizada
+* **Mejora**: Compatibilidad con versiones anteriores para mantener la funcionalidad con configuraciones existentes
+
 ## 1.2.6 - 2025-05-13
 * **Corrección**: Solucionado problema de persistencia de checkboxes al cambiar entre pestañas
 * **Nuevo**: Añadida personalización completa del icono de eliminación rápida

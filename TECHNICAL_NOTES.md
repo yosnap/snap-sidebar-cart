@@ -1,5 +1,48 @@
 # Notas Técnicas - Snap Sidebar Cart
 
+## Múltiples Queries Personalizadas para Productos Relacionados
+
+### Versión 1.2.7 (2025-05-13)
+
+#### Implementación de Múltiples Queries Personalizadas
+
+Se ha implementado la funcionalidad para permitir a los usuarios añadir múltiples queries personalizadas en la pestaña "Productos relacionados". Los cambios principales incluyen:
+
+1. **Estructura de Datos**:
+   - Migración de la estructura de datos de una única query personalizada (`custom_query`) a un array de queries personalizadas (`custom_queries`)
+   - Cada query personalizada incluye un nombre (etiqueta de pestaña) y código PHP
+   - Compatibilidad con versiones anteriores para mantener la funcionalidad con configuraciones existentes
+   - Mantenimiento de todas las pestañas estándar (Más vendidos, Destacados, etc.)
+
+2. **Interfaz de Administración**:
+   - Implementación de una interfaz dinámica para añadir/eliminar queries personalizadas
+   - Cada query personalizada tiene su propia etiqueta y código PHP integrado (sin campos separados)
+   - Eliminación del campo redundante de etiqueta de pestaña personalizada
+   - Restauración de todos los checkboxes para pestañas estándar
+   - Botones para añadir nuevas queries o eliminar las existentes
+   - Estilos CSS para mejorar la usabilidad de la interfaz
+
+3. **Lógica de Frontend**:
+   - Generación dinámica de pestañas basadas en las queries personalizadas configuradas
+   - Identificación de cada query personalizada con un ID único (`custom_X`)
+   - Manejo de la selección de pestañas y carga de productos según la query seleccionada
+   - Verificación de código válido antes de mostrar una pestaña personalizada
+
+4. **Archivos Modificados**:
+   - `includes/class-snap-sidebar-cart-admin.php`: Actualizada la interfaz de administración y la validación de opciones
+   - `includes/class-snap-sidebar-cart-ajax.php`: Modificada la lógica de recuperación de productos para usar múltiples queries
+   - `public/partials/snap-sidebar-cart-public-display.php`: Actualizada la generación de pestañas en el frontend
+   - `admin/js/snap-sidebar-cart-admin.js`: Añadida lógica para manejar la adición/eliminación de queries
+   - `admin/css/snap-sidebar-cart-admin.css`: Añadidos estilos para la interfaz de queries personalizadas
+
+5. **Ejemplo de Uso**:
+   - Los usuarios pueden crear diferentes queries personalizadas, por ejemplo:
+     - "Precios similares" para mostrar productos con precios cercanos al actual
+     - "Misma marca" para mostrar productos de la misma marca
+     - "Accesorios compatibles" para mostrar accesorios que funcionan con el producto actualueries personalizadas como "Precios similares", "Misma marca", etc.
+   - Cada query aparecerá como una pestaña separada en el carrito lateral
+   - El código PHP de cada query puede acceder a variables como `$current_product`, `$product_id`, etc.
+
 ## Personalización del Icono de Eliminación Rápida
 
 ### Versión 1.2.6 (2025-05-13)

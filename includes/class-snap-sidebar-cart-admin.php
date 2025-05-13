@@ -678,6 +678,21 @@ class Snap_Sidebar_Cart_Admin {
             }
             
             // Query personalizada
+            // Manejar queries personalizadas múltiples
+            if (isset($input['related_products']['custom_queries']) && is_array($input['related_products']['custom_queries'])) {
+                $output['related_products']['custom_queries'] = array();
+                
+                foreach ($input['related_products']['custom_queries'] as $index => $query) {
+                    if (isset($query['name']) && isset($query['code'])) {
+                        $output['related_products']['custom_queries'][$index] = array(
+                            'name' => sanitize_text_field($query['name']),
+                            'code' => sanitize_textarea_field($query['code'])
+                        );
+                    }
+                }
+            }
+            
+            // Mantener compatibilidad con la versión anterior (query única)
             if (isset($input['related_products']['custom_query'])) {
                 $output['related_products']['custom_query'] = sanitize_textarea_field($input['related_products']['custom_query']);
             }
@@ -1160,13 +1175,15 @@ class Snap_Sidebar_Cart_Admin {
      * @since    1.0.0
      */
     public function related_products_active_tabs_callback() {
-        $active_tabs = isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : 'related,cross-sells,upsells';
+        $active_tabs = isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : 'related,crosssells,upsells,bestsellers,featured,custom';
         $active_tabs_arr = explode(',', $active_tabs);
         
         $tabs = array(
-            'related' => __('Productos relacionados', 'snap-sidebar-cart'),
-            'cross-sells' => __('Ventas cruzadas', 'snap-sidebar-cart'),
+            'related' => __('Misma categoría', 'snap-sidebar-cart'),
+            'crosssells' => __('Ventas cruzadas', 'snap-sidebar-cart'),
             'upsells' => __('Ventas adicionales', 'snap-sidebar-cart'),
+            'bestsellers' => __('Más vendidos', 'snap-sidebar-cart'),
+            'featured' => __('Destacados', 'snap-sidebar-cart'),
             'custom' => __('Personalizada', 'snap-sidebar-cart'),
         );
         
@@ -1174,6 +1191,9 @@ class Snap_Sidebar_Cart_Admin {
             $checked = in_array($tab_key, $active_tabs_arr) ? 'checked' : '';
             echo '<label style="margin-right: 15px;"><input type="checkbox" name="snap_sidebar_cart_options[related_products][active_tabs_arr][]" value="' . $tab_key . '" ' . $checked . '> ' . $tab_label . '</label>';
         }
+        
+        // Campo oculto para almacenar las pestañas activas como string separado por comas
+        echo '<input type="hidden" name="snap_sidebar_cart_options[related_products][active_tabs]" id="active_tabs_hidden" value="' . esc_attr($active_tabs) . '">';
     }
     
     /**
@@ -1192,21 +1212,87 @@ class Snap_Sidebar_Cart_Admin {
      * @since    1.0.0
      */
     public function related_products_custom_query_callback() {
-        $value = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
-        echo '<textarea name="snap_sidebar_cart_options[related_products][custom_query]" rows="5" cols="50" class="large-text code">' . $value . '</textarea>';
-        echo '<p class="description">' . __('Código PHP para obtener IDs de productos. Debe devolver un array de IDs de productos.', 'snap-sidebar-cart') . '</p>';
+        // Sección para queries personalizadas adicionales
+        echo '<h4>' . __('Pestañas personalizadas adicionales', 'snap-sidebar-cart') . '</h4>';
+        echo '<p class="description">' . __('Puedes añadir pestañas personalizadas adicionales, cada una con su propia query PHP.', 'snap-sidebar-cart') . '</p>';
         
+        // Campo de código para la query personalizada principal (mantener para compatibilidad)
+        $value = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
+        echo '<div class="custom-query-main">';
+        echo '<h5>' . __('Query personalizada principal', 'snap-sidebar-cart') . '</h5>';
+        echo '<textarea name="snap_sidebar_cart_options[related_products][custom_query]" rows="5" cols="50" class="large-text code">' . esc_textarea($value) . '</textarea>';
+        echo '<p class="description">' . __('Código PHP para obtener IDs de productos. Debe devolver un array de IDs de productos.', 'snap-sidebar-cart') . '</p>';
+        echo '</div>';
+        
+        // Mantener el campo original para compatibilidad (oculto)
+        $custom_tab_label = isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : '';
+        echo '<input type="hidden" name="snap_sidebar_cart_options[related_products][custom_tab_label]" value="' . esc_attr($custom_tab_label) . '">';
+        
+        // Obtener las queries personalizadas adicionales existentes
+        $custom_queries = isset($this->options['related_products']['custom_queries']) && is_array($this->options['related_products']['custom_queries']) 
+            ? $this->options['related_products']['custom_queries'] 
+            : array();
+        
+        echo '<div id="custom-queries-container">';
+        
+        // Mostrar las queries existentes
+        foreach ($custom_queries as $index => $query) {
+            $name = isset($query['name']) ? $query['name'] : '';
+            $code = isset($query['code']) ? $query['code'] : '';
+            
+            echo '<div class="custom-query-item" data-index="' . $index . '">';
+            echo '<div class="custom-query-header">';
+            echo '<label>' . __('Etiqueta de pestaña', 'snap-sidebar-cart') . '</label>';
+            echo '<input type="text" name="snap_sidebar_cart_options[related_products][custom_queries][' . $index . '][name]" value="' . esc_attr($name) . '" class="regular-text custom-query-name" placeholder="' . esc_attr__('Precios similares', 'snap-sidebar-cart') . '">';
+            
+            // Botón para eliminar
+            echo '<button type="button" class="button button-secondary remove-custom-query">' . __('Eliminar', 'snap-sidebar-cart') . '</button>';
+            
+            echo '</div>';
+            
+            echo '<label>' . __('Código PHP', 'snap-sidebar-cart') . '</label>';
+            echo '<textarea name="snap_sidebar_cart_options[related_products][custom_queries][' . $index . '][code]" rows="5" cols="50" class="large-text code custom-query-code">' . esc_textarea($code) . '</textarea>';
+            echo '<p class="description">' . __('Código PHP para obtener IDs de productos. Debe devolver un array de IDs de productos.', 'snap-sidebar-cart') . '</p>';
+            echo '</div>';
+        }
+        
+        echo '</div>';
+        
+        // Botón para añadir nueva query
+        echo '<p><button type="button" id="add-custom-query" class="button button-secondary">' . __('Añadir otra pestaña personalizada', 'snap-sidebar-cart') . '</button></p>';
+        
+        // Template para nuevas queries (oculto)
+        echo '<script type="text/template" id="custom-query-template">
+            <div class="custom-query-item" data-index="{{index}}">
+                <div class="custom-query-header">
+                    <label>' . __('Etiqueta de pestaña', 'snap-sidebar-cart') . '</label>
+                    <input type="text" name="snap_sidebar_cart_options[related_products][custom_queries][{{index}}][name]" value="" class="regular-text custom-query-name" placeholder="' . esc_attr__('Precios similares', 'snap-sidebar-cart') . '">
+                    <button type="button" class="button button-secondary remove-custom-query">' . __('Eliminar', 'snap-sidebar-cart') . '</button>
+                </div>
+                <label>' . __('Código PHP', 'snap-sidebar-cart') . '</label>
+                <textarea name="snap_sidebar_cart_options[related_products][custom_queries][{{index}}][code]" rows="5" cols="50" class="large-text code custom-query-code"></textarea>
+                <p class="description">' . __('Código PHP para obtener IDs de productos. Debe devolver un array de IDs de productos.', 'snap-sidebar-cart') . '</p>
+            </div>
+        </script>';
+        
+        // Ejemplo de código
         echo '<details>';
         echo '<summary>' . __('Ver ejemplo', 'snap-sidebar-cart') . '</summary>';
-        echo '<pre>$args = array(
+        echo '<pre>$price = $current_product->get_price();
+$min_price = $price * 0.8;  // 20% menos
+$max_price = $price * 1.2;  // 20% más
+
+$args = array(
     "post_type" => "product",
     "posts_per_page" => 4,
-    "orderby" => "date",
-    "order" => "DESC",
+    "orderby" => "rand",
+    "post__not_in" => array($product_id),
     "meta_query" => array(
         array(
-            "key" => "_featured",
-            "value" => "yes"
+            "key" => "_price",
+            "value" => array($min_price, $max_price),
+            "type" => "NUMERIC",
+            "compare" => "BETWEEN"
         )
     )
 );

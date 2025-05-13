@@ -95,6 +95,21 @@ $cart_count = WC()->cart->get_cart_contents_count();
                                 'custom' => isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : __('Recomendados', 'snap-sidebar-cart')
                             );
                             
+                            // Añadir etiquetas para las queries personalizadas adicionales
+                            if (isset($this->options['related_products']['custom_queries']) && is_array($this->options['related_products']['custom_queries'])) {
+                                foreach ($this->options['related_products']['custom_queries'] as $index => $query) {
+                                    if (!empty($query['name']) && !empty($query['code'])) {
+                                        $custom_tab_id = 'custom_' . $index;
+                                        $tab_labels[$custom_tab_id] = $query['name'];
+                                        
+                                        // Añadir a las pestañas activas si no está ya
+                                        if (!in_array($custom_tab_id, $active_tabs)) {
+                                            $active_tabs[] = $custom_tab_id;
+                                        }
+                                    }
+                                }
+                            }
+                            
                             // Mostrar sólo las pestañas activas
                             $first_tab = true;
                             foreach ($active_tabs as $tab_key) {

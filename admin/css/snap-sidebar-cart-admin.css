@@ -49,6 +49,65 @@ h2.nav-tab-wrapper {
     margin-bottom: 20px;
 }
 
+/* Estilos para las queries personalizadas */
+.custom-query-main {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 3px;
+}
+
+.custom-query-main textarea {
+    width: 100%;
+    margin-top: 5px;
+    font-family: monospace;
+}
+
+.custom-query-item {
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+}
+
+.custom-query-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.custom-query-header label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.custom-query-header input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.custom-query-header .button {
+    margin-left: auto;
+}
+
+.custom-query-item textarea {
+    width: 100%;
+    margin-top: 5px;
+    font-family: monospace;
+}
+
+#add-custom-query {
+    margin-bottom: 20px;
+}
+
+hr {
+    margin: 30px 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 0;
+}
+
 @media screen and (max-width: 960px) {
     .snap-sidebar-cart-admin-wrapper form {
         margin-right: 0;
