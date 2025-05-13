@@ -434,6 +434,10 @@ class Snap_Sidebar_Cart {
         
         add_action('wp_ajax_snap_sidebar_cart_get_content', array($plugin_ajax, 'get_cart_content'));
         add_action('wp_ajax_nopriv_snap_sidebar_cart_get_content', array($plugin_ajax, 'get_cart_content'));
+        
+        // Endpoint para sincronización del carrito desde la página del carrito
+        add_action('wp_ajax_snap_sidebar_cart_get_cart', array($plugin_ajax, 'get_sidebar_cart'));
+        add_action('wp_ajax_nopriv_snap_sidebar_cart_get_cart', array($plugin_ajax, 'get_sidebar_cart'));
     }
 
     /**

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.8 - 2025-05-13
+* **Nuevo**: Implementada sincronización automática entre la página del carrito y el sidebar
+* **Mejora**: El sidebar del carrito se actualiza automáticamente cuando se realizan cambios en la página del carrito
+* **Mejora**: No es necesario recargar la página para ver los cambios reflejados en el sidebar
+* **Mejora**: Mejor experiencia de usuario al mantener ambas vistas del carrito sincronizadas
+
 ## 1.2.7 - 2025-05-13
 * **Nuevo**: Implementada funcionalidad para añadir múltiples queries personalizadas en productos relacionados
 * **Mejora**: Interfaz dinámica para añadir/eliminar queries personalizadas con etiquetas propias
