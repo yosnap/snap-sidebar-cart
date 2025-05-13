@@ -53,10 +53,10 @@ class Snap_Sidebar_Cart {
      */
     private function load_options() {
         $default_options = array(
-            'title' => __('Carrito de compra', 'snap-sidebar-cart'),
+            'title' => 'Carrito de compra', // Sin usar función de traducción
             'container_selector' => 'sidebar-cart-container',
             'activation_selectors' => '.add_to_cart_button:not(.product_type_variable), .ti-shopping-cart, i.ti-shopping-cart',
-            'delivery_time_text' => __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart'),
+            'delivery_time_text' => 'Entrega en 1-3 días hábiles', // Sin usar función de traducción
             'show_delivery_time' => true,
             'show_shipping' => true,
             'show_delete_icon' => true,
@@ -83,7 +83,7 @@ class Snap_Sidebar_Cart {
                 'slides_to_scroll' => 2,
                 'show_last_chance' => true,
                 'last_chance_stock_limit' => 5,
-                'last_chance_title' => __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart'),
+                'last_chance_title' => 'ÚLTIMA OPORTUNIDAD', // Sin usar función de traducción
                 'last_chance_bg_color' => '#e74c3c',
                 'last_chance_text_color' => '#ffffff',
             ),

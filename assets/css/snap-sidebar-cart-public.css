@@ -592,11 +592,6 @@
     border-bottom: 2px solid var(--button-background);
 }
 
-.snap-sidebar-cart__related-content {
-    /*position: relative;
-    overflow: hidden;*/
-}
-
 .snap-sidebar-cart__related-container {
     display: none;
 }
