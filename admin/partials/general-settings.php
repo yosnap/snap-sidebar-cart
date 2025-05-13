@@ -62,7 +62,7 @@ $options = get_option('snap_sidebar_cart_options');
             </th>
             <td>
                 <label>
-                    <input type="checkbox" id="snap_cart_show_delivery_time" name="snap_sidebar_cart_options[show_delivery_time]" value="1" <?php checked(isset($options['show_delivery_time']) ? $options['show_delivery_time'] : true, true); ?>>
+                    <input type="checkbox" id="snap_cart_show_delivery_time" name="snap_sidebar_cart_options[show_delivery_time]" value="1" <?php checked(isset($options['show_delivery_time']) && $options['show_delivery_time'], true); ?>>
                     <?php echo esc_html__('Mostrar el texto de tiempo de entrega debajo de cada producto.', 'snap-sidebar-cart'); ?>
                 </label>
             </td>
@@ -74,7 +74,7 @@ $options = get_option('snap_sidebar_cart_options');
             </th>
             <td>
                 <label>
-                    <input type="checkbox" id="snap_cart_show_shipping" name="snap_sidebar_cart_options[show_shipping]" value="1" <?php checked(isset($options['show_shipping']) ? $options['show_shipping'] : true, true); ?>>
+                    <input type="checkbox" id="snap_cart_show_shipping" name="snap_sidebar_cart_options[show_shipping]" value="1" <?php checked(isset($options['show_shipping']) && $options['show_shipping'], true); ?>>
                     <?php echo esc_html__('Mostrar información de coste de envío en el pie del carrito.', 'snap-sidebar-cart'); ?>
                 </label>
             </td>
@@ -86,7 +86,7 @@ $options = get_option('snap_sidebar_cart_options');
             </th>
             <td>
                 <label>
-                    <input type="checkbox" id="snap_cart_auto_open" name="snap_sidebar_cart_options[auto_open]" value="1" <?php checked(isset($options['auto_open']) ? $options['auto_open'] : true, true); ?>>
+                    <input type="checkbox" id="snap_cart_auto_open" name="snap_sidebar_cart_options[auto_open]" value="1" <?php checked(isset($options['auto_open']) && $options['auto_open'], true); ?>>
                     <?php echo esc_html__('Abrir automáticamente el carrito lateral cuando se añade un producto.', 'snap-sidebar-cart'); ?>
                 </label>
             </td>
@@ -98,9 +98,50 @@ $options = get_option('snap_sidebar_cart_options');
             </th>
             <td>
                 <label>
-                    <input type="checkbox" id="snap_cart_show_delete_icon_top" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" <?php checked(isset($options['show_delete_icon_top']) ? $options['show_delete_icon_top'] : true, true); ?>>
+                    <input type="checkbox" id="snap_cart_show_delete_icon_top" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" <?php checked(isset($options['show_delete_icon_top']) && $options['show_delete_icon_top'], true); ?>>
                     <?php echo esc_html__('Mostrar el icono de papelera para eliminación rápida de productos en el carrito.', 'snap-sidebar-cart'); ?>
                 </label>
+            </td>
+        </tr>
+
+        <tr class="delete-icon-options" style="<?php echo (!isset($options['show_delete_icon_top']) || !$options['show_delete_icon_top']) ? 'display:none;' : ''; ?>">
+            <th scope="row">
+                <label for="snap_cart_delete_icon_type"><?php echo esc_html__('Tipo de icono', 'snap-sidebar-cart'); ?></label>
+            </th>
+            <td>
+                <select id="snap_cart_delete_icon_type" name="snap_sidebar_cart_options[delete_icon_type]">
+                    <option value="trash" <?php selected(isset($options['delete_icon_type']) && $options['delete_icon_type'] == 'trash', true); ?>><?php echo esc_html__('Papelera', 'snap-sidebar-cart'); ?></option>
+                    <option value="times" <?php selected(isset($options['delete_icon_type']) && $options['delete_icon_type'] == 'times', true); ?>><?php echo esc_html__('X (Cruz)', 'snap-sidebar-cart'); ?></option>
+                    <option value="minus" <?php selected(isset($options['delete_icon_type']) && $options['delete_icon_type'] == 'minus', true); ?>><?php echo esc_html__('Menos (-)', 'snap-sidebar-cart'); ?></option>
+                </select>
+            </td>
+        </tr>
+
+        <tr class="delete-icon-options" style="<?php echo (!isset($options['show_delete_icon_top']) || !$options['show_delete_icon_top']) ? 'display:none;' : ''; ?>">
+            <th scope="row">
+                <label for="snap_cart_delete_icon_size"><?php echo esc_html__('Tamaño del icono', 'snap-sidebar-cart'); ?></label>
+            </th>
+            <td>
+                <input type="text" id="snap_cart_delete_icon_size" name="snap_sidebar_cart_options[delete_icon_size]" value="<?php echo esc_attr(isset($options['delete_icon_size']) ? $options['delete_icon_size'] : '16px'); ?>" class="small-text">
+                <p class="description"><?php echo esc_html__('Tamaño del icono en píxeles (ej: 16px).', 'snap-sidebar-cart'); ?></p>
+            </td>
+        </tr>
+
+        <tr class="delete-icon-options" style="<?php echo (!isset($options['show_delete_icon_top']) || !$options['show_delete_icon_top']) ? 'display:none;' : ''; ?>">
+            <th scope="row">
+                <label for="snap_cart_delete_icon_color"><?php echo esc_html__('Color del icono', 'snap-sidebar-cart'); ?></label>
+            </th>
+            <td>
+                <input type="text" id="snap_cart_delete_icon_color" name="snap_sidebar_cart_options[delete_icon_color]" value="<?php echo esc_attr(isset($options['delete_icon_color']) ? $options['delete_icon_color'] : '#cc0000'); ?>" class="snap-sidebar-cart-color-picker">
+            </td>
+        </tr>
+
+        <tr class="delete-icon-options" style="<?php echo (!isset($options['show_delete_icon_top']) || !$options['show_delete_icon_top']) ? 'display:none;' : ''; ?>">
+            <th scope="row">
+                <label for="snap_cart_delete_icon_hover_color"><?php echo esc_html__('Color al pasar el ratón', 'snap-sidebar-cart'); ?></label>
+            </th>
+            <td>
+                <input type="text" id="snap_cart_delete_icon_hover_color" name="snap_sidebar_cart_options[delete_icon_hover_color]" value="<?php echo esc_attr(isset($options['delete_icon_hover_color']) ? $options['delete_icon_hover_color'] : '#ff0000'); ?>" class="snap-sidebar-cart-color-picker">
             </td>
         </tr>
 
@@ -110,7 +151,7 @@ $options = get_option('snap_sidebar_cart_options');
             </th>
             <td>
                 <label>
-                    <input type="checkbox" id="snap_cart_banner_enable" name="snap_sidebar_cart_options[banner_enable]" value="1" <?php checked(isset($options['banner_enable']) ? $options['banner_enable'] : false, true); ?>>
+                    <input type="checkbox" id="snap_cart_banner_enable" name="snap_sidebar_cart_options[banner_enable]" value="1" <?php checked(isset($options['banner_enable']) && $options['banner_enable'], true); ?>>
                     <?php echo esc_html__('Mostrar un banner informativo personalizado después de la lista de productos.', 'snap-sidebar-cart'); ?>
                 </label>
             </td>

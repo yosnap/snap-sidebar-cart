@@ -60,1074 +60,413 @@ class Snap_Sidebar_Cart_Admin {
         $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'general';
         if ($current_tab === 'related' && function_exists('wp_enqueue_code_editor')) {
             // Cargar el editor de código para PHP
-            wp_enqueue_code_editor(array('type' => 'text/x-php'));
-            wp_enqueue_script('code-editor');
+            wp_enqueue_code_editor(array('type' => 'text/html'));
         }
         
-        // Cargar scripts para el editor WYSIWYG
-        if ($current_tab === 'general') {
-            wp_enqueue_editor();
-            wp_enqueue_media();
-        }
+        wp_enqueue_media();
         
-        wp_enqueue_script('snap-sidebar-cart-admin', SNAP_SIDEBAR_CART_URL . 'admin/js/snap-sidebar-cart-admin.js', array('jquery', 'wp-color-picker'), SNAP_SIDEBAR_CART_VERSION, true);
+        wp_enqueue_script('snap-sidebar-cart-admin', SNAP_SIDEBAR_CART_URL . 'admin/js/snap-sidebar-cart-admin.js', array('jquery', 'wp-color-picker'), SNAP_SIDEBAR_CART_VERSION, false);
+        
+        // Pasar variables al script
+        wp_localize_script('snap-sidebar-cart-admin', 'snap_sidebar_cart_admin', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('snap_sidebar_cart_admin_nonce'),
+        ));
     }
 
     /**
-     * Agrega la página de opciones al menú de administración.
+     * Registra la página de opciones del plugin en el menú de administración.
      *
      * @since    1.0.0
      */
     public function add_plugin_admin_menu() {
         add_options_page(
-            __('Configuración del Carrito Lateral', 'snap-sidebar-cart'),
-            __('Carrito Lateral', 'snap-sidebar-cart'),
+            __('Configuración de Snap Sidebar Cart', 'snap-sidebar-cart'),
+            __('Snap Sidebar Cart', 'snap-sidebar-cart'),
             'manage_options',
             'snap-sidebar-cart-settings',
-            array($this, 'display_plugin_setup_page')
-        );
-        
-        // Añadir página de diagnóstico
-        add_submenu_page(
-            'options-general.php',
-            __('Diagnóstico de Snap Sidebar Cart', 'snap-sidebar-cart'),
-            __('Diagnóstico de Carrito', 'snap-sidebar-cart'),
-            'manage_options',
-            'snap-sidebar-cart-diagnostics',
-            array($this, 'display_plugin_diagnostics_page')
+            array($this, 'display_plugin_admin_page')
         );
     }
 
     /**
-     * Agrega enlaces de acción a la lista de plugins.
-     *
-     * @since    1.0.0
-     * @param    array    $links    Los enlaces existentes.
-     * @return   array    Los enlaces modificados.
-     */
-    public function add_action_links($links) {
-        $settings_link = '<a href="' . admin_url('options-general.php?page=snap-sidebar-cart-settings') . '">' . __('Configuración', 'snap-sidebar-cart') . '</a>';
-        array_unshift($links, $settings_link);
-        return $links;
-    }
-
-    /**
-     * Renderiza la página de configuración del plugin.
-     *
-     * @since    1.0.0
-     */
-    public function display_plugin_setup_page() {
-        include_once SNAP_SIDEBAR_CART_PATH . 'admin/partials/snap-sidebar-cart-admin-display.php';
-    }
-    
-    /**
-     * Renderiza la página de diagnóstico del plugin.
-     *
-     * @since    1.2.3
-     */
-    public function display_plugin_diagnostics_page() {
-        include_once SNAP_SIDEBAR_CART_PATH . 'admin/diagnostics.php';
-    }
-
-    /**
-     * Registra las opciones del plugin.
+     * Registra las secciones y campos de configuración.
      *
      * @since    1.0.0
      */
     public function register_settings() {
         register_setting(
-            'snap_sidebar_cart_option_group',
+            'snap_sidebar_cart_options',
             'snap_sidebar_cart_options',
             array($this, 'validate_options')
         );
         
-        // PESTAÑA 1: CONFIGURACIÓN GENERAL
-        // Sección general
+        // Sección General
         add_settings_section(
             'snap_sidebar_cart_general_section',
-            __('Ajustes Básicos', 'snap-sidebar-cart'),
-            array($this, 'general_section_info'),
+            __('Configuración General', 'snap-sidebar-cart'),
+            array($this, 'general_section_callback'),
             'snap-sidebar-cart-settings-general'
         );
         
-        // Título del carrito
+        // Campos de la sección general
         add_settings_field(
-            'title',
+            'snap_cart_title',
             __('Título del carrito', 'snap-sidebar-cart'),
             array($this, 'title_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Selector del contenedor
         add_settings_field(
-            'container_selector',
-            __('ID del contenedor', 'snap-sidebar-cart'),
+            'snap_cart_container_selector',
+            __('Selector del contenedor', 'snap-sidebar-cart'),
             array($this, 'container_selector_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Selectores de activación
         add_settings_field(
-            'activation_selectors',
+            'snap_cart_activation_selectors',
             __('Selectores de activación', 'snap-sidebar-cart'),
             array($this, 'activation_selectors_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Texto de tiempo de entrega
         add_settings_field(
-            'delivery_time_text',
-            __('Texto de tiempo de entrega', 'snap-sidebar-cart'),
-            array($this, 'delivery_time_text_callback'),
-            'snap-sidebar-cart-settings-general',
-            'snap_sidebar_cart_general_section'
-        );
-        
-        // Mostrar tiempo de entrega
-        add_settings_field(
-            'show_delivery_time',
-            __('Mostrar tiempo de entrega', 'snap-sidebar-cart'),
-            array($this, 'show_delivery_time_callback'),
-            'snap-sidebar-cart-settings-general',
-            'snap_sidebar_cart_general_section'
-        );
-        
-        // Mostrar información de envío
-        add_settings_field(
-            'show_shipping',
+            'snap_cart_show_shipping',
             __('Mostrar información de envío', 'snap-sidebar-cart'),
             array($this, 'show_shipping_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Mostrar icono de eliminación rápida superior
         add_settings_field(
-            'show_remove_icon_top',
-            __('Mostrar icono de eliminación superior', 'snap-sidebar-cart'),
-            array($this, 'show_remove_icon_top_callback'),
+            'snap_cart_show_delete_icon_top',
+            __('Mostrar icono de eliminación rápida', 'snap-sidebar-cart'),
+            array($this, 'show_delete_icon_top_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Apertura automática al añadir productos
         add_settings_field(
-            'auto_open',
-            __('Abrir automáticamente al añadir productos', 'snap-sidebar-cart'),
+            'snap_cart_auto_open',
+            __('Abrir automáticamente', 'snap-sidebar-cart'),
             array($this, 'auto_open_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Banner personalizado
         add_settings_field(
-            'banner_enable',
+            'snap_cart_banner_enable',
             __('Mostrar banner informativo', 'snap-sidebar-cart'),
             array($this, 'banner_enable_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // Contenido del banner personalizado
         add_settings_field(
-            'banner_content',
+            'snap_cart_banner_content',
             __('Contenido del banner', 'snap-sidebar-cart'),
             array($this, 'banner_content_callback'),
             'snap-sidebar-cart-settings-general',
             'snap_sidebar_cart_general_section'
         );
         
-        // PESTAÑA 2: PERSONALIZACIÓN DE ESTILOS
-        // Sección de estilos
+        add_settings_field(
+            'snap_cart_delivery_time_text',
+            __('Texto de tiempo de entrega', 'snap-sidebar-cart'),
+            array($this, 'delivery_time_text_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        add_settings_field(
+            'snap_cart_show_delivery_time',
+            __('Mostrar tiempo de entrega', 'snap-sidebar-cart'),
+            array($this, 'show_delivery_time_callback'),
+            'snap-sidebar-cart-settings-general',
+            'snap_sidebar_cart_general_section'
+        );
+        
+        // Sección de Estilos
         add_settings_section(
             'snap_sidebar_cart_styles_section',
-            __('Apariencia Visual', 'snap-sidebar-cart'),
-            array($this, 'styles_section_info'),
+            __('Estilos del Carrito', 'snap-sidebar-cart'),
+            array($this, 'styles_section_callback'),
             'snap-sidebar-cart-settings-styles'
         );
         
-        // Ancho del sidebar
+        // Campos de la sección de estilos
         add_settings_field(
-            'sidebar_width',
-            __('Ancho del carrito lateral', 'snap-sidebar-cart'),
+            'snap_cart_sidebar_width',
+            __('Ancho del carrito', 'snap-sidebar-cart'),
             array($this, 'sidebar_width_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo del listado de productos
         add_settings_field(
-            'products_background',
-            __('Color de fondo del listado de productos', 'snap-sidebar-cart'),
+            'snap_cart_products_background',
+            __('Fondo de la sección de productos', 'snap-sidebar-cart'),
             array($this, 'products_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo de la sección de productos relacionados
         add_settings_field(
-            'related_section_background',
-            __('Color de fondo de productos relacionados', 'snap-sidebar-cart'),
+            'snap_cart_related_section_background',
+            __('Fondo de la sección de productos relacionados', 'snap-sidebar-cart'),
             array($this, 'related_section_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo del footer
         add_settings_field(
-            'footer_background',
-            __('Color de fondo del footer', 'snap-sidebar-cart'),
+            'snap_cart_footer_background',
+            __('Fondo del pie', 'snap-sidebar-cart'),
             array($this, 'footer_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo del encabezado
         add_settings_field(
-            'header_background',
-            __('Color de fondo del encabezado', 'snap-sidebar-cart'),
+            'snap_cart_header_background',
+            __('Fondo de la cabecera', 'snap-sidebar-cart'),
             array($this, 'header_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color del texto del encabezado
         add_settings_field(
-            'header_text_color',
-            __('Color del texto del encabezado', 'snap-sidebar-cart'),
+            'snap_cart_header_text_color',
+            __('Color de texto de la cabecera', 'snap-sidebar-cart'),
             array($this, 'header_text_color_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color del texto de productos
         add_settings_field(
-            'product_text_color',
-            __('Color del texto de productos', 'snap-sidebar-cart'),
+            'snap_cart_product_text_color',
+            __('Color de texto de productos', 'snap-sidebar-cart'),
             array($this, 'product_text_color_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color de fondo de botones
         add_settings_field(
-            'button_background',
-            __('Color de fondo de botones', 'snap-sidebar-cart'),
+            'snap_cart_button_background',
+            __('Fondo de botones', 'snap-sidebar-cart'),
             array($this, 'button_background_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // Color del texto de botones
         add_settings_field(
-            'button_text_color',
-            __('Color del texto de botones', 'snap-sidebar-cart'),
+            'snap_cart_button_text_color',
+            __('Color de texto de botones', 'snap-sidebar-cart'),
             array($this, 'button_text_color_callback'),
             'snap-sidebar-cart-settings-styles',
             'snap_sidebar_cart_styles_section'
         );
         
-        // PESTAÑA 3: CONFIGURACIÓN DEL PRELOADER
-        // Sección de configuración del preloader
+        // Sección de Preloader
         add_settings_section(
             'snap_sidebar_cart_preloader_section',
             __('Configuración del Preloader', 'snap-sidebar-cart'),
-            array($this, 'preloader_section_info'),
+            array($this, 'preloader_section_callback'),
             'snap-sidebar-cart-settings-preloader'
         );
         
-        // PESTAÑA DE ANIMACIONES
-        // Sección de configuración de animaciones
-        add_settings_section(
-            'snap_sidebar_cart_animations_section',
-            __('Configuración de Animaciones', 'snap-sidebar-cart'),
-            array($this, 'animations_section_info'),
-            'snap-sidebar-cart-settings-animations'
-        );
-        
-        // Duración de la animación
+        // Campos de la sección de preloader
         add_settings_field(
-            'animation_duration',
-            __('Duración de la animación', 'snap-sidebar-cart'),
-            array($this, 'animation_duration_callback'),
-            'snap-sidebar-cart-settings-animations',
-            'snap_sidebar_cart_animations_section'
-        );
-        
-        // Delay para la animación de actualización de cantidad
-        add_settings_field(
-            'quantity_update_delay',
-            __('Delay de actualización de cantidad', 'snap-sidebar-cart'),
-            array($this, 'quantity_update_delay_callback'),
-            'snap-sidebar-cart-settings-animations',
-            'snap_sidebar_cart_animations_section'
-        );
-        
-        // Posición para nuevos productos
-        add_settings_field(
-            'new_product_position',
-            __('Posición de nuevos productos', 'snap-sidebar-cart'),
-            array($this, 'new_product_position_callback'),
-            'snap-sidebar-cart-settings-animations',
-            'snap_sidebar_cart_animations_section'
-        );
-        
-        // Tipo de preloader
-        add_settings_field(
-            'preloader_type',
+            'snap_cart_preloader_type',
             __('Tipo de preloader', 'snap-sidebar-cart'),
             array($this, 'preloader_type_callback'),
             'snap-sidebar-cart-settings-preloader',
             'snap_sidebar_cart_preloader_section'
         );
         
-        // Tamaño del preloader
         add_settings_field(
-            'preloader_size',
+            'snap_cart_preloader_size',
             __('Tamaño del preloader', 'snap-sidebar-cart'),
             array($this, 'preloader_size_callback'),
             'snap-sidebar-cart-settings-preloader',
             'snap_sidebar_cart_preloader_section'
         );
         
-        // Color principal del preloader
         add_settings_field(
-            'preloader_color',
+            'snap_cart_preloader_color',
             __('Color principal', 'snap-sidebar-cart'),
             array($this, 'preloader_color_callback'),
             'snap-sidebar-cart-settings-preloader',
             'snap_sidebar_cart_preloader_section'
         );
         
-        // Color secundario del preloader
         add_settings_field(
-            'preloader_color2',
+            'snap_cart_preloader_color2',
             __('Color secundario', 'snap-sidebar-cart'),
             array($this, 'preloader_color2_callback'),
             'snap-sidebar-cart-settings-preloader',
             'snap_sidebar_cart_preloader_section'
         );
         
-        // Posición del preloader
         add_settings_field(
-            'preloader_position',
+            'snap_cart_preloader_position',
             __('Posición del preloader', 'snap-sidebar-cart'),
             array($this, 'preloader_position_callback'),
             'snap-sidebar-cart-settings-preloader',
             'snap_sidebar_cart_preloader_section'
         );
         
-        // PESTAÑA 4: PRODUCTOS RELACIONADOS
-        // Sección de productos relacionados
+        // Sección de Animaciones
         add_settings_section(
-            'snap_sidebar_cart_related_section',
+            'snap_sidebar_cart_animations_section',
+            __('Configuración de Animaciones', 'snap-sidebar-cart'),
+            array($this, 'animations_section_callback'),
+            'snap-sidebar-cart-settings-animations'
+        );
+        
+        // Campos de la sección de animaciones
+        add_settings_field(
+            'snap_cart_animations_duration',
+            __('Duración de la animación (ms)', 'snap-sidebar-cart'),
+            array($this, 'animations_duration_callback'),
+            'snap-sidebar-cart-settings-animations',
+            'snap_sidebar_cart_animations_section'
+        );
+        
+        add_settings_field(
+            'snap_cart_animations_quantity_update_delay',
+            __('Delay para actualización de cantidad (ms)', 'snap-sidebar-cart'),
+            array($this, 'animations_quantity_update_delay_callback'),
+            'snap-sidebar-cart-settings-animations',
+            'snap_sidebar_cart_animations_section'
+        );
+        
+        add_settings_field(
+            'snap_cart_animations_new_product_position',
+            __('Posición de nuevos productos', 'snap-sidebar-cart'),
+            array($this, 'animations_new_product_position_callback'),
+            'snap-sidebar-cart-settings-animations',
+            'snap_sidebar_cart_animations_section'
+        );
+        
+        // Sección de Productos Relacionados
+        add_settings_section(
+            'snap_sidebar_cart_related_products_section',
             __('Configuración de Productos Relacionados', 'snap-sidebar-cart'),
-            array($this, 'related_section_info'),
+            array($this, 'related_products_section_callback'),
             'snap-sidebar-cart-settings-related'
         );
         
-        // Mostrar productos relacionados
+        // Campos de la sección de productos relacionados
         add_settings_field(
-            'show_related',
+            'snap_cart_related_products_show',
             __('Mostrar productos relacionados', 'snap-sidebar-cart'),
-            array($this, 'show_related_callback'),
+            array($this, 'related_products_show_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Número de productos relacionados
         add_settings_field(
-            'related_count',
-            __('Número de productos relacionados', 'snap-sidebar-cart'),
-            array($this, 'related_count_callback'),
+            'snap_cart_related_products_count',
+            __('Número de productos', 'snap-sidebar-cart'),
+            array($this, 'related_products_count_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Columnas de productos relacionados
         add_settings_field(
-            'related_columns',
-            __('Columnas de productos relacionados', 'snap-sidebar-cart'),
-            array($this, 'related_columns_callback'),
+            'snap_cart_related_products_columns',
+            __('Columnas', 'snap-sidebar-cart'),
+            array($this, 'related_products_columns_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Orden de productos relacionados
         add_settings_field(
-            'related_orderby',
-            __('Ordenar productos relacionados por', 'snap-sidebar-cart'),
-            array($this, 'related_orderby_callback'),
+            'snap_cart_related_products_orderby',
+            __('Ordenar por', 'snap-sidebar-cart'),
+            array($this, 'related_products_orderby_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Número de slides a desplazar
         add_settings_field(
-            'slides_to_scroll',
-            __('Número de slides a desplazar', 'snap-sidebar-cart'),
-            array($this, 'slides_to_scroll_callback'),
+            'snap_cart_related_products_slides_to_scroll',
+            __('Slides a desplazar', 'snap-sidebar-cart'),
+            array($this, 'related_products_slides_to_scroll_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Mostrar badge de última oportunidad
+        // Campos para el badge "Last chance"
         add_settings_field(
-            'show_last_chance',
-            __('Mostrar badge de última oportunidad', 'snap-sidebar-cart'),
-            array($this, 'show_last_chance_callback'),
+            'snap_cart_related_products_show_last_chance',
+            __('Mostrar badge "Última oportunidad"', 'snap-sidebar-cart'),
+            array($this, 'related_products_show_last_chance_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Límite de stock para última oportunidad
         add_settings_field(
-            'last_chance_stock_limit',
-            __('Límite de stock para última oportunidad', 'snap-sidebar-cart'),
-            array($this, 'last_chance_stock_limit_callback'),
+            'snap_cart_related_products_last_chance_stock_limit',
+            __('Límite de stock para "Última oportunidad"', 'snap-sidebar-cart'),
+            array($this, 'related_products_last_chance_stock_limit_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Título del badge de última oportunidad
         add_settings_field(
-            'last_chance_title',
-            __('Título del badge de última oportunidad', 'snap-sidebar-cart'),
-            array($this, 'last_chance_title_callback'),
+            'snap_cart_related_products_last_chance_title',
+            __('Título del badge', 'snap-sidebar-cart'),
+            array($this, 'related_products_last_chance_title_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Color de fondo del badge de última oportunidad
         add_settings_field(
-            'last_chance_bg_color',
+            'snap_cart_related_products_last_chance_bg_color',
             __('Color de fondo del badge', 'snap-sidebar-cart'),
-            array($this, 'last_chance_bg_color_callback'),
+            array($this, 'related_products_last_chance_bg_color_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Color de texto del badge de última oportunidad
         add_settings_field(
-            'last_chance_text_color',
+            'snap_cart_related_products_last_chance_text_color',
             __('Color de texto del badge', 'snap-sidebar-cart'),
-            array($this, 'last_chance_text_color_callback'),
+            array($this, 'related_products_last_chance_text_color_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
-
-        // Pestañas activas de productos relacionados
+        
+        // Campos para pestañas personalizadas
         add_settings_field(
-            'related_active_tabs',
-            __('Pestañas de productos relacionados', 'snap-sidebar-cart'),
-            array($this, 'related_active_tabs_callback'),
+            'snap_cart_related_products_active_tabs',
+            __('Pestañas activas', 'snap-sidebar-cart'),
+            array($this, 'related_products_active_tabs_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Etiqueta personalizada
         add_settings_field(
-            'related_custom_tab_label',
-            __('Etiqueta de la pestaña personalizada', 'snap-sidebar-cart'),
-            array($this, 'related_custom_tab_label_callback'),
+            'snap_cart_related_products_custom_tab_label',
+            __('Etiqueta de pestaña personalizada', 'snap-sidebar-cart'),
+            array($this, 'related_products_custom_tab_label_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
         
-        // Código personalizado para queries
         add_settings_field(
-            'related_custom_query',
-            __('Código personalizado para queries', 'snap-sidebar-cart'),
-            array($this, 'related_custom_query_callback'),
+            'snap_cart_related_products_custom_query',
+            __('Query personalizada', 'snap-sidebar-cart'),
+            array($this, 'related_products_custom_query_callback'),
             'snap-sidebar-cart-settings-related',
-            'snap_sidebar_cart_related_section'
+            'snap_sidebar_cart_related_products_section'
         );
-    }
-
-    /**
-     * Información de la sección general.
-     *
-     * @since    1.0.0
-     */
-    public function general_section_info() {
-        echo '<p>' . __('Configura las opciones generales del carrito lateral.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Información de la sección de estilos.
-     *
-     * @since    1.0.0
-     */
-    public function styles_section_info() {
-        echo '<p>' . __('Personaliza el aspecto visual del carrito lateral.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Información de la sección del preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_section_info() {
-        echo '<p>' . __('Configura la apariencia del preloader que aparece al actualizar productos.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Información de la sección de animaciones.
-     *
-     * @since    1.0.6
-     */
-    public function animations_section_info() {
-        echo '<p>' . __('Configura las animaciones del carrito lateral y la inserción de productos.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el tipo de preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_type_callback() {
-        $value = isset($this->options['preloader']['type']) ? esc_attr($this->options['preloader']['type']) : 'circle';
-        ?>
-        <select name="snap_sidebar_cart_options[preloader][type]">
-            <option value="circle" <?php selected($value, 'circle'); ?>><?php _e('Círculo', 'snap-sidebar-cart'); ?></option>
-            <option value="square" <?php selected($value, 'square'); ?>><?php _e('Cuadrado', 'snap-sidebar-cart'); ?></option>
-            <option value="dots" <?php selected($value, 'dots'); ?>><?php _e('Línea con puntos', 'snap-sidebar-cart'); ?></option>
-            <option value="spinner" <?php selected($value, 'spinner'); ?>><?php _e('Espiral', 'snap-sidebar-cart'); ?></option>
-        </select>
-        <p class="description"><?php _e('Selecciona el estilo visual del preloader.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el tamaño del preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_size_callback() {
-        $value = isset($this->options['preloader']['size']) ? esc_attr($this->options['preloader']['size']) : '40px';
-        echo '<input type="text" name="snap_sidebar_cart_options[preloader][size]" value="' . $value . '" class="small-text">';
-        echo '<p class="description">' . __('Tamaño del preloader en px, em o rem. Ejemplo: 40px', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el color principal del preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_color_callback() {
-        $value = isset($this->options['preloader']['color']) ? esc_attr($this->options['preloader']['color']) : '#3498db';
-        echo '<input type="text" name="snap_sidebar_cart_options[preloader][color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-        echo '<p class="description">' . __('Color principal para el preloader.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el color secundario del preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_color2_callback() {
-        $value = isset($this->options['preloader']['color2']) ? esc_attr($this->options['preloader']['color2']) : '#e74c3c';
-        echo '<input type="text" name="snap_sidebar_cart_options[preloader][color2]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-        echo '<p class="description">' . __('Color secundario para algunos tipos de preloader.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para la posición del preloader.
-     *
-     * @since    1.0.0
-     */
-    public function preloader_position_callback() {
-        $value = isset($this->options['preloader']['position']) ? esc_attr($this->options['preloader']['position']) : 'center';
-        ?>
-        <select name="snap_sidebar_cart_options[preloader][position]">
-            <option value="center" <?php selected($value, 'center'); ?>><?php _e('Centro', 'snap-sidebar-cart'); ?></option>
-            <option value="top-left" <?php selected($value, 'top-left'); ?>><?php _e('Superior izquierda', 'snap-sidebar-cart'); ?></option>
-            <option value="top-right" <?php selected($value, 'top-right'); ?>><?php _e('Superior derecha', 'snap-sidebar-cart'); ?></option>
-            <option value="bottom-left" <?php selected($value, 'bottom-left'); ?>><?php _e('Inferior izquierda', 'snap-sidebar-cart'); ?></option>
-            <option value="bottom-right" <?php selected($value, 'bottom-right'); ?>><?php _e('Inferior derecha', 'snap-sidebar-cart'); ?></option>
-        </select>
-        <p class="description"><?php _e('Posición del preloader en el contenedor del producto.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para la duración de la animación.
-     *
-     * @since    1.0.6
-     */
-    public function animation_duration_callback() {
-        $value = isset($this->options['animations']['duration']) ? intval($this->options['animations']['duration']) : 300;
-        echo '<input type="number" name="snap_sidebar_cart_options[animations][duration]" value="' . $value . '" class="small-text" min="100" max="2000" step="50">';
-        echo '<p class="description">' . __('Duración de la animación en milisegundos. Valores recomendados entre 200ms y 1000ms.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el delay de actualización de cantidad.
-     *
-     * @since    1.0.6
-     */
-    public function quantity_update_delay_callback() {
-        $value = isset($this->options['animations']['quantity_update_delay']) ? intval($this->options['animations']['quantity_update_delay']) : 200;
-        echo '<input type="number" name="snap_sidebar_cart_options[animations][quantity_update_delay]" value="' . $value . '" class="small-text" min="0" max="1000" step="50">';
-        echo '<p class="description">' . __('Tiempo de espera antes de mostrar la animación de actualización de cantidad (en milisegundos).', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para la posición de nuevos productos.
-     *
-     * @since    1.0.6
-     */
-    public function new_product_position_callback() {
-        $value = isset($this->options['animations']['new_product_position']) ? esc_attr($this->options['animations']['new_product_position']) : 'top';
-        ?>
-        <select name="snap_sidebar_cart_options[animations][new_product_position]">
-            <option value="top" <?php selected($value, 'top'); ?>><?php _e('Al inicio de la lista', 'snap-sidebar-cart'); ?></option>
-            <option value="bottom" <?php selected($value, 'bottom'); ?>><?php _e('Al final de la lista', 'snap-sidebar-cart'); ?></option>
-        </select>
-        <p class="description"><?php _e('Posición donde se agregarán los nuevos productos en el carrito.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Información de la sección de productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function related_section_info() {
-        echo '<p>' . __('Configura las opciones para los productos relacionados.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de título.
-     *
-     * @since    1.0.0
-     */
-    public function title_callback() {
-        $value = isset($this->options['title']) ? esc_attr($this->options['title']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[title]" value="' . $value . '" class="regular-text">';
-        echo '<p class="description">' . __('Título que se mostrará en la parte superior del carrito. El contador de items se añadirá automáticamente.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de selector del contenedor.
-     *
-     * @since    1.0.0
-     */
-    public function container_selector_callback() {
-        $value = isset($this->options['container_selector']) ? esc_attr($this->options['container_selector']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[container_selector]" value="' . $value . '" class="regular-text">';
-        echo '<p class="description">' . __('ID del contenedor HTML del carrito lateral. No incluir el símbolo #.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de selectores de activación.
-     *
-     * @since    1.0.0
-     */
-    public function activation_selectors_callback() {
-        $value = isset($this->options['activation_selectors']) ? esc_attr($this->options['activation_selectors']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[activation_selectors]" value="' . $value . '" class="large-text">';
-        echo '<p class="description">' . __('Selectores CSS separados por comas que, al hacer clic, abrirán el carrito lateral.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de mostrar información de envío.
-     *
-     * @since    1.0.0
-     */
-    public function show_shipping_callback() {
-        $checked = isset($this->options['show_shipping']) && $this->options['show_shipping'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_shipping]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Mostrar información de coste de envío en el pie del carrito.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de mostrar icono de eliminación rápida superior.
-     *
-     * @since    1.5.0
-     */
-    public function show_remove_icon_top_callback() {
-        $checked = isset($this->options['show_delete_icon_top']) && $this->options['show_delete_icon_top'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Mostrar un icono de papelera en la parte superior de cada producto del carrito para eliminación rápida.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el campo de apertura automática.
-     *
-     * @since    1.0.0
-     */
-    public function auto_open_callback() {
-        $checked = isset($this->options['auto_open']) && $this->options['auto_open'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" name="snap_sidebar_cart_options[auto_open]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Abrir automáticamente el carrito lateral cuando se añade un producto.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el campo de texto de tiempo de entrega.
-     *
-     * @since    1.2.2
-     */
-    public function delivery_time_text_callback() {
-        $value = isset($this->options['delivery_time_text']) ? esc_attr($this->options['delivery_time_text']) : __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart');
-        echo '<input type="text" name="snap_sidebar_cart_options[delivery_time_text]" value="' . $value . '" class="regular-text">';
-        echo '<p class="description">' . __('Texto que se mostrará debajo de cada producto indicando el tiempo de entrega. Puedes usar %dias% como variable para mostrarlo dinámicamente.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el campo de mostrar tiempo de entrega.
-     *
-     * @since    1.2.2
-     */
-    public function show_delivery_time_callback() {
-        $checked = isset($this->options['show_delivery_time']) && $this->options['show_delivery_time'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delivery_time]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Mostrar el texto de tiempo de entrega debajo de cada producto. Desmarca esta opción para ocultar esta información.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el ancho del sidebar.
-     *
-     * @since    1.0.0
-     */
-    public function sidebar_width_callback() {
-        $value = isset($this->options['styles']['sidebar_width']) ? esc_attr($this->options['styles']['sidebar_width']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][sidebar_width]" value="' . $value . '" class="small-text">';
-        echo '<p class="description">' . __('Ancho del carrito lateral en px, em, rem o %. Ejemplo: 400px', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el color de fondo del listado de productos.
-     *
-     * @since    1.2.0
-     */
-    public function products_background_callback() {
-        $value = isset($this->options['styles']['products_background']) ? esc_attr($this->options['styles']['products_background']) : '#ffffff';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][products_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-        echo '<p class="description">' . __('Color de fondo para el listado de productos.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el color de fondo de la sección de productos relacionados.
-     *
-     * @since    1.2.0
-     */
-    public function related_section_background_callback() {
-        $value = isset($this->options['styles']['related_section_background']) ? esc_attr($this->options['styles']['related_section_background']) : '#f9f9f9';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][related_section_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-        echo '<p class="description">' . __('Color de fondo para la sección de productos relacionados.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para el color de fondo del footer.
-     *
-     * @since    1.2.0
-     */
-    public function footer_background_callback() {
-        $value = isset($this->options['styles']['footer_background']) ? esc_attr($this->options['styles']['footer_background']) : '#f8f8f8';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][footer_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-        echo '<p class="description">' . __('Color de fondo para el footer del carrito.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el color de fondo del encabezado.
-     *
-     * @since    1.0.0
-     */
-    public function header_background_callback() {
-        $value = isset($this->options['styles']['header_background']) ? esc_attr($this->options['styles']['header_background']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][header_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-    }
-
-    /**
-     * Callback para el color del texto del encabezado.
-     *
-     * @since    1.0.0
-     */
-    public function header_text_color_callback() {
-        $value = isset($this->options['styles']['header_text_color']) ? esc_attr($this->options['styles']['header_text_color']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][header_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-    }
-
-    /**
-     * Callback para el color del texto de productos.
-     *
-     * @since    1.0.0
-     */
-    public function product_text_color_callback() {
-        $value = isset($this->options['styles']['product_text_color']) ? esc_attr($this->options['styles']['product_text_color']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][product_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-    }
-
-    /**
-     * Callback para el color de fondo de botones.
-     *
-     * @since    1.0.0
-     */
-    public function button_background_callback() {
-        $value = isset($this->options['styles']['button_background']) ? esc_attr($this->options['styles']['button_background']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][button_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-    }
-
-    /**
-     * Callback para el color del texto de botones.
-     *
-     * @since    1.0.0
-     */
-    public function button_text_color_callback() {
-        $value = isset($this->options['styles']['button_text_color']) ? esc_attr($this->options['styles']['button_text_color']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[styles][button_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
-    }
-
-    /**
-     * Callback para mostrar productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function show_related_callback() {
-        $checked = isset($this->options['related_products']['show']) && $this->options['related_products']['show'] ? 'checked="checked"' : '';
-        echo '<input type="checkbox" name="snap_sidebar_cart_options[related_products][show]" value="1" ' . $checked . '>';
-        echo '<p class="description">' . __('Mostrar productos relacionados en el carrito lateral.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el número de productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function related_count_callback() {
-        $value = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
-        echo '<input type="number" name="snap_sidebar_cart_options[related_products][count]" value="' . $value . '" class="small-text" min="1" max="12">';
-        echo '<p class="description">' . __('Número máximo de productos relacionados a mostrar.', 'snap-sidebar-cart') . '</p>';
-    }
-    
-    /**
-     * Callback para las columnas de productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function related_columns_callback() {
-        $value = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 2;
-        ?>
-        <select name="snap_sidebar_cart_options[related_products][columns]">
-            <option value="1" <?php selected($value, 1); ?>><?php _e('1 columna', 'snap-sidebar-cart'); ?></option>
-            <option value="2" <?php selected($value, 2); ?>><?php _e('2 columnas', 'snap-sidebar-cart'); ?></option>
-            <option value="3" <?php selected($value, 3); ?>><?php _e('3 columnas', 'snap-sidebar-cart'); ?></option>
-            <option value="4" <?php selected($value, 4); ?>><?php _e('4 columnas', 'snap-sidebar-cart'); ?></option>
-        </select>
-        <p class="description"><?php _e('Número de columnas para mostrar productos relacionados.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el orden de productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function related_orderby_callback() {
-        $value = isset($this->options['related_products']['orderby']) ? esc_attr($this->options['related_products']['orderby']) : 'rand';
-        ?>
-        <select name="snap_sidebar_cart_options[related_products][orderby]">
-            <option value="rand" <?php selected($value, 'rand'); ?>><?php _e('Aleatorio', 'snap-sidebar-cart'); ?></option>
-            <option value="date" <?php selected($value, 'date'); ?>><?php _e('Fecha', 'snap-sidebar-cart'); ?></option>
-            <option value="price" <?php selected($value, 'price'); ?>><?php _e('Precio', 'snap-sidebar-cart'); ?></option>
-            <option value="popularity" <?php selected($value, 'popularity'); ?>><?php _e('Popularidad', 'snap-sidebar-cart'); ?></option>
-            <option value="rating" <?php selected($value, 'rating'); ?>><?php _e('Valoración', 'snap-sidebar-cart'); ?></option>
-        </select>
-        <?php
-    }
-    
-    /**
-     * Callback para el número de slides a desplazar.
-     *
-     * @since    1.1.5
-     */
-    public function slides_to_scroll_callback() {
-        $value = isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2;
-        ?>
-        <input type="number" name="snap_sidebar_cart_options[related_products][slides_to_scroll]" value="<?php echo $value; ?>" min="1" max="5" class="small-text">
-        <p class="description"><?php _e('Número de productos a desplazar cuando se hace clic en los botones de navegación.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para mostrar badge de última oportunidad.
-     *
-     * @since    1.1.5
-     */
-    public function show_last_chance_callback() {
-        $checked = isset($this->options['related_products']['show_last_chance']) && $this->options['related_products']['show_last_chance'] ? 'checked="checked"' : '';
-        ?>
-        <input type="checkbox" name="snap_sidebar_cart_options[related_products][show_last_chance]" value="1" <?php echo $checked; ?>>
-        <p class="description"><?php _e('Mostrar badge de última oportunidad en productos con stock limitado.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el límite de stock para última oportunidad.
-     *
-     * @since    1.1.5
-     */
-    public function last_chance_stock_limit_callback() {
-        $value = isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5;
-        ?>
-        <input type="number" name="snap_sidebar_cart_options[related_products][last_chance_stock_limit]" value="<?php echo $value; ?>" min="1" max="20" class="small-text">
-        <p class="description"><?php _e('Mostrar badge de última oportunidad cuando el stock sea igual o menor a este valor.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el título del badge de última oportunidad.
-     *
-     * @since    1.2.0
-     */
-    public function last_chance_title_callback() {
-        $value = isset($this->options['related_products']['last_chance_title']) ? esc_attr($this->options['related_products']['last_chance_title']) : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart');
-        ?>
-        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_title]" value="<?php echo $value; ?>" class="regular-text">
-        <p class="description"><?php _e('Texto que se mostrará en el badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el color de fondo del badge de última oportunidad.
-     *
-     * @since    1.2.0
-     */
-    public function last_chance_bg_color_callback() {
-        $value = isset($this->options['related_products']['last_chance_bg_color']) ? esc_attr($this->options['related_products']['last_chance_bg_color']) : '#e74c3c';
-        ?>
-        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_bg_color]" value="<?php echo $value; ?>" class="snap-sidebar-cart-color-picker">
-        <p class="description"><?php _e('Color de fondo del badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-    
-    /**
-     * Callback para el color de texto del badge de última oportunidad.
-     *
-     * @since    1.2.0
-     */
-    public function last_chance_text_color_callback() {
-        $value = isset($this->options['related_products']['last_chance_text_color']) ? esc_attr($this->options['related_products']['last_chance_text_color']) : '#ffffff';
-        ?>
-        <input type="text" name="snap_sidebar_cart_options[related_products][last_chance_text_color]" value="<?php echo $value; ?>" class="snap-sidebar-cart-color-picker">
-        <p class="description"><?php _e('Color del texto del badge de última oportunidad.', 'snap-sidebar-cart'); ?></p>
-        <?php
-    }
-
-    /**
-     * Callback para las pestañas activas de productos relacionados.
-     *
-     * @since    1.0.0
-     */
-    public function related_active_tabs_callback() {
-        $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
-                      explode(',', $this->options['related_products']['active_tabs']) : 
-                      array('upsells', 'crosssells', 'related');
-        
-        $tab_options = array(
-            'upsells' => __('Complementos (Up-sells)', 'snap-sidebar-cart'),
-            'crosssells' => __('Productos cruzados (Cross-sells)', 'snap-sidebar-cart'),
-            'related' => __('Misma categoría', 'snap-sidebar-cart'),
-            'bestsellers' => __('Más vendidos', 'snap-sidebar-cart'),
-            'featured' => __('Destacados', 'snap-sidebar-cart'),
-            'custom' => __('Consulta personalizada', 'snap-sidebar-cart')
-        );
-        
-        echo '<div class="related-tabs-options">';
-        foreach ($tab_options as $tab_key => $tab_label) {
-            $checked = in_array($tab_key, $active_tabs) ? 'checked="checked"' : '';
-            echo '<label style="display: block; margin-bottom: 8px;">';
-            echo '<input type="checkbox" name="snap_sidebar_cart_options[related_products][active_tabs_arr][]" value="' . esc_attr($tab_key) . '" ' . $checked . '> ';
-            echo esc_html($tab_label);
-            echo '</label>';
-        }
-        echo '</div>';
-        
-        // Campo oculto para mantener compatibilidad con el formato de cadena separada por comas
-        echo '<input type="hidden" name="snap_sidebar_cart_options[related_products][active_tabs]" id="related-active-tabs-hidden" value="' . esc_attr(isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : '') . '">';
-        
-        echo '<p class="description">' . __('Selecciona qué tipos de productos relacionados quieres mostrar en el carrito.', 'snap-sidebar-cart') . '</p>';
-        
-        // Script para actualizar el campo oculto cuando cambian los checkboxes
-        ?>
-        <script>
-        jQuery(document).ready(function($) {
-            // Actualizar el campo oculto cuando cambian los checkboxes
-            $('.related-tabs-options input[type="checkbox"]').on('change', function() {
-                var selectedTabs = [];
-                $('.related-tabs-options input[type="checkbox"]:checked').each(function() {
-                    selectedTabs.push($(this).val());
-                });
-                $('#related-active-tabs-hidden').val(selectedTabs.join(','));
-            });
-        });
-        </script>
-        <?php
-    }
-
-    /**
-     * Callback para la etiqueta personalizada de la pestaña.
-     *
-     * @since    1.0.0
-     */
-    public function related_custom_tab_label_callback() {
-        $value = isset($this->options['related_products']['custom_tab_label']) ? esc_attr($this->options['related_products']['custom_tab_label']) : '';
-        echo '<input type="text" name="snap_sidebar_cart_options[related_products][custom_tab_label]" value="' . $value . '" class="regular-text">';
-        echo '<p class="description">' . __('Etiqueta personalizada para la pestaña de productos relacionados.', 'snap-sidebar-cart') . '</p>';
-    }
-
-    /**
-     * Callback para el código personalizado de queries.
-     *
-     * @since    1.0.0
-     */
-    public function related_custom_query_callback() {
-        $value = isset($this->options['related_products']['custom_query']) ? esc_textarea($this->options['related_products']['custom_query']) : '';
-        echo '<textarea name="snap_sidebar_cart_options[related_products][custom_query]" id="custom-php-code" class="large-text code" rows="10" style="font-family: monospace;">' . $value . '</textarea>';
-        
-        // Enqueue the code editor if WP >= 4.9
-        if (function_exists('wp_enqueue_code_editor')) {
-            $settings = wp_enqueue_code_editor(array('type' => 'text/x-php'));
-            
-            if ($settings !== false) {
-                wp_add_inline_script(
-                    'code-editor',
-                    sprintf(
-                        'jQuery(function($) { wp.codeEditor.initialize("custom-php-code", %s); });',
-                        wp_json_encode($settings)
-                    )
-                );
-            }
-        }
-        
-        echo '<p class="description">' . __('Código PHP personalizado para las queries de productos relacionados. Las variables disponibles son: $product_id, $current_product, $category_ids, $tag_ids, $limit, $cart_product_ids.', 'snap-sidebar-cart') . '</p>';
-        
-        // Agregar ejemplo de código
-        echo '<details style="margin-top: 10px; padding: 5px; border: 1px solid #ddd;">';
-        echo '<summary style="cursor: pointer; font-weight: bold;">' . __('Ver ejemplo de código', 'snap-sidebar-cart') . '</summary>';
-        echo '<pre style="background-color: #f8f8f8; padding: 10px; overflow: auto; margin-top: 10px; font-size: 12px;">// Ejemplo: Obtener productos con un precio similar
-$price = $current_product->get_price();
-$args = array(
-    \'post_type\'      => \'product\',
-    \'posts_per_page\' => $limit,
-    \'post__not_in\'   => array_merge(array($product_id), $cart_product_ids),
-    \'meta_query\'     => array(
-        array(
-            \'key\'     => \'_price\',
-            \'value\'   => array($price * 0.8, $price * 1.2),
-            \'compare\' => \'BETWEEN\',
-            \'type\'    => \'NUMERIC\'
-        )
-    )
-);
-
-$products = get_posts($args);
-return wp_list_pluck($products, \'ID\');</pre>';
-        echo '</details>';
     }
 
     /**
@@ -1158,18 +497,34 @@ return wp_list_pluck($products, \'ID\');</pre>';
             $output['delivery_time_text'] = sanitize_text_field($input['delivery_time_text']);
         }
         
-        // Validación de campos del banner
-        $output['banner_enable'] = isset($input['banner_enable']) ? 1 : 0;
-        
-        if (isset($input['banner_content'])) {
-            $output['banner_content'] = wp_kses_post($input['banner_content']);
-        }
-        
         // Validación de checkboxes
         $output['show_delivery_time'] = isset($input['show_delivery_time']) ? 1 : 0;
         $output['show_shipping'] = isset($input['show_shipping']) ? 1 : 0;
         $output['show_delete_icon_top'] = isset($input['show_delete_icon_top']) ? 1 : 0;
         $output['auto_open'] = isset($input['auto_open']) ? 1 : 0;
+        $output['banner_enable'] = isset($input['banner_enable']) ? 1 : 0;
+        
+        // Validación de las opciones del icono de eliminación
+        if (isset($input['delete_icon_type'])) {
+            $output['delete_icon_type'] = sanitize_text_field($input['delete_icon_type']);
+        }
+        
+        if (isset($input['delete_icon_size'])) {
+            $output['delete_icon_size'] = sanitize_text_field($input['delete_icon_size']);
+        }
+        
+        if (isset($input['delete_icon_color'])) {
+            $output['delete_icon_color'] = sanitize_hex_color($input['delete_icon_color']);
+        }
+        
+        if (isset($input['delete_icon_hover_color'])) {
+            $output['delete_icon_hover_color'] = sanitize_hex_color($input['delete_icon_hover_color']);
+        }
+        
+        // Validación del contenido del banner
+        if (isset($input['banner_content'])) {
+            $output['banner_content'] = wp_kses_post($input['banner_content']);
+        }
         
         // Validación de estilos
         if (isset($input['styles']) && is_array($input['styles'])) {
@@ -1182,149 +537,682 @@ return wp_list_pluck($products, \'ID\');</pre>';
             }
         }
         
-        // Validación de las opciones del preloader
+        // Validación del preloader
         if (isset($input['preloader']) && is_array($input['preloader'])) {
             // Tipo de preloader
             $valid_types = array('circle', 'square', 'dots', 'spinner');
-            $output['preloader']['type'] = isset($input['preloader']['type']) && in_array($input['preloader']['type'], $valid_types) 
-                ? $input['preloader']['type'] 
-                : 'circle';
+            if (isset($input['preloader']['type']) && in_array($input['preloader']['type'], $valid_types)) {
+                $output['preloader']['type'] = $input['preloader']['type'];
+            }
             
             // Tamaño del preloader
-            $output['preloader']['size'] = isset($input['preloader']['size']) 
-                ? sanitize_text_field($input['preloader']['size']) 
-                : '40px';
+            if (isset($input['preloader']['size'])) {
+                $output['preloader']['size'] = sanitize_text_field($input['preloader']['size']);
+            }
             
             // Colores del preloader
-            $output['preloader']['color'] = isset($input['preloader']['color']) 
-                ? sanitize_hex_color($input['preloader']['color']) 
-                : '#3498db';
+            if (isset($input['preloader']['color'])) {
+                $output['preloader']['color'] = sanitize_hex_color($input['preloader']['color']);
+            }
             
-            $output['preloader']['color2'] = isset($input['preloader']['color2']) 
-                ? sanitize_hex_color($input['preloader']['color2']) 
-                : '#e74c3c';
+            if (isset($input['preloader']['color2'])) {
+                $output['preloader']['color2'] = sanitize_hex_color($input['preloader']['color2']);
+            }
             
             // Posición del preloader
             $valid_positions = array('center', 'top-left', 'top-right', 'bottom-left', 'bottom-right');
-            $output['preloader']['position'] = isset($input['preloader']['position']) && in_array($input['preloader']['position'], $valid_positions) 
-                ? $input['preloader']['position'] 
-                : 'center';
+            if (isset($input['preloader']['position']) && in_array($input['preloader']['position'], $valid_positions)) {
+                $output['preloader']['position'] = $input['preloader']['position'];
+            }
         }
         
-        // Validación de las opciones de animaciones
+        // Validación de animaciones
         if (isset($input['animations']) && is_array($input['animations'])) {
             // Duración de la animación
-            $output['animations']['duration'] = isset($input['animations']['duration']) 
-                ? intval($input['animations']['duration']) 
-                : 300;
-            
-            // Verificar límites
-            if ($output['animations']['duration'] < 100) {
-                $output['animations']['duration'] = 100;
-            } elseif ($output['animations']['duration'] > 2000) {
-                $output['animations']['duration'] = 2000;
+            if (isset($input['animations']['duration'])) {
+                $output['animations']['duration'] = intval($input['animations']['duration']);
+                if ($output['animations']['duration'] < 100) {
+                    $output['animations']['duration'] = 100;
+                } elseif ($output['animations']['duration'] > 2000) {
+                    $output['animations']['duration'] = 2000;
+                }
             }
             
-            // Delay de actualización de cantidad
-            $output['animations']['quantity_update_delay'] = isset($input['animations']['quantity_update_delay']) 
-                ? intval($input['animations']['quantity_update_delay']) 
-                : 200;
-            
-            // Verificar límites
-            if ($output['animations']['quantity_update_delay'] < 0) {
-                $output['animations']['quantity_update_delay'] = 0;
-            } elseif ($output['animations']['quantity_update_delay'] > 1000) {
-                $output['animations']['quantity_update_delay'] = 1000;
+            // Delay de actualización
+            if (isset($input['animations']['quantity_update_delay'])) {
+                $output['animations']['quantity_update_delay'] = intval($input['animations']['quantity_update_delay']);
+                if ($output['animations']['quantity_update_delay'] < 0) {
+                    $output['animations']['quantity_update_delay'] = 0;
+                } elseif ($output['animations']['quantity_update_delay'] > 1000) {
+                    $output['animations']['quantity_update_delay'] = 1000;
+                }
             }
             
             // Posición de nuevos productos
             $valid_positions = array('top', 'bottom');
-            $output['animations']['new_product_position'] = isset($input['animations']['new_product_position']) && in_array($input['animations']['new_product_position'], $valid_positions) 
-                ? $input['animations']['new_product_position'] 
-                : 'top';
+            if (isset($input['animations']['new_product_position']) && in_array($input['animations']['new_product_position'], $valid_positions)) {
+                $output['animations']['new_product_position'] = $input['animations']['new_product_position'];
+            }
         }
         
         // Validación de productos relacionados
-        $output['related_products']['show'] = isset($input['related_products']['show']) ? 1 : 0;
-        
-        if (isset($input['related_products']['count'])) {
-            $output['related_products']['count'] = intval($input['related_products']['count']);
-            if ($output['related_products']['count'] < 1) {
-                $output['related_products']['count'] = 1;
-            } elseif ($output['related_products']['count'] > 12) {
-                $output['related_products']['count'] = 12;
+        if (isset($input['related_products'])) {
+            // Mostrar productos relacionados
+            $output['related_products']['show'] = isset($input['related_products']['show']) ? 1 : 0;
+            
+            // Número de productos
+            if (isset($input['related_products']['count'])) {
+                $output['related_products']['count'] = intval($input['related_products']['count']);
+                if ($output['related_products']['count'] < 1) {
+                    $output['related_products']['count'] = 1;
+                } elseif ($output['related_products']['count'] > 12) {
+                    $output['related_products']['count'] = 12;
+                }
+            }
+            
+            // Columnas
+            if (isset($input['related_products']['columns'])) {
+                $output['related_products']['columns'] = intval($input['related_products']['columns']);
+                if ($output['related_products']['columns'] < 1) {
+                    $output['related_products']['columns'] = 1;
+                } elseif ($output['related_products']['columns'] > 4) {
+                    $output['related_products']['columns'] = 4;
+                }
+            }
+            
+            // Ordenación
+            if (isset($input['related_products']['orderby'])) {
+                $valid_orderby = array('rand', 'date', 'price', 'popularity', 'rating');
+                $output['related_products']['orderby'] = in_array($input['related_products']['orderby'], $valid_orderby) ? $input['related_products']['orderby'] : 'rand';
+            }
+            
+            // Slides a desplazar
+            if (isset($input['related_products']['slides_to_scroll'])) {
+                $output['related_products']['slides_to_scroll'] = intval($input['related_products']['slides_to_scroll']);
+                if ($output['related_products']['slides_to_scroll'] < 1) {
+                    $output['related_products']['slides_to_scroll'] = 1;
+                } elseif ($output['related_products']['slides_to_scroll'] > 5) {
+                    $output['related_products']['slides_to_scroll'] = 5;
+                }
+            }
+            
+            // Badge "Last chance"
+            $output['related_products']['show_last_chance'] = isset($input['related_products']['show_last_chance']) ? 1 : 0;
+            
+            // Límite de stock
+            if (isset($input['related_products']['last_chance_stock_limit'])) {
+                $output['related_products']['last_chance_stock_limit'] = intval($input['related_products']['last_chance_stock_limit']);
+                if ($output['related_products']['last_chance_stock_limit'] < 1) {
+                    $output['related_products']['last_chance_stock_limit'] = 1;
+                } elseif ($output['related_products']['last_chance_stock_limit'] > 20) {
+                    $output['related_products']['last_chance_stock_limit'] = 20;
+                }
+            }
+            
+            // Título del badge
+            if (isset($input['related_products']['last_chance_title'])) {
+                $output['related_products']['last_chance_title'] = sanitize_text_field($input['related_products']['last_chance_title']);
+            }
+            
+            // Color de fondo del badge
+            if (isset($input['related_products']['last_chance_bg_color'])) {
+                $output['related_products']['last_chance_bg_color'] = sanitize_hex_color($input['related_products']['last_chance_bg_color']);
+            }
+            
+            // Color de texto del badge
+            if (isset($input['related_products']['last_chance_text_color'])) {
+                $output['related_products']['last_chance_text_color'] = sanitize_hex_color($input['related_products']['last_chance_text_color']);
+            }
+            
+            // Pestañas activas
+            if (isset($input['related_products']['active_tabs_arr']) && is_array($input['related_products']['active_tabs_arr'])) {
+                $active_tabs = array_map('sanitize_text_field', $input['related_products']['active_tabs_arr']);
+                $output['related_products']['active_tabs'] = implode(',', $active_tabs);
+            } elseif (isset($input['related_products']['active_tabs'])) {
+                $output['related_products']['active_tabs'] = sanitize_text_field($input['related_products']['active_tabs']);
+            }
+            
+            // Etiqueta personalizada
+            if (isset($input['related_products']['custom_tab_label'])) {
+                $output['related_products']['custom_tab_label'] = sanitize_text_field($input['related_products']['custom_tab_label']);
+            }
+            
+            // Query personalizada
+            if (isset($input['related_products']['custom_query'])) {
+                $output['related_products']['custom_query'] = sanitize_textarea_field($input['related_products']['custom_query']);
             }
         }
         
-        if (isset($input['related_products']['columns'])) {
-            $output['related_products']['columns'] = intval($input['related_products']['columns']);
-            if ($output['related_products']['columns'] < 1) {
-                $output['related_products']['columns'] = 1;
-            } elseif ($output['related_products']['columns'] > 4) {
-                $output['related_products']['columns'] = 4;
-            }
-        }
-        
-        if (isset($input['related_products']['orderby'])) {
-            $valid_orderby = array('rand', 'date', 'price', 'popularity', 'rating');
-            $output['related_products']['orderby'] = in_array($input['related_products']['orderby'], $valid_orderby) ? $input['related_products']['orderby'] : 'rand';
-        }
-        
-        // Validar el número de slides a desplazar
-        if (isset($input['related_products']['slides_to_scroll'])) {
-            $output['related_products']['slides_to_scroll'] = intval($input['related_products']['slides_to_scroll']);
-            if ($output['related_products']['slides_to_scroll'] < 1) {
-                $output['related_products']['slides_to_scroll'] = 1;
-            } elseif ($output['related_products']['slides_to_scroll'] > 5) {
-                $output['related_products']['slides_to_scroll'] = 5;
-            }
-        }
-        
-        // Validar badge "Last chance"
-        $output['related_products']['show_last_chance'] = isset($input['related_products']['show_last_chance']) ? 1 : 0;
-        
-        // Validar el límite de stock para "Last chance"
-        if (isset($input['related_products']['last_chance_stock_limit'])) {
-            $output['related_products']['last_chance_stock_limit'] = intval($input['related_products']['last_chance_stock_limit']);
-            if ($output['related_products']['last_chance_stock_limit'] < 1) {
-                $output['related_products']['last_chance_stock_limit'] = 1;
-            } elseif ($output['related_products']['last_chance_stock_limit'] > 20) {
-                $output['related_products']['last_chance_stock_limit'] = 20;
-            }
-        }
-        
-        // Validar título del badge
-        if (isset($input['related_products']['last_chance_title'])) {
-            $output['related_products']['last_chance_title'] = sanitize_text_field($input['related_products']['last_chance_title']);
-        }
-        
-        // Validar el color de fondo del badge
-        if (isset($input['related_products']['last_chance_bg_color'])) {
-            $output['related_products']['last_chance_bg_color'] = sanitize_hex_color($input['related_products']['last_chance_bg_color']);
-        }
-        
-        // Validar el color de texto del badge
-        if (isset($input['related_products']['last_chance_text_color'])) {
-            $output['related_products']['last_chance_text_color'] = sanitize_hex_color($input['related_products']['last_chance_text_color']);
-        }
-
-        // Procesamos los checkboxes para pestañas activas
-        if (isset($input['related_products']['active_tabs_arr']) && is_array($input['related_products']['active_tabs_arr'])) {
-            $active_tabs = array_map('sanitize_text_field', $input['related_products']['active_tabs_arr']);
-            $output['related_products']['active_tabs'] = implode(',', $active_tabs);
-        } elseif (isset($input['related_products']['active_tabs'])) {
-            // Compatibilidad con el formato anterior
-            $output['related_products']['active_tabs'] = sanitize_text_field($input['related_products']['active_tabs']);
-        }
-
-        if (isset($input['related_products']['custom_tab_label'])) {
-            $output['related_products']['custom_tab_label'] = sanitize_text_field($input['related_products']['custom_tab_label']);
-        }
-
-        if (isset($input['related_products']['custom_query'])) {
-            $output['related_products']['custom_query'] = sanitize_textarea_field($input['related_products']['custom_query']);
-        }
+        // Fusionar con las opciones existentes para preservar valores no presentes en el input
+        $existing_options = get_option('snap_sidebar_cart_options', array());
+        $output = array_merge($existing_options, $output);
         
         return $output;
+    }
+    
+    /**
+     * Muestra la página de configuración del plugin.
+     *
+     * @since    1.0.0
+     */
+    public function display_plugin_admin_page() {
+        include_once SNAP_SIDEBAR_CART_PATH . 'admin/partials/snap-sidebar-cart-admin-display.php';
+    }
+    
+    /**
+     * Callback para la sección general.
+     *
+     * @since    1.0.0
+     */
+    public function general_section_callback() {
+        echo '<p>' . __('Configura las opciones generales del carrito lateral.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de título.
+     *
+     * @since    1.0.0
+     */
+    public function title_callback() {
+        $value = isset($this->options['title']) ? $this->options['title'] : '';
+        echo '<input type="text" name="snap_sidebar_cart_options[title]" value="' . $value . '" class="regular-text">';
+    }
+    
+    /**
+     * Callback para el campo de selector del contenedor.
+     *
+     * @since    1.0.0
+     */
+    public function container_selector_callback() {
+        $value = isset($this->options['container_selector']) ? $this->options['container_selector'] : 'snap-sidebar-cart';
+        echo '<input type="text" name="snap_sidebar_cart_options[container_selector]" value="' . $value . '" class="regular-text">';
+    }
+    
+    /**
+     * Callback para el campo de selectores de activación.
+     *
+     * @since    1.0.0
+     */
+    public function activation_selectors_callback() {
+        $value = isset($this->options['activation_selectors']) ? $this->options['activation_selectors'] : '.cart-contents, .cart-link, .site-header-cart .cart-contents, a.cart-contents, .cart-icon';
+        echo '<input type="text" name="snap_sidebar_cart_options[activation_selectors]" value="' . $value . '" class="large-text">';
+    }
+    
+    /**
+     * Callback para el campo de mostrar información de envío.
+     *
+     * @since    1.0.0
+     */
+    public function show_shipping_callback() {
+        $checked = isset($this->options['show_shipping']) && $this->options['show_shipping'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_shipping]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de mostrar icono de eliminación rápida.
+     *
+     * @since    1.0.0
+     */
+    public function show_delete_icon_top_callback() {
+        $checked = isset($this->options['show_delete_icon_top']) && $this->options['show_delete_icon_top'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delete_icon_top]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de abrir automáticamente.
+     *
+     * @since    1.0.0
+     */
+    public function auto_open_callback() {
+        $checked = isset($this->options['auto_open']) && $this->options['auto_open'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[auto_open]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de mostrar banner informativo.
+     *
+     * @since    1.0.0
+     */
+    public function banner_enable_callback() {
+        $checked = isset($this->options['banner_enable']) && $this->options['banner_enable'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[banner_enable]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de contenido del banner.
+     *
+     * @since    1.0.0
+     */
+    public function banner_content_callback() {
+        $content = isset($this->options['banner_content']) ? $this->options['banner_content'] : '';
+        wp_editor($content, 'snap_cart_banner_content', array(
+            'textarea_name' => 'snap_sidebar_cart_options[banner_content]',
+            'textarea_rows' => 5,
+            'media_buttons' => false,
+            'teeny' => true,
+        ));
+    }
+    
+    /**
+     * Callback para el campo de texto de tiempo de entrega.
+     *
+     * @since    1.0.0
+     */
+    public function delivery_time_text_callback() {
+        $value = isset($this->options['delivery_time_text']) ? $this->options['delivery_time_text'] : __('Entrega en 1-3 días hábiles', 'snap-sidebar-cart');
+        echo '<input type="text" name="snap_sidebar_cart_options[delivery_time_text]" value="' . $value . '" class="regular-text">';
+    }
+    
+    /**
+     * Callback para el campo de mostrar tiempo de entrega.
+     *
+     * @since    1.0.0
+     */
+    public function show_delivery_time_callback() {
+        $checked = isset($this->options['show_delivery_time']) && $this->options['show_delivery_time'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[show_delivery_time]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para la sección de estilos.
+     *
+     * @since    1.0.0
+     */
+    public function styles_section_callback() {
+        echo '<p>' . __('Personaliza los estilos visuales del carrito lateral.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de ancho del carrito.
+     *
+     * @since    1.0.0
+     */
+    public function sidebar_width_callback() {
+        $value = isset($this->options['styles']['sidebar_width']) ? $this->options['styles']['sidebar_width'] : '540px';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][sidebar_width]" value="' . $value . '" class="small-text">';
+    }
+    
+    /**
+     * Callback para el campo de fondo de la sección de productos.
+     *
+     * @since    1.0.0
+     */
+    public function products_background_callback() {
+        $value = isset($this->options['styles']['products_background']) ? $this->options['styles']['products_background'] : '#ffffff';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][products_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de fondo de la sección de productos relacionados.
+     *
+     * @since    1.0.0
+     */
+    public function related_section_background_callback() {
+        $value = isset($this->options['styles']['related_section_background']) ? $this->options['styles']['related_section_background'] : '#f9f9f9';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][related_section_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de fondo del pie.
+     *
+     * @since    1.0.0
+     */
+    public function footer_background_callback() {
+        $value = isset($this->options['styles']['footer_background']) ? $this->options['styles']['footer_background'] : '#f8f8f8';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][footer_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de fondo de la cabecera.
+     *
+     * @since    1.0.0
+     */
+    public function header_background_callback() {
+        $value = isset($this->options['styles']['header_background']) ? $this->options['styles']['header_background'] : '#f8f8f8';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][header_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de color de texto de la cabecera.
+     *
+     * @since    1.0.0
+     */
+    public function header_text_color_callback() {
+        $value = isset($this->options['styles']['header_text_color']) ? $this->options['styles']['header_text_color'] : '#333333';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][header_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de color de texto de productos.
+     *
+     * @since    1.0.0
+     */
+    public function product_text_color_callback() {
+        $value = isset($this->options['styles']['product_text_color']) ? $this->options['styles']['product_text_color'] : '#333333';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][product_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de fondo de botones.
+     *
+     * @since    1.0.0
+     */
+    public function button_background_callback() {
+        $value = isset($this->options['styles']['button_background']) ? $this->options['styles']['button_background'] : '#2c6aa0';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][button_background]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de color de texto de botones.
+     *
+     * @since    1.0.0
+     */
+    public function button_text_color_callback() {
+        $value = isset($this->options['styles']['button_text_color']) ? $this->options['styles']['button_text_color'] : '#ffffff';
+        echo '<input type="text" name="snap_sidebar_cart_options[styles][button_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para la sección de preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_section_callback() {
+        echo '<p>' . __('Configura las opciones del preloader que se muestra durante las operaciones AJAX.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de tipo de preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_type_callback() {
+        $value = isset($this->options['preloader']['type']) ? $this->options['preloader']['type'] : 'circle';
+        ?>
+        <select name="snap_sidebar_cart_options[preloader][type]">
+            <option value="circle" <?php selected($value, 'circle'); ?>><?php _e('Círculo', 'snap-sidebar-cart'); ?></option>
+            <option value="square" <?php selected($value, 'square'); ?>><?php _e('Cuadrado', 'snap-sidebar-cart'); ?></option>
+            <option value="dots" <?php selected($value, 'dots'); ?>><?php _e('Puntos', 'snap-sidebar-cart'); ?></option>
+            <option value="spinner" <?php selected($value, 'spinner'); ?>><?php _e('Spinner', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <?php
+    }
+    
+    /**
+     * Callback para el campo de tamaño del preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_size_callback() {
+        $value = isset($this->options['preloader']['size']) ? $this->options['preloader']['size'] : '40px';
+        echo '<input type="text" name="snap_sidebar_cart_options[preloader][size]" value="' . $value . '" class="small-text">';
+    }
+    
+    /**
+     * Callback para el campo de color principal del preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_color_callback() {
+        $value = isset($this->options['preloader']['color']) ? $this->options['preloader']['color'] : '#3498db';
+        echo '<input type="text" name="snap_sidebar_cart_options[preloader][color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de color secundario del preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_color2_callback() {
+        $value = isset($this->options['preloader']['color2']) ? $this->options['preloader']['color2'] : '#e74c3c';
+        echo '<input type="text" name="snap_sidebar_cart_options[preloader][color2]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de posición del preloader.
+     *
+     * @since    1.0.0
+     */
+    public function preloader_position_callback() {
+        $value = isset($this->options['preloader']['position']) ? $this->options['preloader']['position'] : 'center';
+        ?>
+        <select name="snap_sidebar_cart_options[preloader][position]">
+            <option value="center" <?php selected($value, 'center'); ?>><?php _e('Centro', 'snap-sidebar-cart'); ?></option>
+            <option value="top-left" <?php selected($value, 'top-left'); ?>><?php _e('Superior izquierda', 'snap-sidebar-cart'); ?></option>
+            <option value="top-right" <?php selected($value, 'top-right'); ?>><?php _e('Superior derecha', 'snap-sidebar-cart'); ?></option>
+            <option value="bottom-left" <?php selected($value, 'bottom-left'); ?>><?php _e('Inferior izquierda', 'snap-sidebar-cart'); ?></option>
+            <option value="bottom-right" <?php selected($value, 'bottom-right'); ?>><?php _e('Inferior derecha', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <?php
+    }
+    
+    /**
+     * Callback para la sección de animaciones.
+     *
+     * @since    1.0.0
+     */
+    public function animations_section_callback() {
+        echo '<p>' . __('Configura las opciones de animación del carrito lateral.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de duración de la animación.
+     *
+     * @since    1.0.0
+     */
+    public function animations_duration_callback() {
+        $value = isset($this->options['animations']['duration']) ? $this->options['animations']['duration'] : 300;
+        echo '<input type="number" name="snap_sidebar_cart_options[animations][duration]" value="' . $value . '" class="small-text" min="100" max="2000" step="50">';
+    }
+    
+    /**
+     * Callback para el campo de delay para actualización de cantidad.
+     *
+     * @since    1.0.0
+     */
+    public function animations_quantity_update_delay_callback() {
+        $value = isset($this->options['animations']['quantity_update_delay']) ? $this->options['animations']['quantity_update_delay'] : 200;
+        echo '<input type="number" name="snap_sidebar_cart_options[animations][quantity_update_delay]" value="' . $value . '" class="small-text" min="0" max="1000" step="50">';
+    }
+    
+    /**
+     * Callback para el campo de posición de nuevos productos.
+     *
+     * @since    1.0.0
+     */
+    public function animations_new_product_position_callback() {
+        $value = isset($this->options['animations']['new_product_position']) ? $this->options['animations']['new_product_position'] : 'top';
+        ?>
+        <select name="snap_sidebar_cart_options[animations][new_product_position]">
+            <option value="top" <?php selected($value, 'top'); ?>><?php _e('Arriba', 'snap-sidebar-cart'); ?></option>
+            <option value="bottom" <?php selected($value, 'bottom'); ?>><?php _e('Abajo', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <?php
+    }
+    
+    /**
+     * Callback para la sección de productos relacionados.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_section_callback() {
+        echo '<p>' . __('Configura las opciones de productos relacionados que se muestran en el carrito lateral.', 'snap-sidebar-cart') . '</p>';
+    }
+    
+    /**
+     * Callback para el campo de mostrar productos relacionados.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_show_callback() {
+        $checked = isset($this->options['related_products']['show']) && $this->options['related_products']['show'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[related_products][show]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de número de productos.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_count_callback() {
+        $value = isset($this->options['related_products']['count']) ? $this->options['related_products']['count'] : 4;
+        echo '<input type="number" name="snap_sidebar_cart_options[related_products][count]" value="' . $value . '" class="small-text" min="1" max="12">';
+    }
+    
+    /**
+     * Callback para el campo de columnas.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_columns_callback() {
+        $value = isset($this->options['related_products']['columns']) ? $this->options['related_products']['columns'] : 2;
+        ?>
+        <select name="snap_sidebar_cart_options[related_products][columns]">
+            <option value="1" <?php selected($value, 1); ?>>1</option>
+            <option value="2" <?php selected($value, 2); ?>>2</option>
+            <option value="3" <?php selected($value, 3); ?>>3</option>
+            <option value="4" <?php selected($value, 4); ?>>4</option>
+        </select>
+        <?php
+    }
+    
+    /**
+     * Callback para el campo de ordenar por.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_orderby_callback() {
+        $value = isset($this->options['related_products']['orderby']) ? $this->options['related_products']['orderby'] : 'rand';
+        ?>
+        <select name="snap_sidebar_cart_options[related_products][orderby]">
+            <option value="rand" <?php selected($value, 'rand'); ?>><?php _e('Aleatorio', 'snap-sidebar-cart'); ?></option>
+            <option value="date" <?php selected($value, 'date'); ?>><?php _e('Fecha', 'snap-sidebar-cart'); ?></option>
+            <option value="price" <?php selected($value, 'price'); ?>><?php _e('Precio', 'snap-sidebar-cart'); ?></option>
+            <option value="popularity" <?php selected($value, 'popularity'); ?>><?php _e('Popularidad', 'snap-sidebar-cart'); ?></option>
+            <option value="rating" <?php selected($value, 'rating'); ?>><?php _e('Valoración', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <?php
+    }
+    
+    /**
+     * Callback para el campo de slides a desplazar.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_slides_to_scroll_callback() {
+        $value = isset($this->options['related_products']['slides_to_scroll']) ? $this->options['related_products']['slides_to_scroll'] : 2;
+        echo '<input type="number" name="snap_sidebar_cart_options[related_products][slides_to_scroll]" value="' . $value . '" min="1" max="5" class="small-text">';
+    }
+    
+    /**
+     * Callback para el campo de mostrar badge "Última oportunidad".
+     *
+     * @since    1.0.0
+     */
+    public function related_products_show_last_chance_callback() {
+        $checked = isset($this->options['related_products']['show_last_chance']) && $this->options['related_products']['show_last_chance'] ? 'checked' : '';
+        echo '<input type="checkbox" name="snap_sidebar_cart_options[related_products][show_last_chance]" value="1" ' . $checked . '>';
+    }
+    
+    /**
+     * Callback para el campo de límite de stock para "Última oportunidad".
+     *
+     * @since    1.0.0
+     */
+    public function related_products_last_chance_stock_limit_callback() {
+        $value = isset($this->options['related_products']['last_chance_stock_limit']) ? $this->options['related_products']['last_chance_stock_limit'] : 5;
+        echo '<input type="number" name="snap_sidebar_cart_options[related_products][last_chance_stock_limit]" value="' . $value . '" class="small-text" min="1" max="20">';
+    }
+    
+    /**
+     * Callback para el campo de título del badge.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_last_chance_title_callback() {
+        $value = isset($this->options['related_products']['last_chance_title']) ? $this->options['related_products']['last_chance_title'] : __('ÚLTIMA OPORTUNIDAD', 'snap-sidebar-cart');
+        echo '<input type="text" name="snap_sidebar_cart_options[related_products][last_chance_title]" value="' . $value . '" class="regular-text">';
+    }
+    
+    /**
+     * Callback para el campo de color de fondo del badge.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_last_chance_bg_color_callback() {
+        $value = isset($this->options['related_products']['last_chance_bg_color']) ? $this->options['related_products']['last_chance_bg_color'] : '#e74c3c';
+        echo '<input type="text" name="snap_sidebar_cart_options[related_products][last_chance_bg_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de color de texto del badge.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_last_chance_text_color_callback() {
+        $value = isset($this->options['related_products']['last_chance_text_color']) ? $this->options['related_products']['last_chance_text_color'] : '#ffffff';
+        echo '<input type="text" name="snap_sidebar_cart_options[related_products][last_chance_text_color]" value="' . $value . '" class="snap-sidebar-cart-color-picker">';
+    }
+    
+    /**
+     * Callback para el campo de pestañas activas.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_active_tabs_callback() {
+        $active_tabs = isset($this->options['related_products']['active_tabs']) ? $this->options['related_products']['active_tabs'] : 'related,cross-sells,upsells';
+        $active_tabs_arr = explode(',', $active_tabs);
+        
+        $tabs = array(
+            'related' => __('Productos relacionados', 'snap-sidebar-cart'),
+            'cross-sells' => __('Ventas cruzadas', 'snap-sidebar-cart'),
+            'upsells' => __('Ventas adicionales', 'snap-sidebar-cart'),
+            'custom' => __('Personalizada', 'snap-sidebar-cart'),
+        );
+        
+        foreach ($tabs as $tab_key => $tab_label) {
+            $checked = in_array($tab_key, $active_tabs_arr) ? 'checked' : '';
+            echo '<label style="margin-right: 15px;"><input type="checkbox" name="snap_sidebar_cart_options[related_products][active_tabs_arr][]" value="' . $tab_key . '" ' . $checked . '> ' . $tab_label . '</label>';
+        }
+    }
+    
+    /**
+     * Callback para el campo de etiqueta de pestaña personalizada.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_custom_tab_label_callback() {
+        $value = isset($this->options['related_products']['custom_tab_label']) ? $this->options['related_products']['custom_tab_label'] : __('Personalizada', 'snap-sidebar-cart');
+        echo '<input type="text" name="snap_sidebar_cart_options[related_products][custom_tab_label]" value="' . $value . '" class="regular-text">';
+    }
+    
+    /**
+     * Callback para el campo de query personalizada.
+     *
+     * @since    1.0.0
+     */
+    public function related_products_custom_query_callback() {
+        $value = isset($this->options['related_products']['custom_query']) ? $this->options['related_products']['custom_query'] : '';
+        echo '<textarea name="snap_sidebar_cart_options[related_products][custom_query]" rows="5" cols="50" class="large-text code">' . $value . '</textarea>';
+        echo '<p class="description">' . __('Código PHP para obtener IDs de productos. Debe devolver un array de IDs de productos.', 'snap-sidebar-cart') . '</p>';
+        
+        echo '<details>';
+        echo '<summary>' . __('Ver ejemplo', 'snap-sidebar-cart') . '</summary>';
+        echo '<pre>$args = array(
+    "post_type" => "product",
+    "posts_per_page" => 4,
+    "orderby" => "date",
+    "order" => "DESC",
+    "meta_query" => array(
+        array(
+            "key" => "_featured",
+            "value" => "yes"
+        )
+    )
+);
+
+$products = get_posts($args);
+return wp_list_pluck($products, \'ID\');</pre>';
+        echo '</details>';
     }
 }

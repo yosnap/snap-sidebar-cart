@@ -840,6 +840,25 @@ class Snap_Sidebar_Cart_Public {
             return;
         }
         
+        // Preparar estilos CSS para el icono de eliminación
+        if (isset($this->options['show_delete_icon_top']) && $this->options['show_delete_icon_top']) {
+            $delete_icon_size = isset($this->options['delete_icon_size']) ? $this->options['delete_icon_size'] : '16px';
+            $delete_icon_color = isset($this->options['delete_icon_color']) ? $this->options['delete_icon_color'] : '#cc0000';
+            $delete_icon_hover_color = isset($this->options['delete_icon_hover_color']) ? $this->options['delete_icon_hover_color'] : '#ff0000';
+            
+            echo "<style>
+                .snap-sidebar-cart__product-remove-top svg {
+                    width: {$delete_icon_size};
+                    height: {$delete_icon_size};
+                    stroke: {$delete_icon_color};
+                    transition: stroke 0.3s ease;
+                }
+                .snap-sidebar-cart__product-remove-top:hover svg {
+                    stroke: {$delete_icon_hover_color};
+                }
+            </style>";
+        }
+        
         // Incluir el sidebar en todas las páginas del sitio
         // Esto permite que el trigger funcione en cualquier página
         include_once SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-public-display.php';

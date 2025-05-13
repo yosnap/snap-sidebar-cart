@@ -31,6 +31,8 @@ Snap Sidebar Cart mejora la experiencia de compra en tu tienda WooCommerce añad
 * **Selectores de activación**: Selectores CSS que, al hacer clic, abrirán el carrito.
 * **Texto de tiempo de entrega**: Mensaje que se muestra debajo de cada producto.
 * **Abrir automáticamente al añadir productos**: Habilita la apertura automática del carrito cuando se añade un producto.
+* **Icono de eliminación rápida**: Opción para mostrar un icono de eliminación rápida para cada producto.
+* **Personalización del icono**: Selección del tipo de icono (papelera, X, menos), tamaño y colores.
 
 ### Personalización de Estilos
 * **Ancho del carrito lateral**: Define el ancho del carrito en px, em, rem o %.

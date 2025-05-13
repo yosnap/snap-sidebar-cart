@@ -48,6 +48,23 @@
         
         // Actualizar cuando cambia el checkbox
         $('input[name="snap_sidebar_cart_options[show_shipping]"]').on('change', toggleShipping);
+        
+        // Mostrar/ocultar opciones del icono de eliminación
+        function toggleDeleteIcon() {
+            var showDeleteIcon = $('#snap_cart_show_delete_icon_top').is(':checked');
+            
+            if (showDeleteIcon) {
+                $('.delete-icon-options').show();
+            } else {
+                $('.delete-icon-options').hide();
+            }
+        }
+        
+        // Inicializar estado
+        toggleDeleteIcon();
+        
+        // Actualizar cuando cambia el checkbox
+        $('#snap_cart_show_delete_icon_top').on('change', toggleDeleteIcon);
     });
 
 })(jQuery);

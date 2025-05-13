@@ -33,28 +33,41 @@ $tabs = array(
     <div class="snap-sidebar-cart-admin-wrapper">
         <form method="post" action="options.php">
             <?php
-            settings_fields('snap_sidebar_cart_option_group');
+            settings_fields('snap_sidebar_cart_options');
             
             // Mostrar solo las secciones correspondientes a la pestaña actual, pero
             // incluir todos los valores existentes como campos ocultos
             $options = get_option('snap_sidebar_cart_options');
             
-            // Incluir campos ocultos para preservar valores no visibles en esta pestaña
+            // Preservar campos de la pestaña general
             if ($current_tab != 'general' && !empty($options)) {
-                if (isset($options['title'])) {
-                    echo '<input type="hidden" name="snap_sidebar_cart_options[title]" value="' . esc_attr($options['title']) . '">';
+                // Preservar checkboxes de la pestaña general
+                $general_checkboxes = array('show_delivery_time', 'show_shipping', 'auto_open', 'show_delete_icon_top', 'banner_enable');
+                foreach ($general_checkboxes as $checkbox) {
+                    if (isset($options[$checkbox]) && $options[$checkbox]) {
+                        echo '<input type="hidden" name="snap_sidebar_cart_options[' . esc_attr($checkbox) . ']" value="1">';
+                    }
                 }
-                if (isset($options['container_selector'])) {
-                    echo '<input type="hidden" name="snap_sidebar_cart_options[container_selector]" value="' . esc_attr($options['container_selector']) . '">';
+                
+                // Preservar campos de texto de la pestaña general
+                $general_text_fields = array('title', 'container_selector', 'activation_selectors', 'delivery_time_text');
+                foreach ($general_text_fields as $field) {
+                    if (isset($options[$field])) {
+                        echo '<input type="hidden" name="snap_sidebar_cart_options[' . esc_attr($field) . ']" value="' . esc_attr($options[$field]) . '">';
+                    }
                 }
-                if (isset($options['activation_selectors'])) {
-                    echo '<input type="hidden" name="snap_sidebar_cart_options[activation_selectors]" value="' . esc_attr($options['activation_selectors']) . '">';
+                
+                // Preservar opciones del icono de eliminación
+                $delete_icon_fields = array('delete_icon_type', 'delete_icon_size', 'delete_icon_color', 'delete_icon_hover_color');
+                foreach ($delete_icon_fields as $field) {
+                    if (isset($options[$field])) {
+                        echo '<input type="hidden" name="snap_sidebar_cart_options[' . esc_attr($field) . ']" value="' . esc_attr($options[$field]) . '">';
+                    }
                 }
-                if (isset($options['show_shipping'])) {
-                    echo '<input type="hidden" name="snap_sidebar_cart_options[show_shipping]" value="' . esc_attr($options['show_shipping']) . '">';
-                }
-                if (isset($options['auto_open'])) {
-                    echo '<input type="hidden" name="snap_sidebar_cart_options[auto_open]" value="' . esc_attr($options['auto_open']) . '">';
+                
+                // Preservar contenido del banner
+                if (isset($options['banner_content'])) {
+                    echo '<input type="hidden" name="snap_sidebar_cart_options[banner_content]" value="' . esc_attr($options['banner_content']) . '">';
                 }
             }
             

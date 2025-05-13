@@ -291,8 +291,12 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                 <?php
                 // Verificar si la opción para mostrar el icono de eliminación superior está habilitada
                 $show_delete_icon_top = isset($this->options['show_delete_icon_top']) ? $this->options['show_delete_icon_top'] : true;
-                if ($show_delete_icon_top) : ?>
+                if ($show_delete_icon_top) : 
+                    // Determinar qué tipo de icono mostrar
+                    $icon_type = isset($this->options['delete_icon_type']) ? $this->options['delete_icon_type'] : 'trash';
+                ?>
                 <button type="button" class="snap-sidebar-cart__product-remove-top" data-key="<?php echo esc_attr($cart_item_key); ?>" aria-label="<?php esc_attr_e('Eliminar producto', 'snap-sidebar-cart'); ?>">
+                    <?php if ($icon_type === 'trash') : ?>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
                         <title><?php esc_html_e('Eliminar', 'snap-sidebar-cart'); ?></title>
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -300,6 +304,18 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                         <line x1="10" y1="11" x2="10" y2="17"></line>
                         <line x1="14" y1="11" x2="14" y2="17"></line>
                     </svg>
+                    <?php elseif ($icon_type === 'times') : ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x">
+                        <title><?php esc_html_e('Eliminar', 'snap-sidebar-cart'); ?></title>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    <?php elseif ($icon_type === 'minus') : ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                        <title><?php esc_html_e('Eliminar', 'snap-sidebar-cart'); ?></title>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <?php endif; ?>
                 </button>
                 <?php endif; ?>
                 <?php if ($has_discount) : ?>
