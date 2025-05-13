@@ -1,5 +1,36 @@
 # Notas Técnicas - Snap Sidebar Cart
 
+## Sincronización Automática entre Página del Carrito y Sidebar
+
+### Versión 1.2.8 (2025-05-13)
+
+#### Implementación de Sincronización del Carrito
+
+Se ha implementado una funcionalidad para mantener sincronizado el sidebar del carrito con los cambios realizados en la página del carrito de WooCommerce. Los cambios principales incluyen:
+
+1. **Detección de Eventos**:
+   - Escucha de eventos de WooCommerce como `updated_cart_totals`, `wc_fragments_refreshed` y `removed_from_cart`
+   - Detección automática de cambios en el carrito sin necesidad de recargar la página
+
+2. **Endpoint AJAX Específico**:
+   - Creación de un nuevo endpoint AJAX `snap_sidebar_cart_get_cart` para obtener el contenido actualizado del carrito
+   - Implementación del método `get_sidebar_cart()` en la clase AJAX para manejar la solicitud
+
+3. **Actualización en Tiempo Real**:
+   - Actualización del contenido del sidebar cuando se detectan cambios en la página del carrito
+   - Actualización de contadores, subtotales y productos relacionados
+
+4. **Archivos Modificados**:
+   - `includes/class-snap-sidebar-cart-ajax.php`: Añadido nuevo método para manejar la sincronización
+   - `includes/class-snap-sidebar-cart.php`: Registrados nuevos endpoints AJAX
+   - `includes/class-snap-sidebar-cart-public.php`: Cargado nuevo script de sincronización
+   - `assets/js/cart-page-sync.js`: Nuevo archivo para manejar la sincronización
+
+5. **Mejora de Experiencia de Usuario**:
+   - Mayor coherencia entre diferentes vistas del carrito
+   - Eliminación de la necesidad de recargar la página para ver los cambios
+   - Feedback visual inmediato de las acciones realizadas en la página del carrito
+
 ## Múltiples Queries Personalizadas para Productos Relacionados
 
 ### Versión 1.2.7 (2025-05-13)

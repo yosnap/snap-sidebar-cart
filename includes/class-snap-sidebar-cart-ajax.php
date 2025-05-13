@@ -1082,6 +1082,46 @@ class Snap_Sidebar_Cart_Ajax {
         $this->get_cart_contents();
         wp_die();
     }
+    
+    /**
+     * Obtiene el contenido actualizado del carrito para sincronización.
+     * Este método es llamado desde la página del carrito cuando se realizan cambios.
+     *
+     * @since    1.2.7
+     */
+    public function get_sidebar_cart() {
+        // Verificar nonce
+        check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
+        
+        error_log('Solicitud de sincronización del sidebar del carrito recibida');
+        
+        // Obtener el contenido actualizado del carrito
+        $cart_items = WC()->cart->get_cart();
+        $cart_count = WC()->cart->get_cart_contents_count();
+        $cart_subtotal = WC()->cart->get_cart_subtotal();
+        
+        // Iniciar el buffer de salida para capturar el HTML del carrito
+        ob_start();
+        
+        // Incluir el template del carrito
+        include_once SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-products.php';
+        
+        // Obtener el contenido del buffer
+        $cart_content = ob_get_clean();
+        
+        // Preparar la respuesta
+        $response = array(
+            'cart_content' => $cart_content,
+            'cart_count' => $cart_count,
+            'cart_subtotal' => $cart_subtotal,
+            'is_cart_empty' => (WC()->cart->is_empty() ? 1 : 0)
+        );
+        
+        error_log('Sincronización del sidebar del carrito completada');
+        
+        // Enviar respuesta
+        wp_send_json_success($response);
+    }
 
     /**
      * Obtiene el contenido del carrito y lo envía como respuesta JSON.

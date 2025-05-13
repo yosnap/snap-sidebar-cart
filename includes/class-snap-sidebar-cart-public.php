@@ -193,6 +193,15 @@ class Snap_Sidebar_Cart_Public {
             true
         );
         
+        // Cargar el script de sincronización entre la página del carrito y el sidebar
+        wp_enqueue_script(
+            'snap-sidebar-cart-page-sync', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-page-sync.js', 
+            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-ajax-handler'), 
+            $version, 
+            true
+        );
+        
         // Agregar código inline para asegurar el correcto funcionamiento
         wp_add_inline_script('snap-sidebar-cart-public', "
             jQuery(document).ready(function($) {
