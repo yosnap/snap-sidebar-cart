@@ -172,70 +172,15 @@
         
         // Mostrar preloader
         
-        // Obtener configuración del preloader desde los parámetros globales
-        var preloaderType = 'circle';
-        var preloaderPosition = 'center';
-        var preloaderColor = '#3498db';
-        var preloaderColor2 = '#e74c3c';
-        var preloaderSize = '40px';
-        
-        // Si existen los parámetros, usarlos
-        if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.preloader) {
-            preloaderType = snap_sidebar_cart_params.preloader.type || 'circle';
-            preloaderPosition = snap_sidebar_cart_params.preloader.position || 'center';
-            preloaderColor = snap_sidebar_cart_params.preloader.color || '#3498db';
-            preloaderColor2 = snap_sidebar_cart_params.preloader.color2 || '#e74c3c';
-            preloaderSize = snap_sidebar_cart_params.preloader.size || '40px';
-        }
-        
-        console.log('scroll-snap-init.js - Configuración del preloader:', {
-            type: preloaderType,
-            position: preloaderPosition,
-            color: preloaderColor,
-            color2: preloaderColor2,
-            size: preloaderSize
-        });
-        
-        // Crear clases del preloader
-        var preloaderClasses = 'snap-sidebar-cart__loader-spinner ' + 
-                              'preloader-' + preloaderType + ' ' +
-                              'preloader-position-' + preloaderPosition;
-        
-        // Crear estilos inline para el preloader
-        var inlineStyles = '';
-        
-        // Aplicar estilos según el tipo de preloader
-        if (preloaderType === 'circle') {
-            inlineStyles = 'width: ' + preloaderSize + '; ' +
-                          'height: ' + preloaderSize + '; ' +
-                          'border-color: ' + preloaderColor + '; ' +
-                          'border-top-color: ' + preloaderColor2 + ';';
+        // Usamos el mismo preloader que utiliza el sistema principal
+        // Esto asegura que se respete la configuración del backend
+        if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.loading_html) {
+            // Usar el HTML de carga proporcionado por el sistema
+            $targetContainer.html(snap_sidebar_cart_params.loading_html);
         } else {
-            inlineStyles = 'width: ' + preloaderSize + '; ' +
-                          'height: ' + preloaderSize + ';';
+            // Fallback simple si no hay HTML de carga disponible
+            $targetContainer.empty();
         }
-        
-        // Crear el HTML del preloader
-        var preloaderHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '"';
-        
-        // Añadir contenido específico según el tipo de preloader
-        if (preloaderType === 'dots') {
-            preloaderHTML += '><span style="background-color: ' + preloaderColor + ';"></span>' +
-                           '<span style="background-color: ' + preloaderColor + ';"></span>' +
-                           '<span style="background-color: ' + preloaderColor + ';"></span>';
-        } else {
-            preloaderHTML += '>';
-        }
-        
-        // Cerrar la etiqueta div
-        preloaderHTML += '</div>';
-        
-        $targetContainer.html(
-            '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__loading-products">' +
-            preloaderHTML +
-            '<span>Cargando productos...</span>' +
-            '</div>'
-        );
         
         // Si el productId no es válido, intentar obtenerlo del primer producto en el carrito
         if (!productId || productId <= 0) {
@@ -419,7 +364,7 @@
             var result = '';
             
             // Obtener configuración de columnas desde los parámetros del admin
-            var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 2;
+            var slidesPerView = parseInt(snap_sidebar_cart_params.related.columns) || 3;
             var columnWidth = 100 / slidesPerView;
             
             console.log("Preparando", $temp.find('.snap-sidebar-cart__related-product').length, "productos con ancho de columna:", columnWidth + "%");
@@ -429,14 +374,22 @@
                 var $product = $(this);
                 
                 // Aplicar ancho basado en la configuración de columnas
-                $product.css('width', columnWidth + '%');
-                $product.css('flex', '0 0 ' + columnWidth + '%');
+                $product.css('width', 'calc(' + columnWidth + '% - 10px)');
+                $product.css('flex', '0 0 calc(' + columnWidth + '% - 10px)');
                 
                 // Asegurar que tenga la clase para scroll-snap
                 $product.addClass('snap-sidebar-cart__scroll-snap-item');
                 
                 result += $('<div>').append($product.clone()).html();
             });
+            
+            console.log("Productos preparados:", result.length, "caracteres");
+            
+            return result;
+        } catch (error) {
+            console.error("Error al preparar productos:", error);
+            return '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__no-products">Error al procesar productos relacionados.</div>';
+        }
             
             console.log("Productos preparados:", result.length, "caracteres");
             

@@ -104,7 +104,7 @@ if (!$has_gallery) {
     $product_classes .= ' no-gallery-server';
 }
 ?>
-<div class="<?php echo esc_attr($product_classes); ?>"
+<div class="<?php echo esc_attr($product_classes); ?>">
     <?php if ($is_last_chance) : ?>
         <div class="snap-sidebar-cart__product-badge last-chance">
             <?php 

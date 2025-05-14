@@ -136,6 +136,92 @@
             $('.snap-sidebar-cart__overlay').css('display', 'block');
             $('body').addClass('snap-sidebar-cart-open');
             
+            // Verificar si hay productos en el carrito
+            var hasProducts = $('.snap-sidebar-cart__product').length > 0;
+            
+            // Mostrar u ocultar pestañas según haya productos
+            if (hasProducts) {
+                $('.snap-sidebar-cart__related-tabs').show();
+                $('.snap-sidebar-cart__related-content').show();
+                
+                // Pequeño retraso para asegurar que el DOM está completamente cargado
+                setTimeout(function() {
+                    // Forzar carga de la primera pestaña
+                    var $tabs = $('.snap-sidebar-cart__related-tab');
+                    if ($tabs.length > 0) {
+                        // Activar la primera pestaña si no hay ninguna activa
+                        if ($('.snap-sidebar-cart__related-tab.active').length === 0) {
+                            $tabs.first().addClass('active');
+                        }
+                        
+                        // Obtener la pestaña activa
+                        var $activeTab = $('.snap-sidebar-cart__related-tab.active');
+                        var tabType = $activeTab.data('tab');
+                        
+                        // Activar el contenedor correspondiente
+                        $('.snap-sidebar-cart__related-container').removeClass('active');
+                        var $container = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"]');
+                        $container.addClass('active');
+                        
+                        // Obtener el track para cargar productos
+                        var $track = $container.find('.snap-sidebar-cart__slider-track');
+                        
+                        // Verificar si ya tiene productos
+                        var hasLoadedProducts = $track.children('.snap-sidebar-cart__related-product').not('.snap-sidebar-cart__loading-products').length > 0;
+                        
+                        // Cargar productos si no hay
+                        if (!hasLoadedProducts) {
+                            // Obtener ID del último producto en el carrito
+                            var productId = '';
+                            $('.snap-sidebar-cart__product').each(function() {
+                                var pid = $(this).data('product-id');
+                                if (pid) {
+                                    productId = pid;
+                                }
+                            });
+                            
+                            // Usar el último producto encontrado
+                            if (productId) {
+                                console.log('Cargando productos relacionados para la pestaña ' + tabType + ' con producto ID: ' + productId);
+                                
+                                // Mostrar preloader
+                                if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.loading_html) {
+                                    $track.html(snap_sidebar_cart_params.loading_html);
+                                } else {
+                                    $track.html('<p>Cargando productos relacionados...</p>');
+                                }
+                                
+                                // Hacer la petición AJAX
+                                $.ajax({
+                                    type: 'POST',
+                                    url: snap_sidebar_cart_params.ajax_url,
+                                    data: {
+                                        action: 'snap_sidebar_cart_get_related',
+                                        nonce: snap_sidebar_cart_params.nonce,
+                                        product_id: productId,
+                                        type: tabType
+                                    },
+                                    success: function(response) {
+                                        if (response.success && response.data && response.data.html) {
+                                            $track.html(response.data.html);
+                                        } else {
+                                            $track.html('<p>No se encontraron productos para mostrar.</p>');
+                                        }
+                                    },
+                                    error: function() {
+                                        $track.html('<p>Error al cargar productos.</p>');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }, 300);
+            } else {
+                // Ocultar pestañas si no hay productos
+                $('.snap-sidebar-cart__related-tabs').hide();
+                $('.snap-sidebar-cart__related-content').hide();
+            }
+            
             // Disparar evento para que otros módulos puedan responder
             $(document.body).trigger('snap_sidebar_cart_opened');
         },

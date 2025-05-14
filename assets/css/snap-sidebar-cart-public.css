@@ -883,7 +883,7 @@
 
 /* Mensaje de carga para productos relacionados */
 .snap-sidebar-cart__loading-products {
-    display: flex;
+    display: flex !important; /* Mostrar el preloader */
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -1179,10 +1179,11 @@
         width: 100% !important;
     }
     
-    .snap-sidebar-cart__related-product {
+    /* Eliminamos esta regla para que se respete la configuración del backend */
+    /* .snap-sidebar-cart__related-product {
         width: calc(50% - 10px);
         min-width: calc(50% - 10px);
-    }
+    } */
 }
 
 /* Estado global para body cuando el carrito está abierto */
@@ -1375,6 +1376,7 @@ body.snap-sidebar-cart-open {
 
 .snap-sidebar-cart__related-container {
     display: none !important;
+    min-height: 250px !important; /* Altura mínima para evitar saltos durante las cargas */
 }
 
 .snap-sidebar-cart__related-container.active {
@@ -1434,6 +1436,7 @@ body.snap-sidebar-cart-open {
     flex-shrink: 0 !important;
     scroll-snap-align: start !important;
     scroll-snap-stop: always !important;
+    /* Ancho controlado por JavaScript según la configuración del admin */
 }
 
 /* Estilos para el contenedor de productos con Scroll Snap */
@@ -1506,12 +1509,13 @@ body.snap-sidebar-cart-open {
 /* Estilo para los elementos de Scroll Snap */
 .snap-sidebar-cart__scroll-snap-item {
     height: auto !important; /* Forzar altura automática */
-    padding: 0 5px;
-    display: flex;
-    min-height: 150px; /* Altura mínima para cada slide */
+    padding: 0 !important;
+    display: flex !important;
+    min-height: 150px !important; /* Altura mínima para cada slide */
     scroll-snap-align: start !important;
     scroll-snap-stop: always !important;
     flex-shrink: 0 !important;
+    /* El ancho se controla dinámicamente mediante JavaScript según la configuración del admin */
 }
 
 /* Productos del slider */

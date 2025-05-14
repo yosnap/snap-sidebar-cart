@@ -245,28 +245,41 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Verificar ID de producto
         if (!isset($_POST['product_id'])) {
-            error_log('Error: No se proporcionó un ID de producto');
-            wp_send_json_error(array('message' => __('No se proporcionó un ID de producto', 'snap-sidebar-cart')));
-            return;
+            error_log('Error: No se proporcionó un ID de producto, usando modo productos destacados');
+            $is_featured_request = true;
+        } else {
+            $product_id_raw = $_POST['product_id'];
+            $is_featured_request = ($product_id_raw === 'featured');
+            
+            error_log('Product ID recibido: ' . $product_id_raw . ($is_featured_request ? ' (Solicitud de productos destacados)' : ''));
         }
-        
-        $product_id = absint($_POST['product_id']);
-        error_log('Product ID recibido: ' . $product_id);
         
         // Obtener el número de productos a mostrar desde la petición o usar el valor por defecto
         $count = isset($_POST['count']) ? absint($_POST['count']) : (isset($this->options['related_products']['count']) ? absint($this->options['related_products']['count']) : 4);
         error_log('Número de productos a mostrar: ' . $count);
         
-        // Obtener el producto
-        $product = wc_get_product($product_id);
-        
-        if (!$product) {
-            error_log('Error: Producto no encontrado para ID: ' . $product_id);
-            wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
-            return;
+        // Si no es una solicitud de productos destacados, intentamos obtener el producto específico
+        if (!$is_featured_request) {
+            $product_id = absint($product_id_raw);
+            
+            // Obtener el producto
+            $product = wc_get_product($product_id);
+            
+            if (!$product) {
+                error_log('Error: Producto no encontrado para ID: ' . $product_id);
+                
+                // En lugar de devolver error, cambiamos a modo productos destacados
+                $is_featured_request = true;
+                error_log('Cambiando a modo productos destacados');
+            } else {
+                error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+            }
         }
         
-        error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+        // Solo registramos esta línea si tenemos un producto válido
+        if (isset($product) && !$is_featured_request) {
+            error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+        }
         
         // Obtener el tipo de productos relacionados a mostrar
         $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'related';
@@ -300,18 +313,43 @@ class Snap_Sidebar_Cart_Ajax {
         // Obtener productos según el tipo
         error_log('Obteniendo productos para el tipo: ' . $type . ', cantidad: ' . $count);
         
+        // Si es una solicitud de productos destacados o no tenemos un producto válido
+        if ($is_featured_request || !isset($product)) {
+            // Si el tipo solicitado requiere un producto específico pero no lo tenemos,
+            // cambiamos automáticamente a un tipo que no lo requiera
+            if (in_array($type, array('upsells', 'crosssells', 'related', 'custom')) || strpos($type, 'custom_') === 0) {
+                error_log('Cambiando tipo de productos a "featured" porque no hay producto de referencia');
+                $type = 'featured';
+            }
+        }
+        
         switch ($type) {
             case 'upsells':
-                error_log('Llamando a get_upsell_products()');
-                $products = $this->get_upsell_products($product, $count);
+                if (isset($product)) {
+                    error_log('Llamando a get_upsell_products()');
+                    $products = $this->get_upsell_products($product, $count);
+                } else {
+                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    $products = $this->get_featured_products($count);
+                }
                 break;
             case 'crosssells':
-                error_log('Llamando a get_crosssell_products()');
-                $products = $this->get_crosssell_products($product, $count);
+                if (isset($product)) {
+                    error_log('Llamando a get_crosssell_products()');
+                    $products = $this->get_crosssell_products($product, $count);
+                } else {
+                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    $products = $this->get_featured_products($count);
+                }
                 break;
             case 'related':
-                error_log('Llamando a get_same_category_products()');
-                $products = $this->get_same_category_products($product, $count);
+                if (isset($product)) {
+                    error_log('Llamando a get_same_category_products()');
+                    $products = $this->get_same_category_products($product, $count);
+                } else {
+                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    $products = $this->get_featured_products($count);
+                }
                 break;
             case 'bestsellers':
                 error_log('Llamando a get_bestseller_products()');
@@ -322,18 +360,28 @@ class Snap_Sidebar_Cart_Ajax {
                 $products = $this->get_featured_products($count);
                 break;
             case 'custom':
-                error_log('Llamando a get_custom_products() - query personalizada principal');
-                $products = $this->get_custom_products($product, $count);
+                if (isset($product)) {
+                    error_log('Llamando a get_custom_products() - query personalizada principal');
+                    $products = $this->get_custom_products($product, $count);
+                } else {
+                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    $products = $this->get_featured_products($count);
+                }
                 break;
             default:
                 // Verificar si es una query personalizada adicional (custom_X)
                 if (strpos($type, 'custom_') === 0) {
-                    $custom_index = intval(substr($type, 7)); // Extraer el índice después de 'custom_'
-                    error_log('Llamando a get_custom_products() con índice personalizado ' . $custom_index);
-                    $products = $this->get_custom_products($product, $count, $custom_index);
+                    if (isset($product)) {
+                        $custom_index = intval(substr($type, 7)); // Extraer el índice después de 'custom_'
+                        error_log('Llamando a get_custom_products() con índice personalizado ' . $custom_index);
+                        $products = $this->get_custom_products($product, $count, $custom_index);
+                    } else {
+                        error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                        $products = $this->get_featured_products($count);
+                    }
                 } else {
-                    error_log('Tipo no reconocido, usando get_same_category_products() como fallback');
-                    $products = $this->get_same_category_products($product, $count);
+                    error_log('Tipo no reconocido, usando get_featured_products() como fallback');
+                    $products = $this->get_featured_products($count);
                 }
                 break;
         }

@@ -119,6 +119,15 @@ class Snap_Sidebar_Cart_Public {
         );
         
         // Ya no cargamos Swiper.js, usamos CSS Scroll Snap en su lugar
+        
+        // Cargar script para forzar la carga de la primera pestaña
+        wp_enqueue_script(
+            'snap-sidebar-cart-force-load-first-tab', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/force-load-first-tab.js', 
+            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
+            $version, 
+            true
+        );
         // Los estilos necesarios están incluidos en snap-sidebar-cart-public.css
         
         // Cargar el script principal
@@ -224,6 +233,59 @@ class Snap_Sidebar_Cart_Public {
         
         // No cargamos los scripts de depuración en producción
         
+        // Crear HTML de carga para productos relacionados
+        $preloader_type = isset($this->options['preloader']['type']) ? $this->options['preloader']['type'] : 'circle';
+        $preloader_position = isset($this->options['preloader']['position']) ? $this->options['preloader']['position'] : 'center';
+        $preloader_size = isset($this->options['preloader']['size']) ? $this->options['preloader']['size'] : '40px';
+        $preloader_color = isset($this->options['preloader']['color']) ? $this->options['preloader']['color'] : '#3498db';
+        $preloader_color2 = isset($this->options['preloader']['color2']) ? $this->options['preloader']['color2'] : '#e74c3c';
+        
+        // Crear clases del preloader
+        $preloader_classes = 'snap-sidebar-cart__loader-spinner ' . 
+                           'preloader-' . $preloader_type . ' ' .
+                           'preloader-position-' . $preloader_position;
+        
+        // Crear estilos inline para el preloader
+        $inline_styles = '';
+        
+        // Aplicar estilos según el tipo de preloader
+        if ($preloader_type === 'circle') {
+            $inline_styles = 'width: ' . $preloader_size . '; ' .
+                           'height: ' . $preloader_size . '; ' .
+                           'border-color: ' . $preloader_color . '; ' .
+                           'border-top-color: ' . $preloader_color2 . ';';
+        } else {
+            $inline_styles = 'width: ' . $preloader_size . '; ' .
+                           'height: ' . $preloader_size . ';';
+        }
+        
+        // Crear el HTML del preloader
+        $preloader_html = '<div class="' . $preloader_classes . '" style="' . $inline_styles . '"';
+        
+        // Añadir contenido específico según el tipo de preloader
+        if ($preloader_type === 'dots') {
+            $preloader_html .= '><span style="background-color: ' . $preloader_color . ';"></span>' .
+                             '<span style="background-color: ' . $preloader_color . ';"></span>' .
+                             '<span style="background-color: ' . $preloader_color . ';"></span>';
+        } else {
+            $preloader_html .= '>';
+        }
+        
+        // Cerrar la etiqueta div
+        $preloader_html .= '</div>';
+        
+        // Generar HTML de carga completo con la cantidad de columnas correcta
+        $columns = isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 3;
+        $loading_html = '';
+        
+        // Crear un placeholder por cada columna configurada
+        for ($i = 0; $i < $columns; $i++) {
+            $loading_html .= '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__loading-products">' .
+                           $preloader_html .
+                           '<span>Cargando productos...</span>' .
+                           '</div>';
+        }
+        
         // Opciones para el script con todos los parámetros necesarios
         $script_options = array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -231,13 +293,15 @@ class Snap_Sidebar_Cart_Public {
             'activation_selectors' => $this->options['activation_selectors'],
             'auto_open' => isset($this->options['auto_open']) ? (bool)$this->options['auto_open'] : false,
             'new_product_position' => isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'top',
+            // HTML de carga para productos relacionados
+            'loading_html' => $loading_html,
             // Opciones de preloader
             'preloader' => array(
-                'type' => isset($this->options['preloader']['type']) ? $this->options['preloader']['type'] : 'circle',
-                'position' => isset($this->options['preloader']['position']) ? $this->options['preloader']['position'] : 'center',
-                'size' => isset($this->options['preloader']['size']) ? $this->options['preloader']['size'] : '40px',
-                'color' => isset($this->options['preloader']['color']) ? $this->options['preloader']['color'] : '#3498db',
-                'color2' => isset($this->options['preloader']['color2']) ? $this->options['preloader']['color2'] : '#e74c3c'
+                'type' => $preloader_type,
+                'position' => $preloader_position,
+                'size' => $preloader_size,
+                'color' => $preloader_color,
+                'color2' => $preloader_color2
             ),
             // Opciones para animaciones
             'animations' => array(
@@ -247,6 +311,7 @@ class Snap_Sidebar_Cart_Public {
             ),
             // Opciones para productos relacionados
             'related' => array(
+                'columns' => isset($this->options['related_products']['columns']) ? intval($this->options['related_products']['columns']) : 3,
                 'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2,
                 'show_last_chance' => isset($this->options['related_products']['show_last_chance']) ? (bool)$this->options['related_products']['show_last_chance'] : true,
                 'last_chance_stock_limit' => isset($this->options['related_products']['last_chance_stock_limit']) ? intval($this->options['related_products']['last_chance_stock_limit']) : 5,
