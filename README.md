@@ -9,6 +9,7 @@ Snap Sidebar Cart mejora la experiencia de compra en tu tienda WooCommerce añad
 ### Características principales
 
 * **Carrito lateral interactivo**: Se muestra suavemente desde el lateral cuando se agregan productos o se hace clic en los botones configurados.
+* **Sincronización automática**: El carrito lateral se actualiza automáticamente cuando se realizan cambios en la página del carrito de WooCommerce.
 * **Productos relacionados**: Muestra productos relacionados en un slider configurable debajo del carrito.
 * **Animaciones suaves**: Efectos de fade-in cuando se agregan productos y preloader durante las actualizaciones.
 * **Personalización completa**: Configuración de colores, anchos, y estilos desde el panel de administración.

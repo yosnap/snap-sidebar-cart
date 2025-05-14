@@ -1,5 +1,34 @@
 # Notas Técnicas - Snap Sidebar Cart
 
+## Corrección de Sincronización entre Página del Carrito y Sidebar
+
+### Versión 1.2.9 (2025-05-14)
+
+#### Corrección de Problemas de Sincronización
+
+Se han corregido varios problemas relacionados con la sincronización entre la página del carrito de WooCommerce y el sidebar del carrito:
+
+1. **Corrección de Ruta de Template**:
+   - Se identificó que el archivo `snap-sidebar-cart-products.php` no existía en la ruta esperada
+   - Se corrigió la ruta para utilizar el archivo `snap-sidebar-cart-contents.php` existente
+   - Se modificó la generación del HTML para mantener la estructura correcta que coincide con la plantilla principal
+
+2. **Actualización de Cantidades Individuales**:
+   - Se implementó una solución para asegurar que las cantidades individuales de cada producto se actualicen correctamente
+   - Se añadieron logs detallados para facilitar la depuración de problemas de sincronización
+
+3. **Corrección de Actualización del Subtotal**:
+   - Se identificó que el subtotal no se actualizaba correctamente debido a selectores CSS incorrectos
+   - Se actualizaron los selectores para asegurar que el subtotal se actualice en todas las ubicaciones posibles
+
+4. **Archivos Modificados**:
+   - `includes/class-snap-sidebar-cart-ajax.php`: Corregida la ruta del template y mejorada la generación del HTML
+   - `assets/js/cart-sync.js`: Mejorada la actualización de elementos individuales y añadidos logs detallados
+
+5. **Mejoras en Debugging**:
+   - Implementados logs detallados tanto en el cliente (JavaScript) como en el servidor (PHP)
+   - Añadida verificación de discrepancias entre las cantidades en la página del carrito y en el sidebar
+
 ## Sincronización Automática entre Página del Carrito y Sidebar
 
 ### Versión 1.2.8 (2025-05-13)

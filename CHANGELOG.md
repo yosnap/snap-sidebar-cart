@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.9 - 2025-05-14
+* **Corrección**: Solucionado problema de sincronización entre la página del carrito y el sidebar
+* **Corrección**: Corregida la actualización de cantidades individuales de productos en el sidebar
+* **Corrección**: Arreglada la actualización del subtotal en el sidebar cuando se modifica el carrito
+* **Mejora**: Implementados logs detallados para facilitar la depuración
+* **Corrección**: Corregida la ruta del template para la generación del HTML del carrito
+
 ## 1.2.8 - 2025-05-13
 * **Nuevo**: Implementada sincronización automática entre la página del carrito y el sidebar
 * **Mejora**: El sidebar del carrito se actualiza automáticamente cuando se realizan cambios en la página del carrito

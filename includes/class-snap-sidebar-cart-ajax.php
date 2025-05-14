@@ -1093,18 +1093,64 @@ class Snap_Sidebar_Cart_Ajax {
         // Verificar nonce
         check_ajax_referer('snap-sidebar-cart-nonce', 'nonce');
         
-        error_log('Solicitud de sincronización del sidebar del carrito recibida');
+        $debug = isset($_POST['debug']) && $_POST['debug'] === 'true';
+        
+        error_log('Solicitud de sincronización del sidebar del carrito recibida' . ($debug ? ' (modo debug)' : ''));
         
         // Obtener el contenido actualizado del carrito
         $cart_items = WC()->cart->get_cart();
         $cart_count = WC()->cart->get_cart_contents_count();
         $cart_subtotal = WC()->cart->get_cart_subtotal();
         
+        if ($debug) {
+            error_log('DEBUG: Número de productos en el carrito: ' . count($cart_items));
+            error_log('DEBUG: Cantidad total de items: ' . $cart_count);
+            error_log('DEBUG: Subtotal del carrito: ' . $cart_subtotal);
+        }
+        
+        // Preparar datos detallados de cada producto para debugging
+        $items_data = array();
+        foreach ($cart_items as $cart_item_key => $cart_item) {
+            $product = $cart_item['data'];
+            $quantity = $cart_item['quantity'];
+            
+            $item_data = array(
+                'key' => $cart_item_key,
+                'product_id' => $product->get_id(),
+                'name' => $product->get_name(),
+                'quantity' => $quantity,
+                'price' => $product->get_price(),
+                'subtotal' => $cart_item['line_subtotal']
+            );
+            
+            $items_data[] = $item_data;
+            
+            if ($debug) {
+                error_log('DEBUG: Producto en carrito - Key: ' . $cart_item_key . ', ID: ' . $product->get_id() . ', Nombre: ' . $product->get_name() . ', Cantidad: ' . $quantity);
+            }
+        }
+        
         // Iniciar el buffer de salida para capturar el HTML del carrito
         ob_start();
         
-        // Incluir el template del carrito
-        include_once SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-products.php';
+        // Generar el HTML del carrito siguiendo la misma estructura que en la vista principal
+        if (empty($cart_items)) {
+            echo '<div class="snap-sidebar-cart__empty">';
+            echo '<p>' . __('Tu carrito está vacío.', 'snap-sidebar-cart') . '</p>';
+            echo '<a href="' . esc_url(get_permalink(wc_get_page_id('shop'))) . '" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart">' . __('Continuar comprando', 'snap-sidebar-cart') . '</a>';
+            echo '</div>';
+        } else {
+            echo '<ul class="snap-sidebar-cart__products-list">';
+            
+            foreach ($cart_items as $cart_item_key => $cart_item) {
+                $product = $cart_item['data'];
+                $is_new_item = false;
+                
+                include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
+            }
+            
+            echo '</ul>';
+        }
         
         // Obtener el contenido del buffer
         $cart_content = ob_get_clean();
@@ -1114,8 +1160,31 @@ class Snap_Sidebar_Cart_Ajax {
             'cart_content' => $cart_content,
             'cart_count' => $cart_count,
             'cart_subtotal' => $cart_subtotal,
-            'is_cart_empty' => (WC()->cart->is_empty() ? 1 : 0)
+            'is_cart_empty' => (WC()->cart->is_empty() ? 1 : 0),
+            'cart_items' => $items_data // Añadir datos detallados de cada producto
         );
+        
+        if ($debug) {
+            // Analizar el HTML generado para ver si contiene los datos correctos
+            $dom = new DOMDocument();
+            @$dom->loadHTML($cart_content);
+            $xpath = new DOMXPath($dom);
+            
+            $products = $xpath->query('//li[contains(@class, "snap-sidebar-cart__product")]');
+            error_log('DEBUG: Productos encontrados en el HTML generado: ' . $products->length);
+            
+            foreach ($products as $product) {
+                $key = $product->getAttribute('data-key');
+                $quantity_inputs = $xpath->query('.//input[contains(@class, "cart-item__quantity-input")]', $product);
+                
+                if ($quantity_inputs->length > 0) {
+                    $quantity = $quantity_inputs->item(0)->getAttribute('value');
+                    error_log('DEBUG: Producto en HTML - Key: ' . $key . ', Cantidad en input: ' . $quantity);
+                } else {
+                    error_log('DEBUG: Producto en HTML - Key: ' . $key . ', No se encontró input de cantidad');
+                }
+            }
+        }
         
         error_log('Sincronización del sidebar del carrito completada');
         

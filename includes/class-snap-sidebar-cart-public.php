@@ -196,7 +196,7 @@ class Snap_Sidebar_Cart_Public {
         // Cargar el script de sincronización entre la página del carrito y el sidebar
         wp_enqueue_script(
             'snap-sidebar-cart-page-sync', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-page-sync.js', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-sync.js', 
             array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-ajax-handler'), 
             $version, 
             true
