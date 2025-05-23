@@ -78,9 +78,7 @@ jQuery(document).ready(function($) {
                         }
                         
                         // Actualizar el contador
-                        if (response.data.cart_count !== undefined) {
-                            $(".snap-sidebar-cart__count").text(response.data.cart_count);
-                        }
+                        // $(".snap-sidebar-cart__count").text(response.data.cart_count);
                         
                         // Ocultar los loaders
                         $('.snap-sidebar-cart__product-loader').hide();

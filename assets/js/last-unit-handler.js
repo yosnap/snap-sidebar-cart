@@ -36,7 +36,7 @@
                             if (response.success) {
                                 // Actualizar el carrito y abrir el sidebar
                                 $(".snap-sidebar-cart__products").html(response.data.cart_html);
-                                $(".snap-sidebar-cart__count").text(response.data.cart_count);
+                                // $(".snap-sidebar-cart__count").text(response.data.cart_count);
                                 $(".snap-sidebar-cart__shipping-price").html(response.data.shipping_total);
                                 $(".snap-sidebar-cart__subtotal-price").html(response.data.subtotal);
                                 

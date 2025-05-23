@@ -62,30 +62,9 @@ jQuery(document).ready(function($) {
     }
     
     // Añadir manejador para el evento de añadir al carrito
-    $(document.body).on('added_to_cart', function(event, fragments, cart_hash, $button) {
-        // Verificar si es una actualización de un producto existente
-        var isProductUpdate = false;
-        var productId = null;
-        
-        if ($button && $button.data && $button.data('product_id')) {
-            productId = $button.data('product_id');
-            
-            // Usar la función global para comprobar si el producto ya está en el carrito
-            if (window.isProductInCart && typeof window.isProductInCart === 'function') {
-                isProductUpdate = window.isProductInCart(productId);
-            } else {
-                // Fallback: comprobar directamente
-                isProductUpdate = $('.snap-sidebar-cart__product[data-product-id="' + productId + '"]').length > 0;
-            }
-            
-            console.log('Product Position Handler - Producto ID:', productId, 'Ya en carrito:', isProductUpdate ? 'Sí' : 'No');
-        }
-        
-        // Si no es una actualización, asegurar que se añada en la posición correcta
-        if (!isProductUpdate) {
-            console.log('Product Position Handler - Nuevo producto será añadido en posición:', getNewProductPosition());
-        }
-    });
+    // $(document.body).on('added_to_cart', function(event, fragments, cart_hash, $button) {
+    //     ...
+    // });
     
     console.log('Product Position Handler instalado correctamente');
 });

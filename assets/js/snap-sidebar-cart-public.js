@@ -331,10 +331,6 @@
           "</div>";
         $(".snap-sidebar-cart__footer").append(buttonsHtml);
       }
-    } else {
-      // Actualizar la visibilidad del footer
-      updateFooterVisibility(0);
-    }
 
       // Si hay productos pero no hay productos relacionados cargados, cargar para el primer producto
       if (
@@ -358,9 +354,11 @@
         }
       }
     } else {
-      $(".snap-sidebar-cart__buttons").remove();
+      // Actualizar la visibilidad del footer
+      updateFooterVisibility(0);
 
       // Si no hay productos, limpiar los productos relacionados y ocultar la sección
+      $(".snap-sidebar-cart__buttons").remove();
       $(".snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track").empty();
       $(".snap-sidebar-cart__related-section").hide();
     }
@@ -1822,8 +1820,8 @@
       );
     });
     
-    // Función para actualizar la visibilidad de los botones de navegación
-    function updateSliderNavigation($track) {
+    // Función para actualizar la visibilidad de los botones de navegación del slider
+    window.updateSliderNavigation = function($track) {
       var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();
       var currentScrollLeft = $track.scrollLeft();
       

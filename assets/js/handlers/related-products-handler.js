@@ -408,40 +408,27 @@
                 var $primaryImage = $product.find('.primary-image');
                 var $hoverImage = $product.find('.hover-image');
                 var $imageContainer = $product.find('.snap-sidebar-cart__related-product-image');
-                
                 // Verificar si hay una imagen de hover válida
                 var hasValidHoverImage = false;
-                
-                // Verificar que la imagen de hover sea válida
                 if ($hoverImage.length > 0) {
                     var hoverSrc = $hoverImage.attr('src');
                     if (hoverSrc && hoverSrc.trim() !== '' && !hoverSrc.includes('placeholder') && !hoverSrc.includes('woocommerce-placeholder')) {
                         hasValidHoverImage = true;
                     }
                 }
-                
                 console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
                            '- Imagen hover válida:', hasValidHoverImage);
-                
-                // Ya no necesitamos marcar los productos desde JS, ahora se hace desde el servidor
-                // Solo verificamos si el producto ya tiene la clase no-gallery-server
                 var hasGalleryFromServer = !$product.hasClass('no-gallery-server');
-                
-                // Configurar hover solo para productos con galería
-                // El efecto de zoom se aplica a todos los productos, pero el cambio de imagen solo a los que tienen galería
                 $product.hover(
                     function() {
-                        // Mouse enter - Aplicar un ligero zoom a la imagen
                         $imageContainer.addClass('hover-active');
                     },
                     function() {
-                        // Mouse leave - Quitar el zoom
                         $imageContainer.removeClass('hover-active');
                     }
                 );
-                    // Ya no necesitamos el efecto de mousemove con la nueva estructura
-                    // El CSS se encarga de la animación de hover
-                }
+                // Ya no necesitas el efecto de mousemove con la nueva estructura
+                // El CSS se encarga de la animación de hover
             });
         },
         

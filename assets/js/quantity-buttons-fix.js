@@ -157,11 +157,6 @@ jQuery(function($) {
                         $('.snap-sidebar-cart__products-list').html(response.data.cart_content);
                     }
                     
-                    // Actualizar contador de ítems
-                    if (response.data.cart_count !== undefined) {
-                        $('.snap-sidebar-cart__count').text(response.data.cart_count);
-                    }
-                    
                     // Actualizar subtotal
                     if (response.data.subtotal) {
                         $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);

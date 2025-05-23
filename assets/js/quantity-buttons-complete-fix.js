@@ -201,76 +201,17 @@ jQuery(function($) {
      */
     function updateCartFromResponse(data) {
         if (!data) return;
-        
         console.log('Actualizando carrito con datos:', data);
-        
         // Actualizar el contenido del carrito
         if (data.cart_content) {
             $('.snap-sidebar-cart__products-list').html(data.cart_content);
         }
-        
-        // Actualizar contador de ítems
-        if (data.cart_count !== undefined) {
-            updateCartItemCount(data.cart_count);
-        }
-        
         // Actualizar subtotal
         if (data.cart_subtotal !== undefined) {
             updateCartSubtotal(data.cart_subtotal);
         }
-        
-        // Recalcular el total sumando las cantidades de cada producto
-        recalculateCartTotal();
-        
-        // Solicitar una actualización completa del carrito para asegurar que todo esté sincronizado
-        setTimeout(function() {
-            $.ajax({
-                type: 'POST',
-                url: snap_sidebar_cart_params.ajax_url,
-                data: {
-                    action: 'snap_sidebar_cart_get_cart',
-                    nonce: snap_sidebar_cart_params.nonce
-                },
-                success: function(response) {
-                    console.log('Respuesta de actualización completa:', response);
-                    
-                    if (response.success && response.data) {
-                        // Actualizar el subtotal con el valor correcto
-                        if (response.data.cart_subtotal) {
-                            // Actualizar todos los elementos que muestran el subtotal
-                            $('.snap-sidebar-cart__subtotal-value').html(response.data.cart_subtotal);
-                            
-                            // Actualizar el elemento con la estructura específica
-                            var $subtotalPrice = $('.snap-sidebar-cart__subtotal-price');
-                            if ($subtotalPrice.length) {
-                                // Si contiene la estructura de WooCommerce, actualizar solo el contenido
-                                if ($subtotalPrice.find('.woocommerce-Price-amount').length) {
-                                    $subtotalPrice.find('.woocommerce-Price-amount bdi').html(
-                                        response.data.cart_subtotal.replace('<span class="woocommerce-Price-currencySymbol">', '&nbsp;<span class="woocommerce-Price-currencySymbol">')
-                                    );
-                                } else {
-                                    // Si no, reemplazar todo el contenido
-                                    $subtotalPrice.html(response.data.cart_subtotal);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }, 300);
-        
         // Disparar evento de actualización
         $(document.body).trigger('snap_sidebar_cart_updated', [data]);
-    }
-    
-    /**
-     * Actualiza el contador de ítems en el carrito
-     */
-    function updateCartItemCount(count) {
-        console.log('Actualizando contador de ítems a:', count);
-        
-        // Actualizar todos los contadores en la página
-        $('.snap-sidebar-cart__count, .cart-contents-count, .cart-count, .cart-items-count').text(count);
     }
     
     /**
@@ -315,24 +256,6 @@ jQuery(function($) {
                 }
             }
         });
-    }
-    
-    /**
-     * Recalcula el total del carrito sumando las cantidades de cada producto
-     */
-    function recalculateCartTotal() {
-        var totalItems = 0;
-        
-        // Sumar las cantidades de cada producto
-        $('.snap-sidebar-cart__product').each(function() {
-            var quantity = parseInt($(this).find('input.cart-item__quantity-input, input.snap-sidebar-cart__quantity-input').val(), 10) || 0;
-            totalItems += quantity;
-        });
-        
-        console.log('Total de ítems recalculado:', totalItems);
-        
-        // Actualizar el contador con el total recalculado
-        updateCartItemCount(totalItems);
     }
     
     /**

@@ -203,7 +203,7 @@
             
             // Actualizar todos los contadores del carrito en la página
             $('.snap-sidebar-cart__count').text(data.cart_count);
-            $('.cart-contents-count').text(data.cart_count);
+            // $('.cart-contents-count').text(data.cart_count);
             
             // Actualizar título con contador (formato "Carrito de compra (X)")
             var title = $('.snap-sidebar-cart__title').first().contents().filter(function() {

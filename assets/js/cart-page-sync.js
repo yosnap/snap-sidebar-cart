@@ -32,9 +32,7 @@
                     }
                     
                     // Actualizar el contador del carrito
-                    if (response.data.cart_count !== undefined) {
-                        updateCartCount(response.data.cart_count);
-                    }
+                    // updateCartCount(response.data.cart_count);
                     
                     // Actualizar el subtotal del carrito
                     if (response.data.cart_subtotal !== undefined) {

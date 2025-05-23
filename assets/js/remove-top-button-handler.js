@@ -77,11 +77,6 @@
                             $('.snap-sidebar-cart__products').html(response.data.cart_html);
                         }
                         
-                        // Actualizar contador
-                        if (response.data.cart_count !== undefined) {
-                            $('.snap-sidebar-cart__count').text(response.data.cart_count);
-                        }
-                        
                         // Actualizar precios
                         if (response.data.subtotal) {
                             $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);

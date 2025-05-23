@@ -233,20 +233,13 @@
          */
         updateCartContent: function(data) {
             console.log("Actualizando contenido del carrito");
-            
             // Actualizar el HTML del carrito
             $('.snap-sidebar-cart__products').html(data.cart_html);
-            
-            // Actualizar el contador
-            $('.snap-sidebar-cart__count').text(data.cart_count);
-            
             // Actualizar los totales
             $('.snap-sidebar-cart__shipping-price').html(data.shipping_total);
             $('.snap-sidebar-cart__subtotal-price').html(data.subtotal);
-            
             // Actualizar botones según el estado del carrito
             this.updateCartButtons(data.cart_count);
-            
             // Disparar evento para que otros módulos puedan responder
             $(document.body).trigger('snap_sidebar_cart_updated');
         },
@@ -661,5 +654,12 @@
 
     // Exportar para uso en otros scripts
     window.SnapSidebarCartUI = UIHandler;
+
+    // Importar y exponer el nuevo manejador de animaciones
+    if (typeof window.CartAnimationsHandler === 'undefined') {
+        $.getScript(snap_sidebar_cart_params.plugin_url + 'assets/js/handlers/cart-animations-handler.js');
+    }
+    // Importar el handler de sincronización de fragmentos de WooCommerce
+    $.getScript(snap_sidebar_cart_params.plugin_url + 'assets/js/handlers/cart-fragment-sync.js');
 
 })(jQuery);

@@ -372,27 +372,13 @@
             // Asegurar que cada producto tenga el ancho correcto según la configuración
             $temp.find('.snap-sidebar-cart__related-product').each(function() {
                 var $product = $(this);
-                
-                // Aplicar ancho basado en la configuración de columnas
                 $product.css('width', 'calc(' + columnWidth + '% - 10px)');
                 $product.css('flex', '0 0 calc(' + columnWidth + '% - 10px)');
-                
-                // Asegurar que tenga la clase para scroll-snap
                 $product.addClass('snap-sidebar-cart__scroll-snap-item');
-                
                 result += $('<div>').append($product.clone()).html();
             });
             
             console.log("Productos preparados:", result.length, "caracteres");
-            
-            return result;
-        } catch (error) {
-            console.error("Error al preparar productos:", error);
-            return '<div class="snap-sidebar-cart__related-product snap-sidebar-cart__no-products">Error al procesar productos relacionados.</div>';
-        }
-            
-            console.log("Productos preparados:", result.length, "caracteres");
-            
             return result;
         } catch (error) {
             console.error("Error al preparar productos:", error);

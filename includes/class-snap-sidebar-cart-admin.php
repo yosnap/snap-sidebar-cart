@@ -1301,4 +1301,18 @@ $products = get_posts($args);
 return wp_list_pluck($products, \'ID\');</pre>';
         echo '</details>';
     }
+
+    /**
+     * Añade enlaces de acción personalizados en la lista de plugins
+     *
+     * @since    1.0.0
+     * @param    array   $links   Enlaces actuales
+     * @return   array            Enlaces modificados
+     */
+    public function add_action_links($links) {
+        // Puedes personalizar el enlace de ajustes aquí
+        $settings_link = '<a href="options-general.php?page=snap-sidebar-cart-settings">' . __('Ajustes', 'snap-sidebar-cart') . '</a>';
+        array_unshift($links, $settings_link);
+        return $links;
+    }
 }

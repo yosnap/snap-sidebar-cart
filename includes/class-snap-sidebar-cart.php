@@ -261,91 +261,63 @@ class Snap_Sidebar_Cart {
      * @return   array|false                 Los datos del artículo con el timestamp añadido o false para prevenir adición.
      */
     public function add_timestamp_to_cart_item($cart_item_data, $product_id, $variation_id) {
-        // Obtener la instancia actual del carrito de WooCommerce
+        // Log detallado para depuración
+        error_log('DEBUG add_timestamp_to_cart_item: action=' . (isset($_POST['action']) ? $_POST['action'] : 'NO_ACTION') . ' | REQUEST=' . json_encode($_REQUEST));
+        // Si la acción es una actualización de cantidad vía AJAX, no hacer nada especial
+        if (
+            isset($_POST['action']) &&
+            $_POST['action'] === 'snap_sidebar_cart_update'
+        ) {
+            return $cart_item_data;
+        }
         $cart = WC()->cart;
         if (!$cart) {
             error_log('Error en add_timestamp_to_cart_item: WC()->cart no está disponible');
-            return $cart_item_data; // Fallback seguro
+            return $cart_item_data;
         }
-        
-        // Verificar si este producto ya existe en el carrito
         $product_in_cart = false;
         $existing_cart_item_key = '';
-        
-        // Buscar si el producto ya existe comparando exactamente producto y variación
+        // Normalizar variación del request
+        $requested_variation = array();
+        if (isset($_REQUEST['variation']) && is_array($_REQUEST['variation'])) {
+            foreach ($_REQUEST['variation'] as $k => $v) {
+                $requested_variation[strtolower(trim($k))] = strtolower(trim($v));
+            }
+        }
+        ksort($requested_variation);
+        $requested_serialized = serialize($requested_variation);
+        error_log('REQUESTED VARIATION (normalizada y serializada): ' . $requested_serialized);
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-            // Comparamos por ID de producto y variación (o ambas son 0)
             if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
-                // Verificar también atributos de variación si los hay
-                $variation_match = true;
-                if (!empty($cart_item['variation']) && isset($_REQUEST['variation'])) {
-                    $requested_variation = $_REQUEST['variation'];
-                    foreach ($requested_variation as $attribute => $value) {
-                        if (!isset($cart_item['variation'][$attribute]) || $cart_item['variation'][$attribute] !== $value) {
-                            $variation_match = false;
-                            break;
-                        }
+                // Normalizar variación del carrito
+                $cart_variation = array();
+                if (!empty($cart_item['variation']) && is_array($cart_item['variation'])) {
+                    foreach ($cart_item['variation'] as $k => $v) {
+                        $cart_variation[strtolower(trim($k))] = strtolower(trim($v));
                     }
                 }
-                
-                if ($variation_match) {
+                ksort($cart_variation);
+                $cart_serialized = serialize($cart_variation);
+                error_log('CART VARIATION (normalizada y serializada): ' . $cart_serialized);
+                // Si ambos arrays son vacíos o iguales, es el mismo producto
+                if ($cart_serialized === $requested_serialized) {
                     $product_in_cart = true;
                     $existing_cart_item_key = $cart_item_key;
-                    break;
+                    error_log('¡MATCH! Producto ya en carrito. NO se añade timestamp ni se permite duplicado.');
+                    // Devolver false para que WooCommerce NO cree una nueva línea
+                    return false;
                 }
             }
         }
-        
-        // Log para debug con información adicional
         $product = wc_get_product($product_id);
         $product_name = $product ? $product->get_name() : 'Producto desconocido';
         $timestamp = time();
-        
-        error_log('Proceso para producto ID ' . $product_id . ' (' . $product_name . '): Timestamp=' . $timestamp . ', Ya en carrito: ' . ($product_in_cart ? 'Sí (clave:' . $existing_cart_item_key . ')' : 'No'));
-        
-        // Si el producto ya está en el carrito y tenemos su clave
-        if ($product_in_cart && !empty($existing_cart_item_key)) {
-            // Obtener la cantidad actual y la nueva cantidad a añadir
-            $cart_items = $cart->get_cart();
-            $current_quantity = $cart_items[$existing_cart_item_key]['quantity'];
-            $quantity_to_add = isset($_REQUEST['quantity']) ? absint($_REQUEST['quantity']) : 1;
-            $new_quantity = $current_quantity + $quantity_to_add;
-            
-            error_log('Actualizando cantidad del producto existente de ' . $current_quantity . ' a ' . $new_quantity);
-            
-            // Actualizar la cantidad del producto existente
-            $cart->set_quantity($existing_cart_item_key, $new_quantity, true);
-            
-            // Actualizar el timestamp para mantener el producto en la posición correcta según configuración
-            // Esto es importante para preservar la ordenación por nuevos/antiguos
-            $cart_items = $cart->get_cart();
-            if (isset($cart_items[$existing_cart_item_key])) {
-                $cart_items[$existing_cart_item_key]['time_added'] = $timestamp;
-                $cart->set_cart_contents($cart_items);
-                error_log('Timestamp actualizado para el producto existente: ' . $timestamp);
-            }
-            
-            // Verificar después de la actualización para confirmar la cantidad correcta
-            $cart_items = $cart->get_cart();
-            if (isset($cart_items[$existing_cart_item_key])) {
-                $updated_quantity = $cart_items[$existing_cart_item_key]['quantity'];
-                error_log('Cantidad después de actualizar: ' . $updated_quantity . ' (esperada: ' . $new_quantity . ')');
-            }
-            
-            // IMPORTANTE: Retornar false para que WooCommerce no añada un nuevo item al carrito
-            return false;
-        } else {
-            // Es un nuevo producto, agregamos los datos necesarios
-            if (!is_array($cart_item_data)) {
-                $cart_item_data = array();
-            }
-            
-            // Agregar el timestamp al ítem para ordenar después
-            $cart_item_data['time_added'] = $timestamp;
-            error_log('Nuevo producto añadido con timestamp: ' . $timestamp);
-            
-            return $cart_item_data;
+        error_log('Nuevo producto añadido con timestamp: ' . $timestamp);
+        if (!is_array($cart_item_data)) {
+            $cart_item_data = array();
         }
+        $cart_item_data['time_added'] = $timestamp;
+        return $cart_item_data;
     }
 
     /**

@@ -84,10 +84,6 @@
                             // Alternativa si la función de actualización no está disponible
                             $product.slideUp(300, function() {
                                 $(this).remove();
-                                // Actualizar el contador
-                                if (response.data && response.data.cart_count !== undefined) {
-                                    $('.snap-sidebar-cart__count').text(response.data.cart_count);
-                                }
                                 // Verificar si el carrito está vacío y recargar
                                 if (response.data && response.data.cart_count === 0) {
                                     location.reload();

@@ -61,21 +61,10 @@
                         console.log('DEBUG: No se recibieron datos de productos individuales');
                     }
                     
-                    // Actualizar el contenido de los productos
-                    if (response.data.cart_content) {
-                        console.log('DEBUG: Actualizando contenido HTML completo del carrito');
-                        
-                        // Guardar el HTML actual para comparación
-                        var currentHtml = $('.snap-sidebar-cart__products').html();
-                        var newHtml = response.data.cart_content;
-                        
-                        // Comprobar si el HTML es diferente
-                        if (currentHtml !== newHtml) {
-                            console.log('DEBUG: El HTML del carrito ha cambiado, actualizando');
-                            $('.snap-sidebar-cart__products').html(newHtml);
-                        } else {
-                            console.log('DEBUG: El HTML del carrito no ha cambiado');
-                        }
+                    // Actualizar SIEMPRE el HTML del carrito con el recibido del backend
+                    if (response.data.cart_html) {
+                        console.log('Reemplazando HTML completo del carrito para evitar duplicados');
+                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
                     }
                     
                     // Actualizar el contador del carrito

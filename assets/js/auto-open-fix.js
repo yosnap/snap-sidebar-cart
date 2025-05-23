@@ -155,40 +155,29 @@ jQuery(document).ready(function($) {
     
     // 3. MANEJO DE APERTURA AUTOMÁTICA
     // Manejador directo para el evento added_to_cart con prioridad
+    /*
     $(document.body).on('added_to_cart', function(event, fragments, cart_hash, $button) {
         console.log('Evento added_to_cart detectado (manejador definitivo)');
-        
         // Verificar si el carrito estaba vacío antes de agregar este producto
         var cartCount = parseInt($(".snap-sidebar-cart__count").text()) || 0;
         var wasCartEmpty = cartCount <= 1; // Si es 1, significa que acabamos de agregar el primer producto
         console.log("¿El carrito estaba vacío?", wasCartEmpty ? "Sí" : "No", "Conteo actual:", cartCount);
-        
         // Verificar auto_open de múltiples formas para garantizar compatibilidad
         var autoOpenValue = snap_sidebar_cart_params.auto_open;
         var shouldAutoOpen = (autoOpenValue === true || 
                              autoOpenValue === "true" || 
                              autoOpenValue === 1 || 
                              autoOpenValue === "1");
-        
         console.log('Valor de auto_open:', autoOpenValue, '| Tipo:', typeof autoOpenValue);
         console.log('¿Debería abrirse automáticamente?', shouldAutoOpen);
-        
         // Si auto_open está habilitado, abrir el sidebar
         if (shouldAutoOpen) {
             console.log('Auto-open habilitado, abriendo sidebar...');
-            
-            // Primero abrir el sidebar para asegurarnos de que los elementos del DOM estén disponibles
             openSidebarDefinitive();
-            
-            // Si el carrito estaba vacío, asegurarnos de que el footer y la sección de productos relacionados sean visibles
             if (wasCartEmpty) {
                 console.log('El carrito estaba vacío, asegurando que el footer y productos relacionados sean visibles');
-                
-                // Asegurar que los contenedores necesarios estén visibles
                 $(".snap-sidebar-cart__footer").show();
                 $(".snap-sidebar-cart__related-section").show();
-                
-                // Asegurarnos de que los botones estén presentes
                 if ($(".snap-sidebar-cart__buttons").length === 0) {
                     var buttonsHtml =
                       '<div class="snap-sidebar-cart__buttons">' +
@@ -203,14 +192,10 @@ jQuery(document).ready(function($) {
                       "</div>";
                     $(".snap-sidebar-cart__footer").append(buttonsHtml);
                 }
-                
-                // Verificar si existe el contenedor de productos, si no, crearlo
                 if ($('.snap-sidebar-cart__products-list').length === 0) {
                     console.log('Creando contenedor de productos que no existe');
                     $('.snap-sidebar-cart__products').html('<ul class="snap-sidebar-cart__products-list"></ul>');
                 }
-                
-                // Asegurarnos de que el contenedor de productos vacío no tenga el mensaje de carrito vacío
                 if ($('.snap-sidebar-cart__empty').length > 0) {
                     console.log('Eliminando mensaje de carrito vacío');
                     $('.snap-sidebar-cart__empty').remove();
@@ -219,13 +204,11 @@ jQuery(document).ready(function($) {
         } else {
             console.log('Auto-open deshabilitado, no se abrirá el sidebar');
         }
-        
-        // Pequeño retraso para asegurar que el DOM esté actualizado antes de manejar el producto
         setTimeout(function() {
-            // No importa si se abrió o no el sidebar, manejar la adición del producto
             handleAddedProduct($button);
         }, 100);
     });
+    */
     
     // 4. MANEJO DE POSICIÓN DE NUEVOS PRODUCTOS
     // Función para manejar un producto recién añadido al carrito
@@ -282,13 +265,20 @@ jQuery(document).ready(function($) {
         // Si es una actualización y no una adición, manejarlo diferente
         if (isProductUpdate) {
             console.log('Actualizando producto existente en el carrito');
-            
-            // Actualizar contenido sin animación especial de nuevo producto
+            // Obtener la cantidad actualizada desde el backend
             getCartContent(function(response) {
-                if (response.success) {
-                    // Actualizar el contenido del carrito
-                    updateCartContent(response.data);
-                    
+                if (response.success && response.data && response.data.cart_items) {
+                    // Buscar el item correspondiente y actualizar solo la cantidad en el DOM
+                    var updatedItem = response.data.cart_items.find(function(item) {
+                        return item.product_id == productId || item.key == productId;
+                    });
+                    if (updatedItem) {
+                        var $product = $('.snap-sidebar-cart__product[data-product-id="' + productId + '"]');
+                        if ($product.length) {
+                            $product.find('.cart-item__quantity-input').val(updatedItem.quantity);
+                            $product.find('.snap-sidebar-cart__product-quantity-value').text(updatedItem.quantity);
+                        }
+                    }
                     // Mostrar animación de actualización en el producto
                     highlightExistingProduct(productId);
                 }
@@ -714,9 +704,34 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 console.log("Respuesta de actualización:", response);
-                if (response.success) {
-                    // Actualizar el contenido del carrito
-                    updateCartContent(response.data);
+                if (response.success && response.data) {
+                    // Buscar el producto actualizado en la respuesta
+                    if (response.data.cart_items && Array.isArray(response.data.cart_items)) {
+                        var updatedItem = response.data.cart_items.find(function(item) {
+                            return item.key == cartItemKey;
+                        });
+                        if (updatedItem) {
+                            var $product = $('.snap-sidebar-cart__product[data-key="' + cartItemKey + '"]');
+                            if ($product.length) {
+                                $product.find('.cart-item__quantity-input').val(updatedItem.quantity);
+                                $product.find('.snap-sidebar-cart__product-quantity-value').text(updatedItem.quantity);
+                                highlightExistingProduct($product.data('product-id'));
+                            }
+                        }
+                        // Detectar si hay cambio estructural (producto eliminado o nuevo)
+                        var currentKeys = $('.snap-sidebar-cart__product').map(function(){return $(this).data('key');}).get();
+                        var newKeys = response.data.cart_items.map(function(item){return item.key;});
+                        var structureChanged = (currentKeys.length !== newKeys.length) ||
+                            currentKeys.some(function(key) { return !newKeys.includes(key); }) ||
+                            newKeys.some(function(key) { return !currentKeys.includes(key); });
+                        if (structureChanged) {
+                            console.log('Cambio estructural detectado tras actualización de cantidad, actualizando HTML completo');
+                            updateCartContent(response.data);
+                        }
+                    } else {
+                        // Si no hay cart_items, actualizar todo
+                        updateCartContent(response.data);
+                    }
                 } else {
                     if (response.data && response.data.message) {
                         alert(response.data.message);
@@ -810,12 +825,6 @@ jQuery(document).ready(function($) {
             console.log('HTML del carrito actualizado con éxito');
         } else {
             console.error('Error: No se recibió HTML del carrito en la respuesta');
-        }
-        
-        // Actualizar el contador
-        if (data.cart_count !== undefined) {
-            $(".snap-sidebar-cart__count").text(data.cart_count);
-            console.log('Contador actualizado a:', data.cart_count);
         }
         
         // Actualizar los totales
