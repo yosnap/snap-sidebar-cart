@@ -330,9 +330,7 @@
                         
                         // Actualizar contenido del carrito
                         if (window.SnapSidebarCartUI) {
-                            window.SnapSidebarCartUI.updateCartContent(response.data);
-                            
-                            // Una vez actualizado el contenido, animar el cambio de cantidad
+                            // Animación de cantidad si aplica
                             if (animationData && animationData.productId) {
                                 window.SnapSidebarCartUI.highlightExistingProductQuantity(
                                     animationData.productId, 
@@ -341,7 +339,6 @@
                             }
                         } else {
                             // Fallback si no está disponible el módulo UI
-                            self.updateCartContent(response.data);
                         }
                     } else {
                         if (response.data && response.data.message) {
@@ -521,36 +518,6 @@
                     $notification.remove();
                 }, 300);
             }, 2500);
-        },
-        
-        /**
-         * Método de respaldo para actualizar el contenido del carrito
-         * 
-         * @param {Object} data - Datos del carrito actualizados
-         */
-        updateCartContent: function(data) {
-            // Actualizar el HTML del carrito
-            $('.snap-sidebar-cart__products').html(data.cart_html);
-            // Actualizar los totales
-            $('.snap-sidebar-cart__shipping-price').html(data.shipping_total);
-            $('.snap-sidebar-cart__subtotal-price').html(data.subtotal);
-            // Ocultar todos los preloaders
-            $('.snap-sidebar-cart__product-loader').hide();
-            // Rehabilitar inputs y botones que pudieran estar deshabilitados
-            $('.notabutton.temp-disabled').each(function() {
-                var $btn = $(this);
-                var originalState = $btn.data('original-disabled') || false;
-                $btn.prop('disabled', originalState).removeClass('temp-disabled');
-            });
-            $('.cart-item__quantity-input:disabled').each(function() {
-                var $input = $(this);
-                var originalState = $input.data('original-disabled') || false;
-                $input.prop('disabled', originalState);
-            });
-            // Volver a vincular los eventos
-            this.checkStockLimits();
-            // Disparar evento de actualización
-            $(document.body).trigger('snap_sidebar_cart_updated');
         }
     };
 

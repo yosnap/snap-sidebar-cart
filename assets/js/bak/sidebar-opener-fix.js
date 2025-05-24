@@ -10,7 +10,6 @@ jQuery(function($) {
     // Asegurarnos de que las variables globales estén definidas
     var $sidebar = $('.snap-sidebar-cart');
     var $overlay = $('.snap-sidebar-cart__overlay');
-    var $body = $('body');
     
     /**
      * Función definitiva para abrir el sidebar
@@ -43,7 +42,7 @@ jQuery(function($) {
             'opacity': '1'
         });
         
-        $body.addClass('snap-sidebar-cart-open');
+        $('body').addClass('snap-sidebar-cart-open');
         
         // Forzar un reflow para asegurar que los cambios se apliquen inmediatamente
         try {
@@ -72,7 +71,7 @@ jQuery(function($) {
             'opacity': '0'
         });
         
-        $body.removeClass('snap-sidebar-cart-open');
+        $('body').removeClass('snap-sidebar-cart-open');
     }
     
     // Exponer la función globalmente para que otros scripts puedan usarla

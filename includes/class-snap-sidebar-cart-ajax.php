@@ -1184,14 +1184,16 @@ class Snap_Sidebar_Cart_Ajax {
             echo '</div>';
         } else {
             echo '<ul class="snap-sidebar-cart__products-list">';
-            
+            // Log para depuración: cuántos productos hay realmente en el array
+            error_log('DEBUG: Número de productos en $cart_items: ' . count($cart_items));
             foreach ($cart_items as $cart_item_key => $cart_item) {
                 $product = $cart_item['data'];
-                $is_new_item = false;
-                
+                $is_new_item = ($cart_item_key === $new_item_key);
+                if ($is_new_item) {
+                    error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
+                }
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }
-            
             echo '</ul>';
         }
         

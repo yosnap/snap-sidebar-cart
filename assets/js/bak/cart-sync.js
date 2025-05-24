@@ -63,27 +63,20 @@
                     
                     // Actualizar SIEMPRE el HTML del carrito con el recibido del backend
                     if (response.data.cart_html) {
-                        console.log('Reemplazando HTML completo del carrito para evitar duplicados');
-                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
-                    }
-                    
-                    // Actualizar el contador del carrito
-                    if (response.data.cart_count !== undefined) {
-                        console.log('DEBUG: Actualizando contador del carrito:', response.data.cart_count);
-                        $('.snap-sidebar-cart__count, .snap-sidebar-cart-opener__count').text(response.data.cart_count);
-                    }
-                    
-                    // Actualizar el subtotal del carrito
-                    if (response.data.cart_subtotal !== undefined) {
-                        console.log('DEBUG: Actualizando subtotal del carrito:', response.data.cart_subtotal);
-                        
-                        // Actualizar todos los posibles selectores de subtotal
-                        $('.snap-sidebar-cart__subtotal-value').html(response.data.cart_subtotal);
-                        $('.snap-sidebar-cart__subtotal-price').html(response.data.cart_subtotal);
-                        $('.snap-sidebar-cart__footer-subtotal-value').html(response.data.cart_subtotal);
-                        $('.snap-sidebar-cart-subtotal').html(response.data.cart_subtotal);
-                        
-                        console.log('DEBUG: Selectores de subtotal actualizados');
+                        if (window.SnapSidebarCartUI && typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
+                        } else {
+                            $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                            if (response.data.cart_count !== undefined) {
+                                $('.snap-sidebar-cart__count, .snap-sidebar-cart-opener__count').text(response.data.cart_count);
+                            }
+                            if (response.data.cart_subtotal !== undefined) {
+                                $('.snap-sidebar-cart__subtotal-value').html(response.data.cart_subtotal);
+                                $('.snap-sidebar-cart__subtotal-price').html(response.data.cart_subtotal);
+                                $('.snap-sidebar-cart__footer-subtotal-value').html(response.data.cart_subtotal);
+                                $('.snap-sidebar-cart-subtotal').html(response.data.cart_subtotal);
+                            }
+                        }
                     }
                     
                     // Verificar si hay productos en el carrito

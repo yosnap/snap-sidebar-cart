@@ -37,21 +37,14 @@
                 success: function (response) {
                     if (response.success) {
                         // Si hay una función global para actualizar el carrito, usarla
-                        if (typeof window.updateCartContent === 'function') {
-                            window.updateCartContent(response.data);
+                        if (typeof window.SnapSidebarCartUI !== 'undefined') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
+                        } else if (typeof window.updateCartContent === 'function') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
                         } else {
-                            // Método alternativo: actualizar contenido
+                            // Fallback: solo actualizar HTML si no está disponible el handler principal
                             if (response.data && response.data.cart_html) {
                                 $('.snap-sidebar-cart__products').html(response.data.cart_html);
-                            }
-                            
-                            // Actualizar totales
-                            if (response.data && response.data.subtotal) {
-                                $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
-                            }
-                            
-                            if (response.data && response.data.shipping_total) {
-                                $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
                             }
                         }
                     } else {

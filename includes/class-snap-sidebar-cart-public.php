@@ -91,145 +91,41 @@ class Snap_Sidebar_Cart_Public {
         // Cargar jQuery explícitamente
         wp_enqueue_script('jquery');
         
-        // Cargar el manejador AJAX del carrito primero
+        // Cargar el manejador de posición de nuevos productos
         wp_enqueue_script(
-            'snap-sidebar-cart-ajax-handler', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-ajax-handler.js', 
+            'snap-sidebar-cart-product-position', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/product-position-handler.js', 
             array('jquery'), 
             $version, 
             true
         );
         
-        // Cargar el manejador de posición de nuevos productos
+        // Cargar el handler de productos relacionados ANTES que el principal
         wp_enqueue_script(
-            'snap-sidebar-cart-product-position', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/product-position-handler.js', 
-            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
-            $version, 
+            'snap-sidebar-cart-related-products-handler',
+            SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/related-products-handler.js',
+            array('jquery'),
+            $version,
             true
         );
         
-        // Cargar la corrección definitiva para auto-open y animaciones
-        wp_enqueue_script(
-            'snap-sidebar-cart-auto-open-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/auto-open-fix.js', 
-            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
-            $version, 
-            true
-        );
-        
-        // Ya no cargamos Swiper.js, usamos CSS Scroll Snap en su lugar
-        
-        // Cargar script para forzar la carga de la primera pestaña
-        wp_enqueue_script(
-            'snap-sidebar-cart-force-load-first-tab', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/force-load-first-tab.js', 
-            array('jquery', 'snap-sidebar-cart-ajax-handler'), 
-            $version, 
-            true
-        );
-        // Los estilos necesarios están incluidos en snap-sidebar-cart-public.css
-        
-        // Cargar el script principal
+        // Cargar el script principal, dependiendo del handler de productos relacionados
         wp_enqueue_script(
             'snap-sidebar-cart-public', 
             SNAP_SIDEBAR_CART_URL . 'assets/js/snap-sidebar-cart-public.js', 
-            array('jquery', 'snap-sidebar-cart-auto-open-fix'), 
+            array('jquery', 'snap-sidebar-cart-related-products-handler'), 
             $version, 
             true
         );
         
-        // Cargar inicializador de Scroll Snap
+        // Cargar el handler de cantidad, dependiendo del principal
         wp_enqueue_script(
-            'snap-sidebar-cart-scroll-snap-init', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/scroll-snap-init.js', 
-            array('jquery', 'snap-sidebar-cart-public'), 
-            $version, 
+            'snap-sidebar-cart-quantity-handler',
+            SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/quantity-handler.js',
+            array('jquery', 'snap-sidebar-cart-public'),
+            $version,
             true
         );
-        
-        // Cargar solución inmediata para tabs y slider
-        wp_enqueue_script(
-            'snap-sidebar-cart-immediate-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/immediate-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-scroll-snap-init'), 
-            $version, 
-            true
-        );
-        
-        // Cargar solución específica para la apertura del sidebar
-        wp_enqueue_script(
-            'snap-sidebar-cart-opener-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/sidebar-opener-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix'), 
-            $version, 
-            true
-        );
-        
-        // Cargar solución simple para los botones de cantidad
-        wp_enqueue_script(
-            'snap-sidebar-cart-quantity-buttons-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/quantity-buttons-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-opener-fix'), 
-            $version, 
-            true
-        );
-        
-        // Cargar el manejador del botón de eliminación superior
-        wp_enqueue_script(
-            'snap-sidebar-cart-remove-top-button', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/remove-top-button-handler.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-quantity-buttons-fix'), 
-            $version, 
-            true
-        );
-        
-        // Cargar el parche de compatibilidad al final para asegurar que resuelva cualquier conflicto
-        wp_enqueue_script(
-            'snap-sidebar-cart-compatibility-patch', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/compatibility-patch.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-opener-fix', 'snap-sidebar-cart-quantity-buttons-fix', 'snap-sidebar-cart-remove-top-button'), 
-            $version, 
-            true
-        );
-        
-        // Cargar el script de corrección para carrito vacío
-        wp_enqueue_script(
-            'snap-sidebar-cart-empty-cart-fix', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/empty-cart-fix.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-auto-open-fix', 'snap-sidebar-cart-remove-button-fix'), 
-            $version, 
-            true
-        );
-        
-        // Cargar el script de sincronización entre la página del carrito y el sidebar
-        wp_enqueue_script(
-            'snap-sidebar-cart-page-sync', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/cart-sync.js', 
-            array('jquery', 'snap-sidebar-cart-public', 'snap-sidebar-cart-ajax-handler'), 
-            $version, 
-            true
-        );
-        
-        // Agregar código inline para asegurar el correcto funcionamiento
-        wp_add_inline_script('snap-sidebar-cart-public', "
-            jQuery(document).ready(function($) {
-                // Aplicar solución directa para las pestañas
-                $(document).on('click', '.snap-sidebar-cart__related-tab', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    var tabType = $(this).data('tab');
-                    
-                    // Actualizar UI
-                    $('.snap-sidebar-cart__related-tab').removeClass('active');
-                    $(this).addClass('active');
-                    
-                    $('.snap-sidebar-cart__related-container').removeClass('active');
-                    $('.snap-sidebar-cart__related-container[data-content=\"' + tabType + '\"]').addClass('active');
-                });
-            });
-        ");
         
         // No cargamos los scripts de depuración en producción
         

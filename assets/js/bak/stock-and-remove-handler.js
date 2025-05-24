@@ -71,8 +71,8 @@
                 success: function (response) {
                     if (response.success) {
                         // Actualizar el contenido del carrito
-                        if (typeof updateCartContent === 'function') {
-                            updateCartContent(response.data);
+                        if (typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
                         } else {
                             location.reload(); // Fallback si la función no está disponible
                         }
@@ -123,8 +123,8 @@
                     success: function (response) {
                         if (response.success) {
                             // Actualizar el contenido del carrito
-                            if (typeof updateCartContent === 'function') {
-                                updateCartContent(response.data);
+                            if (typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                                window.SnapSidebarCartUI.updateCartContent(response.data);
                             } else {
                                 location.reload(); // Fallback si la función no está disponible
                             }
@@ -180,8 +180,8 @@
                     success: function (response) {
                         if (response.success) {
                             // Actualizar el contenido del carrito
-                            if (typeof updateCartContent === 'function') {
-                                updateCartContent(response.data);
+                            if (typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                                window.SnapSidebarCartUI.updateCartContent(response.data);
                             } else {
                                 location.reload(); // Fallback si la función no está disponible
                             }

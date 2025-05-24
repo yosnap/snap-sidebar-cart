@@ -66,7 +66,6 @@ jQuery(document).ready(function($) {
             
             var $sidebar = $('.snap-sidebar-cart');
             var $overlay = $('.snap-sidebar-cart__overlay');
-            var $body = $('body');
             
             if ($sidebar.length) {
                 $sidebar.addClass('open');
@@ -83,7 +82,7 @@ jQuery(document).ready(function($) {
                     'opacity': '1'
                 });
                 
-                $body.addClass('snap-sidebar-cart-open');
+                $('body').addClass('snap-sidebar-cart-open');
                 
                 console.log('Sidebar abierto con éxito');
             } else {

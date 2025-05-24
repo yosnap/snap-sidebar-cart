@@ -55,8 +55,8 @@ jQuery(document).ready(function($) {
         }
         
         // Actualizar ambos lugares para máxima compatibilidad
-        snap_sidebar_cart_params.new_product_position = newProductPosition;
-        snap_sidebar_cart_params.animations.new_product_position = newProductPosition;
+        // snap_sidebar_cart_params.new_product_position = newProductPosition;
+        // snap_sidebar_cart_params.animations.new_product_position = newProductPosition;
         
         console.log('Posición de nuevos productos configurada:', newProductPosition);
     }

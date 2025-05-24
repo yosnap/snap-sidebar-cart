@@ -21,8 +21,9 @@
                 if (window.snap_sidebar_cart_params.animations) {
                     this.animationDuration = parseInt(window.snap_sidebar_cart_params.animations.duration, 10) || 300;
                 }
-                this.newProductPosition = window.snap_sidebar_cart_params.new_product_position ||
-                    (window.snap_sidebar_cart_params.animations && window.snap_sidebar_cart_params.animations.new_product_position) || 'top';
+                // Líneas 23-24: comentar la asignación de this.newProductPosition desde snap_sidebar_cart_params.new_product_position o animations.new_product_position para desactivar temporalmente la lógica de orden de productos
+                // this.newProductPosition = window.snap_sidebar_cart_params.new_product_position ||
+                //     (window.snap_sidebar_cart_params.animations && window.snap_sidebar_cart_params.animations.new_product_position) || 'top';
             }
         },
 

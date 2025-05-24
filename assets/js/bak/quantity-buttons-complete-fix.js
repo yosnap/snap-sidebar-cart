@@ -148,7 +148,7 @@ jQuery(function($) {
                 
                 if (response.success) {
                     // Actualizar el contenido del carrito
-                    updateCartFromResponse(response.data);
+                    window.SnapSidebarCartUI.updateCartContent(response.data);
                 } else {
                     // Mostrar mensaje de error si existe
                     if (response.data && response.data.message) {
@@ -194,24 +194,6 @@ jQuery(function($) {
             var nextUpdate = updateQueue.shift();
             processQuantityUpdate(nextUpdate.key, nextUpdate.newVal, nextUpdate.oldVal, nextUpdate.$product);
         }
-    }
-    
-    /**
-     * Actualiza el carrito con los datos de la respuesta
-     */
-    function updateCartFromResponse(data) {
-        if (!data) return;
-        console.log('Actualizando carrito con datos:', data);
-        // Actualizar el contenido del carrito
-        if (data.cart_content) {
-            $('.snap-sidebar-cart__products-list').html(data.cart_content);
-        }
-        // Actualizar subtotal
-        if (data.cart_subtotal !== undefined) {
-            updateCartSubtotal(data.cart_subtotal);
-        }
-        // Disparar evento de actualización
-        $(document.body).trigger('snap_sidebar_cart_updated', [data]);
     }
     
     /**

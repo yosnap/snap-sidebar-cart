@@ -40,11 +40,6 @@
                                 $(".snap-sidebar-cart__shipping-price").html(response.data.shipping_total);
                                 $(".snap-sidebar-cart__subtotal-price").html(response.data.subtotal);
                                 
-                                // Vincular eventos
-                                if (typeof bindQuantityEvents === 'function') {
-                                    bindQuantityEvents();
-                                }
-                                
                                 // Abrir el carrito
                                 $(".snap-sidebar-cart").addClass("open");
                                 $(".snap-sidebar-cart__overlay").css("display", "block");

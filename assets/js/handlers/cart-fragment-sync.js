@@ -1,5 +1,9 @@
+// Log para comprobar que el handler se carga
+console.log('[SnapSidebarCart] Handler de sincronización cargado');
+
 // Sincroniza los fragmentos WooCommerce tras cada actualización del sidebar
 jQuery(document).on('snap_sidebar_cart_updated', function(e, data) {
+    console.log('[SnapSidebarCart] Evento snap_sidebar_cart_updated recibido', data);
     // 1. Refrescar fragmentos WooCommerce
     if (typeof wc_cart_fragments_params !== 'undefined') {
         jQuery.ajax({
@@ -35,11 +39,20 @@ jQuery(document).on('snap_sidebar_cart_updated', function(e, data) {
                             var $newTotals = jQuery(html).find('.cart_totals');
                             if ($newCart.length) {
                                 jQuery('.woocommerce-cart-form').replaceWith($newCart);
+                                console.log('[SnapSidebarCart] Tabla del carrito reemplazada vía AJAX');
                             }
                             if ($newTotals.length) {
                                 jQuery('.cart_totals').replaceWith($newTotals);
+                                console.log('[SnapSidebarCart] Totales del carrito reemplazados vía AJAX');
                             }
+                            // Disparar eventos estándar de WooCommerce
                             jQuery(document.body).trigger('updated_cart_totals');
+                            if ($newCart.length === 0) {
+                                jQuery(document.body).trigger('wc_cart_emptied');
+                            }
+                        },
+                        error: function() {
+                            console.error('[SnapSidebarCart] Error al recargar la tabla del carrito vía AJAX');
                         }
                     });
                 }

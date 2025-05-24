@@ -44,7 +44,10 @@
                 
                 if (response.success) {
                     // Actualizar el contenido del carrito completo
-                    $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                    if (window.SnapSidebarCartUI) {
+                        // Fallback: solo actualizar HTML si no está disponible el handler principal
+                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                    }
                     $('.snap-sidebar-cart__count').text(response.data.cart_count);
                     $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
                     $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
@@ -90,12 +93,6 @@
                     
                     // Reiniciar los manejadores de eventos
                     initRemoveButtonHandlers();
-                    
-                    // Si hay una función global para vincular eventos de cantidad, llamarla
-                    if (typeof window.bindQuantityEvents === 'function') {
-                        window.bindQuantityEvents();
-                        debugLog("Re-bound quantity events");
-                    }
                 } else {
                     debugLog("Error en respuesta AJAX: " + (response.data ? response.data.message : "Unknown error"));
                     $product.css('opacity', '1').removeClass('removing');

@@ -45,8 +45,8 @@ jQuery(document).ready(function($) {
         var $product = $('[data-key="' + cartItemKey + '"]');
         
         // Si hay un manejador de preloader global, usarlo
-        if (window.setupAndShowPreloader && typeof window.setupAndShowPreloader === 'function' && $product.length) {
-            window.setupAndShowPreloader($product);
+        if (window.SnapSidebarCartShowPreloader && typeof window.SnapSidebarCartShowPreloader === 'function' && $product.length) {
+            window.SnapSidebarCartShowPreloader($product);
         } else if ($product.length) {
             // Fallback simple
             var $loader = $product.find('.snap-sidebar-cart__product-loader');
@@ -69,8 +69,8 @@ jQuery(document).ready(function($) {
                 console.log("Respuesta de actualización:", response);
                 if (response.success) {
                     // Actualizar el contenido del carrito
-                    if (window.updateCartContent && typeof window.updateCartContent === 'function') {
-                        window.updateCartContent(response.data);
+                    if (window.SnapSidebarCartUI && typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                        window.SnapSidebarCartUI.updateCartContent(response.data);
                     } else {
                         // Implementación básica si no existe la función
                         if (response.data.cart_html) {
@@ -204,7 +204,7 @@ jQuery(document).ready(function($) {
                 product_id: productId,
                 quantity: quantity,
                 variation: variations,
-                new_product_position: snap_sidebar_cart_params.animations.new_product_position || 'top'
+                // new_product_position: snap_sidebar_cart_params.animations.new_product_position || 'top'
             },
             success: function(response) {
                 console.log("Respuesta de añadir producto:", response);
@@ -227,8 +227,8 @@ jQuery(document).ready(function($) {
                     }
                     
                     // Actualizar el contenido del carrito
-                    if (window.updateCartContent && typeof window.updateCartContent === 'function') {
-                        window.updateCartContent(response.data);
+                    if (window.SnapSidebarCartUI && typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                        window.SnapSidebarCartUI.updateCartContent(response.data);
                     }
                     
                     // Productos relacionados

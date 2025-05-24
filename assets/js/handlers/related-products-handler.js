@@ -223,6 +223,7 @@
          * @param {string} tabType - El tipo de pestaña a activar
          */
         changeTab: function(tabType) {
+            console.log('changeTab: tabType recibido:', tabType, typeof tabType);
             if (tabType === this.currentTab) {
                 return; // Ya está activa
             }
@@ -265,6 +266,7 @@
          * @param {string} tabType - El tipo de pestaña para cargar productos
          */
         loadRelatedProducts: function(tabType) {
+            console.log('Llamando a loadRelatedProducts con tabType:', tabType, typeof tabType);
             var self = this;
             var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .snap-sidebar-cart__slider-track');
             
@@ -416,8 +418,8 @@
                         hasValidHoverImage = true;
                     }
                 }
-                console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
-                           '- Imagen hover válida:', hasValidHoverImage);
+                /*console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
+                           '- Imagen hover válida:', hasValidHoverImage);*/
                 var hasGalleryFromServer = !$product.hasClass('no-gallery-server');
                 $product.hover(
                     function() {
@@ -488,9 +490,6 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Actualizar contenido
-                            window.SnapSidebarCartUI.updateCartContent(response.data);
-                            
                             // Resaltar producto
                             window.SnapSidebarCartUI.highlightExistingProduct(productId);
                         } else {
@@ -511,19 +510,12 @@
             } else {
                 // Si es nuevo, añadirlo al carrito
                 
-                // Obtener posición de nuevos productos
-                var newProductPosition = snap_sidebar_cart_params.new_product_position || 'top';
-                
                 // Mostrar preloader
                 var $productsContainer = $('.snap-sidebar-cart__products-list');
                 var $newItemPlaceholder = $('<li class="snap-sidebar-cart__product placeholder-animation"></li>');
                 
                 // Insertar placeholder
-                if (newProductPosition === 'top') {
-                    $productsContainer.prepend($newItemPlaceholder);
-                } else {
-                    $productsContainer.append($newItemPlaceholder);
-                }
+                $productsContainer.append($newItemPlaceholder);
                 
                 // Añadir preloader usando la función auxiliar
                 var $preloader = $(generatePreloaderHTML(false));
@@ -544,16 +536,8 @@
                         $newItemPlaceholder.remove();
                         
                         if (response.success) {
-                            // Actualizar contenido
-                            window.SnapSidebarCartUI.updateCartContent(response.data);
-                            
                             // Animar nuevo producto
-                            var $newItem;
-                            if (newProductPosition === 'top') {
-                                $newItem = $('.snap-sidebar-cart__product:first-child');
-                            } else {
-                                $newItem = $('.snap-sidebar-cart__product:last-child');
-                            }
+                            var $newItem = $('.snap-sidebar-cart__product:last-child');
                             
                             if ($newItem.length) {
                                 $newItem.addClass('new-item');
@@ -584,7 +568,11 @@
         RelatedProductsHandler.init();
     });
 
-    // Exportar para uso en otros scripts
+    // Exportar para uso global y compatibilidad con el plugin principal
+    window.snapSidebarCartSlider = window.snapSidebarCartSlider || {};
+    window.snapSidebarCartSlider.loadRelatedProducts = RelatedProductsHandler.loadRelatedProducts.bind(RelatedProductsHandler);
+    window.snapSidebarCartSlider.initSlider = RelatedProductsHandler.initSlider.bind(RelatedProductsHandler);
+    // (Opcional) Mantener la referencia anterior
     window.SnapSidebarCartRelated = RelatedProductsHandler;
 
 })(jQuery);

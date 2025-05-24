@@ -76,10 +76,10 @@
                     if (response.success) {
                         console.log('Producto eliminado correctamente:', response);
                         // Actualizar el contenido del carrito
-                        if (typeof window.updateCartContent === 'function') {
-                            window.updateCartContent(response.data);
-                        } else if (typeof updateCartContent === 'function') {
-                            updateCartContent(response.data);
+                        if (typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
+                        } else if (typeof window.SnapSidebarCartUI.updateCartContent === 'function') {
+                            window.SnapSidebarCartUI.updateCartContent(response.data);
                         } else {
                             // Alternativa si la función de actualización no está disponible
                             $product.slideUp(300, function() {
