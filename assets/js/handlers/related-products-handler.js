@@ -223,12 +223,9 @@
          * @param {string} tabType - El tipo de pestaña a activar
          */
         changeTab: function(tabType) {
-            console.log('changeTab: tabType recibido:', tabType, typeof tabType);
             if (tabType === this.currentTab) {
                 return; // Ya está activa
             }
-            
-            console.log('Cambiando a pestaña:', tabType);
             
             // Actualizar UI
             $('.snap-sidebar-cart__related-tab').removeClass('active');
@@ -266,12 +263,10 @@
          * @param {string} tabType - El tipo de pestaña para cargar productos
          */
         loadRelatedProducts: function(tabType) {
-            console.log('Llamando a loadRelatedProducts con tabType:', tabType, typeof tabType);
             var self = this;
             var $targetContainer = $('.snap-sidebar-cart__related-container[data-content="' + tabType + '"] .snap-sidebar-cart__slider-track');
             
             if ($targetContainer.length === 0) {
-                console.error('Contenedor no encontrado para productos de tipo:', tabType);
                 return;
             }
             
@@ -418,8 +413,6 @@
                         hasValidHoverImage = true;
                     }
                 }
-                /*console.log('Producto:', $product.find('.snap-sidebar-cart__related-product-title').text(), 
-                           '- Imagen hover válida:', hasValidHoverImage);*/
                 var hasGalleryFromServer = !$product.hasClass('no-gallery-server');
                 $product.hover(
                     function() {
@@ -540,7 +533,7 @@
                             var $newItem = $('.snap-sidebar-cart__product:last-child');
                             
                             if ($newItem.length) {
-                                $newItem.addClass('new-item');
+                                // $newItem.addClass('new-item'); // Animación desactivada temporalmente
                                 setTimeout(function() {
                                     $newItem.removeClass('new-item');
                                 }, 800);

@@ -11,7 +11,9 @@
 /* Animación para cambio de cantidad */
 .cart-item__quantity-input.quantity-updated,
 .snap-sidebar-cart__quantity-input.quantity-updated {
-    animation: quantityUpdated var(--animation-duration, 300ms) ease-out;
+    /* Animación desactivada */
+    /* background-color: rgba(241, 196, 15, 0.1); */
+    /* animation: quantityUpdated 1s; */
 }
 
 /* Animación para productos que se eliminan */
@@ -21,7 +23,9 @@
 
 /* Clase para destacar productos actualizados */
 .snap-sidebar-cart__product.product-updated {
-    animation: productHighlight var(--animation-duration, 300ms) ease-out;
+    /* Animación desactivada */
+    /* background-color: rgba(241, 196, 15, 0.1); */
+    /* animation: fadeIn 0.5s; */
 }
 
 /* Keyframes para las animaciones */

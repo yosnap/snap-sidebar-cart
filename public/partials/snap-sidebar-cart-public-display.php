@@ -40,6 +40,21 @@ $cart_count = WC()->cart->get_cart_contents_count();
             <div class="snap-sidebar-cart__products">
                 <?php
                 $cart_items = WC()->cart->get_cart();
+                // Ordenar los productos por 'time_added' según la opción guardada
+                $new_product_position = isset($this->options['animations']['new_product_position'])
+                    ? $this->options['animations']['new_product_position']
+                    : (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'top');
+                uasort($cart_items, function($a, $b) use ($new_product_position) {
+                    $a_time = isset($a['time_added']) ? $a['time_added'] : 0;
+                    $b_time = isset($b['time_added']) ? $b['time_added'] : 0;
+                    if ($a_time == $b_time) return 0;
+                    if ($new_product_position === 'top') {
+                        return ($a_time > $b_time) ? -1 : 1;
+                    } else {
+                        return ($a_time < $b_time) ? -1 : 1;
+                    }
+                });
+                $cart_items = array_values($cart_items);
                 
                 if (empty($cart_items)) {
                     ?>

@@ -94,7 +94,7 @@ class Snap_Sidebar_Cart_Public {
         // Cargar el manejador de posición de nuevos productos
         wp_enqueue_script(
             'snap-sidebar-cart-product-position', 
-            SNAP_SIDEBAR_CART_URL . 'assets/js/product-position-handler.js', 
+            SNAP_SIDEBAR_CART_URL . 'assets/js/handlers/product-position-handler.js', 
             array('jquery'), 
             $version, 
             true

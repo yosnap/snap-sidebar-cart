@@ -29,7 +29,7 @@
                     this.animationDuration = parseInt(window.snap_sidebar_cart_params.animations.duration, 10) || 300;
                 }
                 
-                // this.newProductPosition = window.snap_sidebar_cart_params.new_product_position || 'top';
+                this.newProductPosition = window.snap_sidebar_cart_params.new_product_position || 'top';
             }
             
             this.bindEvents();
@@ -380,54 +380,30 @@
             $('.snap-sidebar-cart__product').each(function() {
                 var $product = $(this);
                 if ($product.data('product-id') == productId) {
-                    // Encontrar contenedor de cantidad e input
                     var $quantityContainer = $product.find('.quantity.buttoned-input');
                     var $quantityInput = $product.find('.cart-item__quantity-input');
-                    
                     if ($quantityInput.length) {
-                        // Obtener nueva cantidad
                         var newQuantity = parseInt($quantityInput.val(), 10) || 0;
-                        
                         if (newQuantity > oldQuantity) {
-                            // Efecto más notable para el contenedor de cantidad
+                            // Solo aplicar animación de fondo amarillo si es incremento de cantidad
                             $quantityContainer.addClass('quantity-highlight');
-                            
-                            // Animación para el valor de la cantidad
                             $quantityInput.addClass('quantity-flash');
-                            
-                            // Añadir un efecto visual temporal para el producto
-                            $product.css({
-                                'transition': 'background-color 0.5s ease-in-out',
-                                'background-color': 'rgba(241, 196, 15, 0.1)'
-                            });
-                            
-                            // Eliminar clases y restaurar estilos después de completar la animación
+                            // Animación de fondo amarillo DESACTIVADA
                             setTimeout(function() {
                                 $quantityContainer.removeClass('quantity-highlight');
                                 $quantityInput.removeClass('quantity-flash');
-                                
-                                $product.css({
-                                    'background-color': '',
-                                    'transition': ''
-                                });
-                                
-                                // Efecto de "pulso" final sutil con CSS puro
                                 $quantityInput.css('animation', 'quantityPulse 0.3s ease-in-out');
-                                
-                                // Limpieza final
                                 setTimeout(function() {
                                     $quantityInput.css('animation', '');
                                 }, 300);
                             }, 1000);
                         }
                     }
-                    
-                    // Asegurar visibilidad scrollando al producto
+                    // Scroll solo si es actualización
                     var $container = $('.snap-sidebar-cart__products');
                     var productOffset = $product.offset().top - $container.offset().top + $container.scrollTop();
                     $container.animate({ scrollTop: productOffset - 10 }, 300);
-                    
-                    return false; // Salir del bucle
+                    return false;
                 }
             });
         },
@@ -440,7 +416,6 @@
         addNewProductAnimation: function(productId) {
             var self = this;
             var $productsContainer = $('.snap-sidebar-cart__products-list');
-            
             // Si no hay contenedor, actualizar todo el carrito
             if (!$productsContainer.length) {
                 $.ajax({
@@ -451,36 +426,15 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Animar nuevo producto
-                            var $newItem;
-                            if (self.newProductPosition === 'top') {
-                                $newItem = $('.snap-sidebar-cart__product:first-child');
-                            } else {
-                                $newItem = $('.snap-sidebar-cart__product:last-child');
-                            }
-                            
-                            if ($newItem.length) {
-                                // Desplazar automáticamente para mostrar el nuevo producto
-                                var $container = $('.snap-sidebar-cart__products');
-                                var scrollPosition = 0;
-                                
-                                if (self.newProductPosition === 'top') {
-                                    scrollPosition = 0;
-                                } else {
-                                    scrollPosition = $container[0].scrollHeight;
-                                }
-                                
-                                $container.animate({
-                                    scrollTop: scrollPosition
-                                }, 300);
-                                
-                                // Destacar el nuevo producto
-                                $newItem.addClass('new-item');
+                            // Animar nuevo producto SOLO al producto con el productId correcto
+                            var $newItems = $('.snap-sidebar-cart__product[data-product-id="' + productId + '"]');
+                            if ($newItems.length) {
+                                var $itemToAnimate = (self.newProductPosition === 'top') ? $newItems.first() : $newItems.last();
+                                // $itemToAnimate.addClass('new-item'); // Animación desactivada temporalmente
                                 setTimeout(function() {
-                                    $newItem.removeClass('new-item');
+                                    // $itemToAnimate.removeClass('new-item');
                                 }, self.animationDuration * 2);
                             }
-                            
                             // Cargar productos relacionados si se añadió un nuevo producto
                             if (productId && window.SnapSidebarCartRelated) {
                                 window.SnapSidebarCartRelated.loadRelatedProductsIfEmpty();
@@ -489,8 +443,8 @@
                     },
                     error: function() {
                         // Eliminar elementos de transición en caso de error
-                        $transitionElement.remove();
-                        $newItemPlaceholder.remove();
+                        $transitionElement && $transitionElement.remove();
+                        $newItemPlaceholder && $newItemPlaceholder.remove();
                     }
                 });
                 return;
@@ -580,40 +534,17 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Eliminar elementos de transición y placeholder
-                            $transitionElement.remove();
-                            $newItemPlaceholder.remove();
-                            
-                            // Animar nuevo producto
-                            var $newItem;
-                            if (self.newProductPosition === 'top') {
-                                $newItem = $('.snap-sidebar-cart__product:first-child');
-                            } else {
-                                $newItem = $('.snap-sidebar-cart__product:last-child');
-                            }
-                            
-                            if ($newItem.length) {
-                                // Desplazar automáticamente para mostrar el nuevo producto
-                                var $container = $('.snap-sidebar-cart__products');
-                                var scrollPosition = 0;
-                                
-                                if (self.newProductPosition === 'top') {
-                                    scrollPosition = 0;
-                                } else {
-                                    scrollPosition = $container[0].scrollHeight;
-                                }
-                                
-                                $container.animate({
-                                    scrollTop: scrollPosition
-                                }, 300);
-                                
-                                // Destacar el nuevo producto
-                                $newItem.addClass('new-item');
+                            $transitionElement && $transitionElement.remove();
+                            $newItemPlaceholder && $newItemPlaceholder.remove();
+                            // Animar nuevo producto SOLO al producto con el productId correcto
+                            var $newItems = $('.snap-sidebar-cart__product[data-product-id="' + productId + '"]');
+                            if ($newItems.length) {
+                                var $itemToAnimate = (self.newProductPosition === 'top') ? $newItems.first() : $newItems.last();
+                                // $itemToAnimate.addClass('new-item'); // Animación desactivada temporalmente
                                 setTimeout(function() {
-                                    $newItem.removeClass('new-item');
+                                    // $itemToAnimate.removeClass('new-item');
                                 }, self.animationDuration * 2);
                             }
-                            
                             // Cargar productos relacionados si se añadió un nuevo producto
                             if (productId && window.SnapSidebarCartRelated) {
                                 window.SnapSidebarCartRelated.loadRelatedProductsIfEmpty();
@@ -621,12 +552,11 @@
                         }
                     },
                     error: function() {
-                        // Eliminar elementos de transición en caso de error
-                        $transitionElement.remove();
-                        $newItemPlaceholder.remove();
+                        $transitionElement && $transitionElement.remove();
+                        $newItemPlaceholder && $newItemPlaceholder.remove();
                     }
                 });
-            }, self.animationDuration / 2); // Aumentar ligeramente el tiempo para permitir la transición
+            }, self.animationDuration / 2);
         },
         
         /**

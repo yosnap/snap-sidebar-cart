@@ -224,8 +224,9 @@
 }
 
 .snap-sidebar-cart__product.product-updated {
-    background-color: rgba(241, 196, 15, 0.1);
-    transition: background-color 0.3s;
+    /* Animación desactivada */
+    /* background-color: rgba(241, 196, 15, 0.1); */
+    /* animation: fadeIn 0.5s; */
 }
 
 /* Imagen del producto */
@@ -349,7 +350,9 @@
 }
 
 .cart-item__quantity-input.quantity-updated {
-    animation: quantityUpdated var(--animation-duration) ease-out;
+    /* Animación desactivada */
+    /* background-color: rgba(241, 196, 15, 0.1); */
+    /* animation: quantityUpdated 1s; */
 }
 
 /* Precios */
@@ -1001,8 +1004,9 @@
 
 /* Animación específica para el contenedor de cantidad */
 .quantity.buttoned-input.quantity-highlight {
-    animation: quantityContainerHighlight 1s ease-in-out;
-    box-shadow: 0 0 0 2px var(--highlight-color);
+    /* Animación desactivada */
+    /* animation: quantityContainerHighlight 1s ease-in-out; */
+    /* box-shadow: 0 0 0 2px var(--highlight-color); */
 }
 
 @keyframes quantityContainerHighlight {
@@ -1026,8 +1030,9 @@
 
 /* Animación para el valor de cantidad */
 .cart-item__quantity-input.quantity-flash {
-    animation: quantityFlash 1s ease-in-out;
-    font-weight: bold;
+    /* Animación desactivada */
+    /* animation: quantityFlash 1s ease-in-out; */
+    /* font-weight: bold; */
 }
 
 @keyframes quantityFlash {

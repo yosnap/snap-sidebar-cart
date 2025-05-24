@@ -77,6 +77,9 @@ Sí, el plugin es compatible con WPML y Polylang. Todos los textos son traducibl
 
 == Changelog ==
 
+= 1.2.8 =
+* Corrección: El orden de los productos en el sidebar ahora respeta la configuración de "Arriba/Abajo" tanto al agregar productos como al recargar la página. Se reindexa el array tras ordenar para asegurar consistencia visual.
+
 = 1.2.4 =
 * Mejora: Optimización del rendimiento en dispositivos móviles
 * Mejora: Actualizada compatibilidad con WooCommerce 8.5

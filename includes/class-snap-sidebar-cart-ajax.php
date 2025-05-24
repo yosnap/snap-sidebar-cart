@@ -43,21 +43,21 @@ class Snap_Sidebar_Cart_Ajax {
         $variation = isset($_POST['variation']) ? $_POST['variation'] : array();
         
         // DEBUG: Información detallada sobre la operación
-        error_log('==== INICIO add_to_cart() AJAX ====');
-        error_log('Producto a añadir ID: ' . $product_id . ', Cantidad: ' . $quantity);
-        error_log('Variación ID: ' . $variation_id . ', Atributos: ' . json_encode($variation));
-        error_log('Configuración de posición de nuevos productos: ' . (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'No definido'));
+        // error_log('==== INICIO add_to_cart() AJAX ====');
+        // error_log('Producto a añadir ID: ' . $product_id . ', Cantidad: ' . $quantity);
+        // error_log('Variación ID: ' . $variation_id . ', Atributos: ' . json_encode($variation));
+        // error_log('Configuración de posición de nuevos productos: ' . (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'No definido'));
         
         // Verificar que el producto existe
         $product = wc_get_product($product_id);
         if (!$product) {
-            error_log('Error: Producto no encontrado');
+            // error_log('Error: Producto no encontrado');
             wp_send_json_error(array('message' => __('Producto no encontrado', 'snap-sidebar-cart')));
         }
         
         // Verificar stock antes de proceder
         $stock_quantity = $product->get_stock_quantity();
-        error_log('Stock disponible del producto: ' . ($stock_quantity !== null ? $stock_quantity : 'Ilimitado'));
+        // error_log('Stock disponible del producto: ' . ($stock_quantity !== null ? $stock_quantity : 'Ilimitado'));
         
         // Comprobar la cantidad actual en el carrito de este producto
         $cart = WC()->cart;
@@ -83,7 +83,7 @@ class Snap_Sidebar_Cart_Ajax {
                     $existing_item_key = $cart_item_key;
                     $needs_quantity_update = true;
                     $current_qty_in_cart = $cart_item['quantity'];
-                    error_log('Producto encontrado en carrito: Clave=' . $existing_item_key . ', Cantidad actual=' . $current_qty_in_cart);
+                    // error_log('Producto encontrado en carrito: Clave=' . $existing_item_key . ', Cantidad actual=' . $current_qty_in_cart);
                     break;
                 }
             }
@@ -93,13 +93,13 @@ class Snap_Sidebar_Cart_Ajax {
         if ($needs_quantity_update && $existing_item_key) {
             $new_qty = $current_qty_in_cart + $quantity;
             
-            error_log('Actualizando cantidad del producto existente de ' . $current_qty_in_cart . ' a ' . $new_qty);
+            // error_log('Actualizando cantidad del producto existente de ' . $current_qty_in_cart . ' a ' . $new_qty);
             
             // Verificar si esta es la última unidad disponible
             $is_last_available = false;
             if ($stock_quantity !== null && $new_qty >= $stock_quantity) {
                 $is_last_available = true;
-                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+                // error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
             }
             
             // Actualizamos la cantidad
@@ -108,27 +108,25 @@ class Snap_Sidebar_Cart_Ajax {
             // Para productos existentes, NO actualizamos el timestamp
             // Esto conserva la posición original del producto en el carrito
             // cuando se incrementa su cantidad
-            error_log('Conservando posición del producto existente (no se actualiza timestamp)');
+            // error_log('Conservando posición del producto existente (no se actualiza timestamp)');
             
             $cart_item_key = $existing_item_key;
         } else {
             // Es un producto nuevo, lo añadimos normalmente
-            error_log('Añadiendo nuevo producto al carrito');
+            // error_log('Añadiendo nuevo producto al carrito');
             $cart_item_key = $cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
             
             // Verificar si esta es la última unidad disponible
             if ($stock_quantity !== null && $quantity >= $stock_quantity) {
-                error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
+                // error_log('¡ATENCIÓN! Esta es la última unidad disponible del producto.');
                 $is_last_available = true;
             }
         }
         
         // Verificar el resultado y registrar información
         if ($cart_item_key) {
-            error_log('Operación exitosa: clave del producto ' . $cart_item_key);
+            // error_log('Operación exitosa: clave del producto ' . $cart_item_key);
         }
-        
-        error_log('==== FIN add_to_cart() AJAX ====');
         
         // Forzar el recálculo de totales
         $cart->calculate_totals();
@@ -227,31 +225,31 @@ class Snap_Sidebar_Cart_Ajax {
      * @since    1.0.0
      */
     public function get_related_products() {
-        error_log('=== INICIO get_related_products() ===');
+        // error_log('=== INICIO get_related_products() ===');
         
         // Verificar nonce
         $nonce_valid = check_ajax_referer('snap-sidebar-cart-nonce', 'nonce', false);
         if (!$nonce_valid) {
-            error_log('Error: Nonce inválido');
+            // error_log('Error: Nonce inválido');
             wp_send_json_error(array('message' => __('Error de seguridad: Nonce inválido', 'snap-sidebar-cart')));
             return;
         }
-        error_log('Nonce verificado correctamente');
+        // error_log('Nonce verificado correctamente');
         
         // Verificar ID de producto
         if (!isset($_POST['product_id'])) {
-            error_log('Error: No se proporcionó un ID de producto, usando modo productos destacados');
+            // error_log('Error: No se proporcionó un ID de producto, usando modo productos destacados');
             $is_featured_request = true;
         } else {
             $product_id_raw = $_POST['product_id'];
             $is_featured_request = ($product_id_raw === 'featured');
             
-            error_log('Product ID recibido: ' . $product_id_raw . ($is_featured_request ? ' (Solicitud de productos destacados)' : ''));
+            // error_log('Product ID recibido: ' . $product_id_raw . ($is_featured_request ? ' (Solicitud de productos destacados)' : ''));
         }
         
         // Obtener el número de productos a mostrar desde la petición o usar el valor por defecto
         $count = isset($_POST['count']) ? absint($_POST['count']) : (isset($this->options['related_products']['count']) ? absint($this->options['related_products']['count']) : 4);
-        error_log('Número de productos a mostrar: ' . $count);
+        // error_log('Número de productos a mostrar: ' . $count);
         
         // Si no es una solicitud de productos destacados, intentamos obtener el producto específico
         if (!$is_featured_request) {
@@ -261,24 +259,24 @@ class Snap_Sidebar_Cart_Ajax {
             $product = wc_get_product($product_id);
             
             if (!$product) {
-                error_log('Error: Producto no encontrado para ID: ' . $product_id);
+                // error_log('Error: Producto no encontrado para ID: ' . $product_id);
                 
                 // En lugar de devolver error, cambiamos a modo productos destacados
                 $is_featured_request = true;
-                error_log('Cambiando a modo productos destacados');
+                // error_log('Cambiando a modo productos destacados');
             } else {
-                error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+                // error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
             }
         }
         
         // Solo registramos esta línea si tenemos un producto válido
         if (isset($product) && !$is_featured_request) {
-            error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
+            // error_log('Producto encontrado: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
         }
         
         // Obtener el tipo de productos relacionados a mostrar
         $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'related';
-        error_log('Tipo de productos relacionados solicitado: ' . $type);
+        // error_log('Tipo de productos relacionados solicitado: ' . $type);
         
         // Verificar si el tipo está en las pestañas activas configuradas
         $active_tabs = isset($this->options['related_products']['active_tabs']) ? 
@@ -298,22 +296,22 @@ class Snap_Sidebar_Cart_Ajax {
             }
         }
         
-        error_log('Pestañas activas configuradas: ' . implode(', ', $active_tabs));
+        // error_log('Pestañas activas configuradas: ' . implode(', ', $active_tabs));
         
         if (!in_array($type, $active_tabs)) {
-            error_log('Advertencia: El tipo solicitado "' . $type . '" no está en las pestañas activas. Se usará "related" como fallback.');
+            // error_log('Advertencia: El tipo solicitado "' . $type . '" no está en las pestañas activas. Se usará "related" como fallback.');
             $type = 'related';
         }
         
         // Obtener productos según el tipo
-        error_log('Obteniendo productos para el tipo: ' . $type . ', cantidad: ' . $count);
+        // error_log('Obteniendo productos para el tipo: ' . $type . ', cantidad: ' . $count);
         
         // Si es una solicitud de productos destacados o no tenemos un producto válido
         if ($is_featured_request || !isset($product)) {
             // Si el tipo solicitado requiere un producto específico pero no lo tenemos,
             // cambiamos automáticamente a un tipo que no lo requiera
             if (in_array($type, array('upsells', 'crosssells', 'related', 'custom')) || strpos($type, 'custom_') === 0) {
-                error_log('Cambiando tipo de productos a "featured" porque no hay producto de referencia');
+                // error_log('Cambiando tipo de productos a "featured" porque no hay producto de referencia');
                 $type = 'featured';
             }
         }
@@ -321,45 +319,45 @@ class Snap_Sidebar_Cart_Ajax {
         switch ($type) {
             case 'upsells':
                 if (isset($product)) {
-                    error_log('Llamando a get_upsell_products()');
+                    // error_log('Llamando a get_upsell_products()');
                     $products = $this->get_upsell_products($product, $count);
                 } else {
-                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    // error_log('No hay producto de referencia, usando get_featured_products() como fallback');
                     $products = $this->get_featured_products($count);
                 }
                 break;
             case 'crosssells':
                 if (isset($product)) {
-                    error_log('Llamando a get_crosssell_products()');
+                    // error_log('Llamando a get_crosssell_products()');
                     $products = $this->get_crosssell_products($product, $count);
                 } else {
-                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    // error_log('No hay producto de referencia, usando get_featured_products() como fallback');
                     $products = $this->get_featured_products($count);
                 }
                 break;
             case 'related':
                 if (isset($product)) {
-                    error_log('Llamando a get_same_category_products()');
+                    // error_log('Llamando a get_same_category_products()');
                     $products = $this->get_same_category_products($product, $count);
                 } else {
-                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    // error_log('No hay producto de referencia, usando get_featured_products() como fallback');
                     $products = $this->get_featured_products($count);
                 }
                 break;
             case 'bestsellers':
-                error_log('Llamando a get_bestseller_products()');
+                // error_log('Llamando a get_bestseller_products()');
                 $products = $this->get_bestseller_products($count);
                 break;
             case 'featured':
-                error_log('Llamando a get_featured_products()');
+                // error_log('Llamando a get_featured_products()');
                 $products = $this->get_featured_products($count);
                 break;
             case 'custom':
                 if (isset($product)) {
-                    error_log('Llamando a get_custom_products() - query personalizada principal');
+                    // error_log('Llamando a get_custom_products() - query personalizada principal');
                     $products = $this->get_custom_products($product, $count);
                 } else {
-                    error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                    // error_log('No hay producto de referencia, usando get_featured_products() como fallback');
                     $products = $this->get_featured_products($count);
                 }
                 break;
@@ -368,14 +366,14 @@ class Snap_Sidebar_Cart_Ajax {
                 if (strpos($type, 'custom_') === 0) {
                     if (isset($product)) {
                         $custom_index = intval(substr($type, 7)); // Extraer el índice después de 'custom_'
-                        error_log('Llamando a get_custom_products() con índice personalizado ' . $custom_index);
+                        // error_log('Llamando a get_custom_products() con índice personalizado ' . $custom_index);
                         $products = $this->get_custom_products($product, $count, $custom_index);
                     } else {
-                        error_log('No hay producto de referencia, usando get_featured_products() como fallback');
+                        // error_log('No hay producto de referencia, usando get_featured_products() como fallback');
                         $products = $this->get_featured_products($count);
                     }
                 } else {
-                    error_log('Tipo no reconocido, usando get_featured_products() como fallback');
+                    // error_log('Tipo no reconocido, usando get_featured_products() como fallback');
                     $products = $this->get_featured_products($count);
                 }
                 break;
@@ -383,16 +381,16 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Verificar resultado
         if (is_array($products)) {
-            error_log('Productos encontrados: ' . count($products));
+            // error_log('Productos encontrados: ' . count($products));
         } else {
-            error_log('Error: Los productos devueltos no son un array');
+            // error_log('Error: Los productos devueltos no son un array');
             $products = array();
         }
         
         $html = '';
         
         if (!empty($products)) {
-            error_log('Generando HTML para ' . count($products) . ' productos');
+            // error_log('Generando HTML para ' . count($products) . ' productos');
             
             ob_start();
             $valid_products = 0;
@@ -400,11 +398,11 @@ class Snap_Sidebar_Cart_Ajax {
             foreach ($products as $related_product) {
                 if (!$related_product || !$related_product->is_purchasable() || !$related_product->is_in_stock()) {
                     if (!$related_product) {
-                        error_log('Producto relacionado no válido (objeto nulo)');
+                        // error_log('Producto relacionado no válido (objeto nulo)');
                     } elseif (!$related_product->is_purchasable()) {
-                        error_log('Producto ID ' . $related_product->get_id() . ' no es comprable');
+                        // error_log('Producto ID ' . $related_product->get_id() . ' no es comprable');
                     } elseif (!$related_product->is_in_stock()) {
-                        error_log('Producto ID ' . $related_product->get_id() . ' no tiene stock');
+                        // error_log('Producto ID ' . $related_product->get_id() . ' no tiene stock');
                     }
                     continue;
                 }
@@ -413,14 +411,14 @@ class Snap_Sidebar_Cart_Ajax {
                 $post_object = get_post($related_product->get_id());
                 setup_postdata($GLOBALS['post'] =& $post_object);
                 
-                error_log('Incluyendo plantilla para producto ID: ' . $related_product->get_id() . ' - ' . $related_product->get_name());
+                // error_log('Incluyendo plantilla para producto ID: ' . $related_product->get_id() . ' - ' . $related_product->get_name());
                 
                 // Capturar errores al incluir la plantilla
                 try {
                     // Incluir plantilla para cada producto relacionado
                     include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-related-product.php';
                 } catch (Exception $e) {
-                    error_log('Error al incluir plantilla para producto: ' . $e->getMessage());
+                    // error_log('Error al incluir plantilla para producto: ' . $e->getMessage());
                 }
             }
             
@@ -429,23 +427,23 @@ class Snap_Sidebar_Cart_Ajax {
             $html = ob_get_clean();
             $html_length = strlen($html);
             
-            error_log('HTML generado correctamente: ' . $valid_products . ' productos válidos, longitud del HTML: ' . $html_length . ' bytes');
+            // error_log('HTML generado correctamente: ' . $valid_products . ' productos válidos, longitud del HTML: ' . $html_length . ' bytes');
             
             if ($html_length < 10 && $valid_products > 0) {
-                error_log('Advertencia: El HTML generado es muy corto a pesar de tener productos válidos');
+                // error_log('Advertencia: El HTML generado es muy corto a pesar de tener productos válidos');
             }
         } else {
-            error_log('No se encontraron productos para mostrar');
+            // error_log('No se encontraron productos para mostrar');
         }
         
-        error_log('Enviando respuesta JSON con HTML (longitud: ' . strlen($html) . ')');
+        // error_log('Enviando respuesta JSON con HTML (longitud: ' . strlen($html) . ')');
         wp_send_json_success(array(
             'html' => $html,
             'count' => count($products),
             'type' => $type
         ));
         
-        error_log('=== FIN get_related_products() ===');
+        // error_log('=== FIN get_related_products() ===');
         wp_die();
     }
 
@@ -465,15 +463,15 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array                     Lista de productos up-sell.
      */
     private function get_upsell_products($product, $count = null) {
-        error_log('=== INICIO get_upsell_products() ===');
-        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        // error_log('=== INICIO get_upsell_products() ===');
+        // error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
-        error_log('Límite de productos relacionados: ' . $related_limit);
+        // error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Obtener los IDs de productos up-sell definidos por el usuario
         $upsell_ids = $product->get_upsell_ids();
-        error_log('Up-sells directamente configurados: ' . count($upsell_ids));
+        // error_log('Up-sells directamente configurados: ' . count($upsell_ids));
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -484,11 +482,11 @@ class Snap_Sidebar_Cart_Ajax {
         // Incluir el producto actual entre los filtrados
         $cart_product_ids[] = $product->get_id();
         $upsell_ids = array_diff($upsell_ids, $cart_product_ids);
-        error_log('Up-sells después de filtrar productos en carrito: ' . count($upsell_ids));
+        // error_log('Up-sells después de filtrar productos en carrito: ' . count($upsell_ids));
         
         // Si no hay suficientes up-sells, obtener productos recomendados según determinados criterios
         if (count($upsell_ids) < $related_limit) {
-            error_log('No hay suficientes up-sells, buscando productos sustitutos');
+            // error_log('No hay suficientes up-sells, buscando productos sustitutos');
             
             // Buscar productos con precio superior (lógica de up-sell)
             $product_price = $product->get_price();
@@ -503,7 +501,7 @@ class Snap_Sidebar_Cart_Ajax {
                 
                 // Si hay categorías, buscar productos de la misma categoría con precio superior
                 if (!empty($product_categories)) {
-                    error_log('Buscando productos de la misma categoría con precio superior');
+                    // error_log('Buscando productos de la misma categoría con precio superior');
                     
                     $args = array(
                         'post_type'      => 'product',
@@ -534,12 +532,12 @@ class Snap_Sidebar_Cart_Ajax {
                     $higher_priced_products = get_posts($args);
                     
                     if (!empty($higher_priced_products)) {
-                        error_log('Productos encontrados con precio superior: ' . count($higher_priced_products));
+                        // error_log('Productos encontrados con precio superior: ' . count($higher_priced_products));
                         foreach ($higher_priced_products as $higher_product) {
                             $upsell_ids[] = $higher_product->ID;
                         }
                     } else {
-                        error_log('No se encontraron productos con precio superior en las mismas categorías');
+                        // error_log('No se encontraron productos con precio superior en las mismas categorías');
                     }
                 }
             }
@@ -547,7 +545,7 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Si aún no hay suficientes, usar productos destacados
         if (count($upsell_ids) < $related_limit) {
-            error_log('Buscando productos destacados para completar');
+            // error_log('Buscando productos destacados para completar');
             
             $args = array(
                 'post_type'      => 'product',
@@ -568,7 +566,7 @@ class Snap_Sidebar_Cart_Ajax {
             $featured_products = get_posts($args);
             
             if (!empty($featured_products)) {
-                error_log('Productos destacados encontrados: ' . count($featured_products));
+                // error_log('Productos destacados encontrados: ' . count($featured_products));
                 foreach ($featured_products as $featured_product) {
                     $upsell_ids[] = $featured_product->ID;
                 }
@@ -577,11 +575,11 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Limitar al número máximo y convertir a objetos de producto
         $upsell_ids = array_slice($upsell_ids, 0, $related_limit);
-        error_log('Total de IDs de up-sells: ' . count($upsell_ids));
+        // error_log('Total de IDs de up-sells: ' . count($upsell_ids));
         
         $result = array_filter(array_map('wc_get_product', $upsell_ids));
-        error_log('Total de objetos de producto válidos: ' . count($result));
-        error_log('=== FIN get_upsell_products() ===');
+        // error_log('Total de objetos de producto válidos: ' . count($result));
+        // error_log('=== FIN get_upsell_products() ===');
         
         return $result;
     }
@@ -595,15 +593,15 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array                     Lista de productos cross-sell.
      */
     private function get_crosssell_products($product, $count = null) {
-        error_log('=== INICIO get_crosssell_products() ===');
-        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        // error_log('=== INICIO get_crosssell_products() ===');
+        // error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
-        error_log('Límite de productos relacionados: ' . $related_limit);
+        // error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Obtener los IDs de productos cross-sell definidos por el usuario
         $crosssell_ids = $product->get_cross_sell_ids();
-        error_log('Cross-sells directamente configurados: ' . count($crosssell_ids));
+        // error_log('Cross-sells directamente configurados: ' . count($crosssell_ids));
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -614,17 +612,17 @@ class Snap_Sidebar_Cart_Ajax {
         // Incluir el producto actual entre los filtrados
         $cart_product_ids[] = $product->get_id();
         $crosssell_ids = array_diff($crosssell_ids, $cart_product_ids);
-        error_log('Cross-sells después de filtrar productos en carrito: ' . count($crosssell_ids));
+        // error_log('Cross-sells después de filtrar productos en carrito: ' . count($crosssell_ids));
         
         // Si no hay suficientes cross-sells, obtener productos que frecuentemente se compran juntos
         if (count($crosssell_ids) < $related_limit) {
-            error_log('No hay suficientes cross-sells, buscando productos complementarios');
+            // error_log('No hay suficientes cross-sells, buscando productos complementarios');
             
             // Obtener categorías del producto
             $product_categories = wc_get_product_term_ids($product->get_id(), 'product_cat');
             
             if (!empty($product_categories)) {
-                error_log('Buscando productos complementarios de categorías similares');
+                // error_log('Buscando productos complementarios de categorías similares');
                 
                 // Para cross-sells buscamos productos complementarios con precio similar o inferior
                 $product_price = $product->get_price();
@@ -657,19 +655,19 @@ class Snap_Sidebar_Cart_Ajax {
                 $complementary_products = get_posts($args);
                 
                 if (!empty($complementary_products)) {
-                    error_log('Productos complementarios encontrados: ' . count($complementary_products));
+                    // error_log('Productos complementarios encontrados: ' . count($complementary_products));
                     foreach ($complementary_products as $complementary_product) {
                         $crosssell_ids[] = $complementary_product->ID;
                     }
                 } else {
-                    error_log('No se encontraron productos complementarios en las mismas categorías');
+                    // error_log('No se encontraron productos complementarios en las mismas categorías');
                 }
             }
         }
         
         // Si aún no hay suficientes, añadir productos más vendidos
         if (count($crosssell_ids) < $related_limit) {
-            error_log('Buscando productos más vendidos para completar');
+            // error_log('Buscando productos más vendidos para completar');
             
             $args = array(
                 'post_type'      => 'product',
@@ -684,7 +682,7 @@ class Snap_Sidebar_Cart_Ajax {
             $bestseller_products = get_posts($args);
             
             if (!empty($bestseller_products)) {
-                error_log('Productos más vendidos encontrados: ' . count($bestseller_products));
+                // error_log('Productos más vendidos encontrados: ' . count($bestseller_products));
                 foreach ($bestseller_products as $bestseller_product) {
                     $crosssell_ids[] = $bestseller_product->ID;
                 }
@@ -693,11 +691,11 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Limitar al número máximo y convertir a objetos de producto
         $crosssell_ids = array_slice($crosssell_ids, 0, $related_limit);
-        error_log('Total de IDs de cross-sells: ' . count($crosssell_ids));
+        // error_log('Total de IDs de cross-sells: ' . count($crosssell_ids));
         
         $result = array_filter(array_map('wc_get_product', $crosssell_ids));
-        error_log('Total de objetos de producto válidos: ' . count($result));
-        error_log('=== FIN get_crosssell_products() ===');
+        // error_log('Total de objetos de producto válidos: ' . count($result));
+        // error_log('=== FIN get_crosssell_products() ===');
         
         return $result;
     }
@@ -711,37 +709,37 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array                     Lista de productos de la misma categoría.
      */
     private function get_same_category_products($product, $count = null) {
-        error_log('=== INICIO get_same_category_products() ===');
-        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        // error_log('=== INICIO get_same_category_products() ===');
+        // error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
         // Obtener límites y configuración desde las opciones
         $related_limit = isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4;
         $related_orderby = isset($this->options['related_products']['orderby']) ? esc_attr($this->options['related_products']['orderby']) : 'rand';
         
-        error_log('Configuración: Límite=' . $related_limit . ', Ordenar por=' . $related_orderby);
+        // error_log('Configuración: Límite=' . $related_limit . ', Ordenar por=' . $related_orderby);
         
         // Obtener categorías del producto
         $product_categories = wc_get_product_term_ids($product->get_id(), 'product_cat');
         
         if (empty($product_categories)) {
-            error_log('ERROR: No se encontraron categorías para el producto ID: ' . $product->get_id());
+            // error_log('ERROR: No se encontraron categorías para el producto ID: ' . $product->get_id());
             
             // Intentar obtener las categorías directamente con otra función
             $terms = get_the_terms($product->get_id(), 'product_cat');
             
             if (!empty($terms) && !is_wp_error($terms)) {
-                error_log('Categorías obtenidas con get_the_terms(): ' . count($terms));
+                // error_log('Categorías obtenidas con get_the_terms(): ' . count($terms));
                 foreach ($terms as $term) {
                     $product_categories[] = $term->term_id;
-                    error_log('Categoría: ' . $term->name . ' (ID: ' . $term->term_id . ')');
+                    // error_log('Categoría: ' . $term->name . ' (ID: ' . $term->term_id . ')');
                 }
             } else {
-                error_log('No se pudieron obtener categorías con métodos alternativos');
+                // error_log('No se pudieron obtener categorías con métodos alternativos');
                 return array();
             }
         }
         
-        error_log('Categorías del producto: ' . implode(', ', $product_categories));
+        // error_log('Categorías del producto: ' . implode(', ', $product_categories));
         
         // Obtener nombres de categorías para log
         $category_names = array();
@@ -751,7 +749,7 @@ class Snap_Sidebar_Cart_Ajax {
                 $category_names[$cat_id] = $term->name;
             }
         }
-        error_log('Nombres de categorías: ' . json_encode($category_names));
+        // error_log('Nombres de categorías: ' . json_encode($category_names));
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -760,13 +758,13 @@ class Snap_Sidebar_Cart_Ajax {
         }
         $cart_product_ids[] = $product->get_id(); // Excluir el producto actual
         
-        error_log('Productos a excluir: ' . implode(', ', $cart_product_ids));
+        // error_log('Productos a excluir: ' . implode(', ', $cart_product_ids));
         
         // Usamos la primera categoría
         $first_category = reset($product_categories);
         $first_category_name = isset($category_names[$first_category]) ? $category_names[$first_category] : 'Desconocida';
         
-        error_log('Usando primera categoría: ' . $first_category . ' (' . $first_category_name . ')');
+        // error_log('Usando primera categoría: ' . $first_category . ' (' . $first_category_name . ')');
         
         // Consultar productos de la misma categoría
         $args = array(
@@ -784,13 +782,13 @@ class Snap_Sidebar_Cart_Ajax {
             ),
         );
         
-        error_log('Ejecutando consulta para categoría ID: ' . $first_category);
-        error_log('Parámetros de consulta: ' . json_encode($args));
+        // error_log('Ejecutando consulta para categoría ID: ' . $first_category);
+        // error_log('Parámetros de consulta: ' . json_encode($args));
         
         $products = get_posts($args);
         
         if (empty($products)) {
-            error_log('No se encontraron productos en la primera categoría');
+            // error_log('No se encontraron productos en la primera categoría');
             
             // Si no hay productos en la primera categoría, intentar con la siguiente categoría si existe
             if (count($product_categories) > 1) {
@@ -798,67 +796,67 @@ class Snap_Sidebar_Cart_Ajax {
                 $next_category = current($product_categories);
                 $next_category_name = isset($category_names[$next_category]) ? $category_names[$next_category] : 'Desconocida';
                 
-                error_log('Intentando con segunda categoría: ' . $next_category . ' (' . $next_category_name . ')');
+                // error_log('Intentando con segunda categoría: ' . $next_category . ' (' . $next_category_name . ')');
                 
                 $args['tax_query'][0]['terms'] = $next_category;
-                error_log('Nuevos parámetros de consulta: ' . json_encode($args));
+                // error_log('Nuevos parámetros de consulta: ' . json_encode($args));
                 
                 $products = get_posts($args);
                 
                 if (empty($products)) {
-                    error_log('Tampoco se encontraron productos en la segunda categoría');
+                    // error_log('Tampoco se encontraron productos en la segunda categoría');
                 } else {
-                    error_log('Se encontraron ' . count($products) . ' productos en la segunda categoría');
+                    // error_log('Se encontraron ' . count($products) . ' productos en la segunda categoría');
                     // Listar los productos encontrados
-                    foreach ($products as $p) {
-                        error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
-                    }
+                    // foreach ($products as $p) {
+                    //     error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+                    // }
                 }
             }
             
             // Si aún no hay productos, intentar una búsqueda más amplia sin filtrar por categoría
             if (empty($products)) {
-                error_log('Intentando búsqueda más amplia sin filtrar por categoría');
+                // error_log('Intentando búsqueda más amplia sin filtrar por categoría');
                 unset($args['tax_query']);
-                error_log('Parámetros de búsqueda amplia: ' . json_encode($args));
+                // error_log('Parámetros de búsqueda amplia: ' . json_encode($args));
                 
                 $products = get_posts($args);
                 
                 if (empty($products)) {
-                    error_log('No se encontraron productos en la búsqueda amplia');
+                    // error_log('No se encontraron productos en la búsqueda amplia');
                 } else {
-                    error_log('Se encontraron ' . count($products) . ' productos en la búsqueda amplia');
+                    // error_log('Se encontraron ' . count($products) . ' productos en la búsqueda amplia');
                     // Listar los productos encontrados
-                    foreach ($products as $p) {
-                        error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
-                    }
+                    // foreach ($products as $p) {
+                    //     error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+                    // }
                 }
             }
         } else {
-            error_log('Se encontraron ' . count($products) . ' productos en la primera categoría');
+            // error_log('Se encontraron ' . count($products) . ' productos en la primera categoría');
             // Listar los productos encontrados
-            foreach ($products as $p) {
-                error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
-            }
+            // foreach ($products as $p) {
+            //     error_log('Producto encontrado: ' . $p->post_title . ' (ID: ' . $p->ID . ')');
+            // }
         }
         
         // Convertir resultados en objetos de producto
         $result = array();
         $product_ids = wp_list_pluck($products, 'ID');
         
-        error_log('IDs de productos para convertir: ' . implode(', ', $product_ids));
+        // error_log('IDs de productos para convertir: ' . implode(', ', $product_ids));
         
         foreach ($product_ids as $pid) {
             $prod = wc_get_product($pid);
             if ($prod) {
                 $result[] = $prod;
             } else {
-                error_log('Error al obtener producto WC para ID: ' . $pid);
+                // error_log('Error al obtener producto WC para ID: ' . $pid);
             }
         }
         
-        error_log('Total de productos válidos convertidos: ' . count($result));
-        error_log('=== FIN get_same_category_products() ===');
+        // error_log('Total de productos válidos convertidos: ' . count($result));
+        // error_log('=== FIN get_same_category_products() ===');
         
         return $result;
     }
@@ -871,10 +869,10 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array             Lista de productos más vendidos.
      */
     private function get_bestseller_products($count = null) {
-        error_log('=== INICIO get_bestseller_products() ===');
+        // error_log('=== INICIO get_bestseller_products() ===');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
-        error_log('Límite de productos relacionados: ' . $related_limit);
+        // error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -915,10 +913,10 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array             Lista de productos destacados.
      */
     private function get_featured_products($count = null) {
-        error_log('=== INICIO get_featured_products() ===');
+        // error_log('=== INICIO get_featured_products() ===');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
-        error_log('Límite de productos relacionados: ' . $related_limit);
+        // error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Filtrar productos que ya están en el carrito
         $cart_product_ids = array();
@@ -944,19 +942,19 @@ class Snap_Sidebar_Cart_Ajax {
             'order'          => 'DESC',
         );
         
-        error_log('Ejecutando consulta de productos destacados');
-        error_log('Parámetros de consulta: ' . json_encode($args));
+        // error_log('Ejecutando consulta de productos destacados');
+        // error_log('Parámetros de consulta: ' . json_encode($args));
         
         $featured_posts = get_posts($args);
         
         if (!empty($featured_posts)) {
-            error_log('Productos destacados encontrados: ' . count($featured_posts));
+            // error_log('Productos destacados encontrados: ' . count($featured_posts));
             
             // Convertir a IDs
             $featured_ids = array();
             foreach ($featured_posts as $featured_post) {
                 $featured_ids[] = $featured_post->ID;
-                error_log('Producto destacado: ' . $featured_post->post_title . ' (ID: ' . $featured_post->ID . ')');
+                // error_log('Producto destacado: ' . $featured_post->post_title . ' (ID: ' . $featured_post->ID . ')');
             }
             
             // Limitar al número máximo
@@ -964,12 +962,12 @@ class Snap_Sidebar_Cart_Ajax {
             
             // Convertir a objetos de producto
             $featured_products = array_filter(array_map('wc_get_product', $featured_ids));
-            error_log('Total de objetos de producto válidos: ' . count($featured_products));
+            // error_log('Total de objetos de producto válidos: ' . count($featured_products));
             
-            error_log('=== FIN get_featured_products() ===');
+            // error_log('=== FIN get_featured_products() ===');
             return $featured_products;
         } else {
-            error_log('No se encontraron productos destacados, buscando productos aleatorios');
+            // error_log('No se encontraron productos destacados, buscando productos aleatorios');
             
             // Si no hay productos destacados, obtener productos aleatorios
             $args = array(
@@ -983,25 +981,25 @@ class Snap_Sidebar_Cart_Ajax {
             $random_posts = get_posts($args);
             
             if (!empty($random_posts)) {
-                error_log('Productos aleatorios encontrados: ' . count($random_posts));
+                // error_log('Productos aleatorios encontrados: ' . count($random_posts));
                 
                 // Convertir a IDs
                 $random_ids = array();
                 foreach ($random_posts as $random_post) {
                     $random_ids[] = $random_post->ID;
-                    error_log('Producto aleatorio: ' . $random_post->post_title . ' (ID: ' . $random_post->ID . ')');
+                    // error_log('Producto aleatorio: ' . $random_post->post_title . ' (ID: ' . $random_post->ID . ')');
                 }
                 
                 // Convertir a objetos de producto
                 $random_products = array_filter(array_map('wc_get_product', $random_ids));
-                error_log('Total de objetos de producto aleatorios válidos: ' . count($random_products));
+                // error_log('Total de objetos de producto aleatorios válidos: ' . count($random_products));
                 
-                error_log('=== FIN get_featured_products() (con productos aleatorios) ===');
+                // error_log('=== FIN get_featured_products() (con productos aleatorios) ===');
                 return $random_products;
             }
             
-            error_log('No se encontraron productos');
-            error_log('=== FIN get_featured_products() (sin productos) ===');
+            // error_log('No se encontraron productos');
+            // error_log('=== FIN get_featured_products() (sin productos) ===');
             return array();
         }
     }
@@ -1015,11 +1013,11 @@ class Snap_Sidebar_Cart_Ajax {
      * @return   array                     Lista de productos personalizados.
      */
     private function get_custom_products($product, $count = null, $custom_query_index = null) {
-        error_log('=== INICIO get_custom_products() ===');
-        error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+        // error_log('=== INICIO get_custom_products() ===');
+        // error_log('Procesando producto: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
         
         $related_limit = $count !== null ? intval($count) : (isset($this->options['related_products']['count']) ? intval($this->options['related_products']['count']) : 4);
-        error_log('Límite de productos relacionados: ' . $related_limit);
+        // error_log('Límite de productos relacionados: ' . $related_limit);
         
         // Obtener la query personalizada según el índice proporcionado
         $custom_query_code = '';
@@ -1033,19 +1031,19 @@ class Snap_Sidebar_Cart_Ajax {
                 !empty($this->options['related_products']['custom_queries'][$custom_query_index]['code'])) {
                 
                 $custom_query_code = $this->options['related_products']['custom_queries'][$custom_query_index]['code'];
-                error_log('Usando query personalizada adicional #' . $custom_query_index . ' para productos relacionados');
+                // error_log('Usando query personalizada adicional #' . $custom_query_index . ' para productos relacionados');
             }
         } else {
             // Si no se proporciona índice, usar la query personalizada principal
             if (isset($this->options['related_products']['custom_query']) && !empty($this->options['related_products']['custom_query'])) {
                 $custom_query_code = $this->options['related_products']['custom_query'];
-                error_log('Usando query personalizada principal para productos relacionados');
+                // error_log('Usando query personalizada principal para productos relacionados');
             }
         }
         
         // Si no hay consulta personalizada, devolvemos productos aleatorios como fallback
         if (empty($custom_query_code)) {
-            error_log('No se encontró ninguna query personalizada, usando fallback de productos aleatorios');
+            // error_log('No se encontró ninguna query personalizada, usando fallback de productos aleatorios');
             
             // Filtrar productos que ya están en el carrito
             $cart_product_ids = array();
@@ -1098,7 +1096,7 @@ class Snap_Sidebar_Cart_Ajax {
             }
         } catch (Exception $e) {
             // En caso de error, registrarlo y devolver productos aleatorios
-            error_log('Error en la consulta personalizada del carrito lateral: ' . $e->getMessage());
+            // error_log('Error en la consulta personalizada del carrito lateral: ' . $e->getMessage());
         }
         
         // Fallback: productos aleatorios
@@ -1138,7 +1136,7 @@ class Snap_Sidebar_Cart_Ajax {
         
         $debug = isset($_POST['debug']) && $_POST['debug'] === 'true';
         
-        error_log('Solicitud de sincronización del sidebar del carrito recibida' . ($debug ? ' (modo debug)' : ''));
+        // error_log('Solicitud de sincronización del sidebar del carrito recibida' . ($debug ? ' (modo debug)' : ''));
         
         // Obtener el contenido actualizado del carrito
         $cart_items = WC()->cart->get_cart();
@@ -1146,9 +1144,9 @@ class Snap_Sidebar_Cart_Ajax {
         $cart_subtotal = WC()->cart->get_cart_subtotal();
         
         if ($debug) {
-            error_log('DEBUG: Número de productos en el carrito: ' . count($cart_items));
-            error_log('DEBUG: Cantidad total de items: ' . $cart_count);
-            error_log('DEBUG: Subtotal del carrito: ' . $cart_subtotal);
+            // error_log('DEBUG: Número de productos en el carrito: ' . count($cart_items));
+            // error_log('DEBUG: Cantidad total de items: ' . $cart_count);
+            // error_log('DEBUG: Subtotal del carrito: ' . $cart_subtotal);
         }
         
         // Preparar datos detallados de cada producto para debugging
@@ -1169,7 +1167,7 @@ class Snap_Sidebar_Cart_Ajax {
             $items_data[] = $item_data;
             
             if ($debug) {
-                error_log('DEBUG: Producto en carrito - Key: ' . $cart_item_key . ', ID: ' . $product->get_id() . ', Nombre: ' . $product->get_name() . ', Cantidad: ' . $quantity);
+                // error_log('DEBUG: Producto en carrito - Key: ' . $cart_item_key . ', ID: ' . $product->get_id() . ', Nombre: ' . $product->get_name() . ', Cantidad: ' . $quantity);
             }
         }
         
@@ -1185,12 +1183,12 @@ class Snap_Sidebar_Cart_Ajax {
         } else {
             echo '<ul class="snap-sidebar-cart__products-list">';
             // Log para depuración: cuántos productos hay realmente en el array
-            error_log('DEBUG: Número de productos en $cart_items: ' . count($cart_items));
+            // error_log('DEBUG: Número de productos en $cart_items: ' . count($cart_items));
             foreach ($cart_items as $cart_item_key => $cart_item) {
                 $product = $cart_item['data'];
                 $is_new_item = ($cart_item_key === $new_item_key);
                 if ($is_new_item) {
-                    error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
+                    // error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
                 }
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }
@@ -1216,7 +1214,7 @@ class Snap_Sidebar_Cart_Ajax {
             $xpath = new DOMXPath($dom);
             
             $products = $xpath->query('//li[contains(@class, "snap-sidebar-cart__product")]');
-            error_log('DEBUG: Productos encontrados en el HTML generado: ' . $products->length);
+            // error_log('DEBUG: Productos encontrados en el HTML generado: ' . $products->length);
             
             foreach ($products as $product) {
                 $key = $product->getAttribute('data-key');
@@ -1224,14 +1222,14 @@ class Snap_Sidebar_Cart_Ajax {
                 
                 if ($quantity_inputs->length > 0) {
                     $quantity = $quantity_inputs->item(0)->getAttribute('value');
-                    error_log('DEBUG: Producto en HTML - Key: ' . $key . ', Cantidad en input: ' . $quantity);
+                    // error_log('DEBUG: Producto en HTML - Key: ' . $key . ', Cantidad en input: ' . $quantity);
                 } else {
-                    error_log('DEBUG: Producto en HTML - Key: ' . $key . ', No se encontró input de cantidad');
+                    // error_log('DEBUG: Producto en HTML - Key: ' . $key . ', No se encontró input de cantidad');
                 }
             }
         }
         
-        error_log('Sincronización del sidebar del carrito completada');
+        // error_log('Sincronización del sidebar del carrito completada');
         
         // Enviar respuesta
         wp_send_json_success($response);
@@ -1254,11 +1252,22 @@ class Snap_Sidebar_Cart_Ajax {
         $shipping_total = WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax();
         
         // Obtener preferencia de posición para nuevos productos
-        $new_product_position = isset($this->options['new_product_position']) 
-            ? $this->options['new_product_position'] 
-            : 'top';
+        $new_product_position = isset($this->options['animations']['new_product_position'])
+            ? $this->options['animations']['new_product_position']
+            : (isset($this->options['new_product_position']) ? $this->options['new_product_position'] : 'top');
         
-        error_log('get_cart_contents - Posición configurada: ' . $new_product_position . ', Total productos: ' . count($cart_items));
+        // error_log('get_cart_contents - Posición configurada: ' . $new_product_position . ', Total productos: ' . count($cart_items));
+        
+        // Reforzar: asegurar que todos los productos tengan 'time_added'
+        $timestamp_now = time();
+        foreach ($cart_items as $key => &$item) {
+            if (!isset($item['time_added']) || empty($item['time_added'])) {
+                $item['time_added'] = $timestamp_now;
+                // También actualizar en el objeto del carrito de WooCommerce
+                WC()->cart->cart_contents[$key]['time_added'] = $timestamp_now;
+            }
+        }
+        unset($item); // Buenas prácticas
         
         // --- FUSIÓN DE DUPLICADOS ---
         $product_counts = array();
@@ -1288,8 +1297,8 @@ class Snap_Sidebar_Cart_Ajax {
         $keys_to_remove_global = [];
         foreach ($product_counts as $identifier => $data) {
             if ($data['count'] > 1) {
-                error_log('ALERTA: Producto duplicado encontrado: ' . $identifier . ' aparece ' . $data['count'] . ' veces');
-                error_log('Claves de los duplicados: ' . implode(', ', $data['keys']));
+                // error_log('ALERTA: Producto duplicado encontrado: ' . $identifier . ' aparece ' . $data['count'] . ' veces');
+                // error_log('Claves de los duplicados: ' . implode(', ', $data['keys']));
                 // Elegir la línea a conservar según la opción de posición
                 $timestamps = $data['timestamps'];
                 if ($new_product_position === 'top') {
@@ -1332,6 +1341,7 @@ class Snap_Sidebar_Cart_Ajax {
         // Recargar los elementos del carrito después de estas modificaciones
         $cart_items = WC()->cart->get_cart();
         // --- ORDENAR POR time_added SEGÚN POSICIÓN ---
+        // error_log('DEBUG: Contenido de $cart_items antes de ordenar: ' . print_r($cart_items, true));
         uasort($cart_items, function($a, $b) use ($new_product_position) {
             $a_time = isset($a['time_added']) ? $a['time_added'] : 0;
             $b_time = isset($b['time_added']) ? $b['time_added'] : 0;
@@ -1342,6 +1352,8 @@ class Snap_Sidebar_Cart_Ajax {
                 return ($a_time < $b_time) ? -1 : 1; // Ascendente
             }
         });
+        // Reindexar para asegurar el orden en el foreach
+        $cart_items = array_values($cart_items);
         ob_start();
         if (empty($cart_items)) {
             echo '<div class="snap-sidebar-cart__empty">';
@@ -1350,11 +1362,11 @@ class Snap_Sidebar_Cart_Ajax {
             echo '</div>';
         } else {
             echo '<ul class="snap-sidebar-cart__products-list">';
-            foreach ($cart_items as $cart_item_key => $cart_item) {
+            foreach ($cart_items as $cart_item) {
                 $product = $cart_item['data'];
                 $is_new_item = ($cart_item_key === $new_item_key);
                 if ($is_new_item) {
-                    error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
+                    // error_log('Mostrando nuevo producto: ' . $product->get_name() . ' (timestamp: ' . (isset($cart_item['time_added']) ? $cart_item['time_added'] : 'no timestamp') . ')');
                 }
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }

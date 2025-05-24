@@ -39,7 +39,7 @@
 
             if (isNew) {
                 // Animación de entrada según posición
-                $product.addClass('new-item');
+                // $product.addClass('new-item'); // Animación desactivada temporalmente
                 setTimeout(function() {
                     $product.removeClass('new-item');
                 }, this.animationDuration);
