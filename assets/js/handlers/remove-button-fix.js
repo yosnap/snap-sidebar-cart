@@ -47,6 +47,10 @@
                     if (window.SnapSidebarCartUI) {
                         // Fallback: solo actualizar HTML si no está disponible el handler principal
                         $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        // Re-inicializar handlers de cantidad después de actualizar el DOM
+                        if (window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.init === 'function') {
+                            window.SnapSidebarCartQuantity.init();
+                        }
                     }
                     $('.snap-sidebar-cart__count').text(response.data.cart_count);
                     $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);

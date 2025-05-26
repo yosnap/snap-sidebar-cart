@@ -148,6 +148,12 @@ class Snap_Sidebar_Cart_Ajax {
         
         $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
         
+        // Log para depuración
+        error_log('=== SNAP SIDEBAR CART DEBUG ===');
+        error_log('Clave recibida para eliminar: ' . $cart_item_key);
+        $cart_keys = array_keys(WC()->cart->get_cart());
+        error_log('Claves actuales en el carrito: ' . print_r($cart_keys, true));
+        
         // Verificar que el item existe en el carrito
         if (!isset(WC()->cart->get_cart()[$cart_item_key])) {
             wp_send_json_error(array('message' => __('Producto no encontrado en el carrito', 'snap-sidebar-cart')));
@@ -183,6 +189,11 @@ class Snap_Sidebar_Cart_Ajax {
         
         // Verificar que el item existe en el carrito
         if (!isset(WC()->cart->get_cart()[$cart_item_key])) {
+            // Si la cantidad es 0, consideramos la eliminación exitosa aunque la clave no exista
+            if ($quantity === 0) {
+                $this->get_cart_contents(); // Responder como éxito
+                wp_die();
+            }
             wp_send_json_error(array('message' => __('Producto no encontrado en el carrito', 'snap-sidebar-cart')));
         }
         
@@ -1341,7 +1352,6 @@ class Snap_Sidebar_Cart_Ajax {
         // Recargar los elementos del carrito después de estas modificaciones
         $cart_items = WC()->cart->get_cart();
         // --- ORDENAR POR time_added SEGÚN POSICIÓN ---
-        // error_log('DEBUG: Contenido de $cart_items antes de ordenar: ' . print_r($cart_items, true));
         uasort($cart_items, function($a, $b) use ($new_product_position) {
             $a_time = isset($a['time_added']) ? $a['time_added'] : 0;
             $b_time = isset($b['time_added']) ? $b['time_added'] : 0;
@@ -1352,8 +1362,7 @@ class Snap_Sidebar_Cart_Ajax {
                 return ($a_time < $b_time) ? -1 : 1; // Ascendente
             }
         });
-        // Reindexar para asegurar el orden en el foreach
-        $cart_items = array_values($cart_items);
+        // ¡No reindexar con array_values! Así se mantienen las claves hash originales
         ob_start();
         if (empty($cart_items)) {
             echo '<div class="snap-sidebar-cart__empty">';
@@ -1362,7 +1371,7 @@ class Snap_Sidebar_Cart_Ajax {
             echo '</div>';
         } else {
             echo '<ul class="snap-sidebar-cart__products-list">';
-            foreach ($cart_items as $cart_item) {
+            foreach ($cart_items as $cart_item_key => $cart_item) {
                 $product = $cart_item['data'];
                 $is_new_item = ($cart_item_key === $new_item_key);
                 if ($is_new_item) {

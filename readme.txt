@@ -77,6 +77,12 @@ Sí, el plugin es compatible con WPML y Polylang. Todos los textos son traducibl
 
 == Changelog ==
 
+= 1.2.9 =
+* Corrección crítica: ahora los botones + y - y el botón eliminar funcionan correctamente usando la clave hash real de WooCommerce.
+* Los totales de cantidad y subtotal del carrito se actualizan dinámicamente tras cada cambio.
+* Refactor: los handlers JS ahora son robustos ante recarga dinámica del HTML del carrito.
+* Mejoras menores de estabilidad y depuración.
+
 = 1.2.8 =
 * Corrección: El orden de los productos en el sidebar ahora respeta la configuración de "Arriba/Abajo" tanto al agregar productos como al recargar la página. Se reindexa el array tras ordenar para asegurar consistencia visual.
 
@@ -104,3 +110,7 @@ Versión inicial del plugin Snap Sidebar Cart para WooCommerce.
 == Credits ==
 
 * Desarrollado por Paulo para Brass Market.
+
+== Uso ==
+- Los botones de cantidad (+ y -) y el botón eliminar funcionan correctamente y actualizan los totales del carrito en tiempo real.
+- El sistema es compatible con recarga dinámica del HTML del carrito (AJAX).

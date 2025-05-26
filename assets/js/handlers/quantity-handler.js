@@ -1,6 +1,12 @@
 /**
  * Maneja la funcionalidad de cantidades de productos en el carrito
- * 
+ *
+ * Cambios recientes:
+ * - Obtención robusta de la clave hash de WooCommerce para cada producto.
+ * - Actualización dinámica de totales y subtotal tras cada cambio.
+ * - Handlers delegados y compatibles con recarga dinámica del HTML del carrito.
+ * - Corrección de errores al eliminar o actualizar productos.
+ *
  * Este archivo se encarga de:
  * - Incrementar/decrementar cantidades de productos
  * - Controlar límites de stock
@@ -10,6 +16,156 @@
  */
 (function ($) {
     'use strict';
+
+    jQuery(document).ready(function($) {
+        console.log('quantity-handler.js cargado');
+
+        // Handler delegado para el botón eliminar dentro del sidebar
+        $('#sidebar-cart-container').on('click', '.snap-sidebar-cart__product-remove-top', function() {
+            var $button = $(this);
+            var cartItemKey = $button.data('key');
+            if (!cartItemKey) {
+                console.error('No se pudo obtener la clave del producto para eliminar');
+                return;
+            }
+            var $product = $button.closest('.snap-sidebar-cart__product');
+            $product.addClass('removing');
+            $.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_remove',
+                    nonce: snap_sidebar_cart_params.nonce,
+                    cart_item_key: cartItemKey
+                },
+                success: function(response) {
+                    if (response.success && response.data.cart_html) {
+                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        // Actualizar totales
+                        if (typeof response.data.cart_count !== 'undefined') {
+                            $('.snap-sidebar-cart__count').text(response.data.cart_count);
+                        }
+                        if (typeof response.data.subtotal !== 'undefined') {
+                            $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
+                        }
+                        if (typeof response.data.shipping_total !== 'undefined') {
+                            $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
+                        }
+                    } else {
+                        alert(response.data?.message || 'Error al eliminar el producto');
+                    }
+                },
+                error: function() {
+                    alert('Error de comunicación con el servidor');
+                },
+                complete: function() {
+                    $product.removeClass('removing');
+                }
+            });
+        });
+
+        // Handler delegado para los botones de cantidad dentro del sidebar
+        $('#sidebar-cart-container').on('click', '.notabutton.quantity-up, .notabutton.quantity-down', function() {
+            var $button = $(this);
+            var $quantityWrapper = $button.closest('.quantity.buttoned-input');
+            var $input = $quantityWrapper.find('input.cart-item__quantity-input');
+            var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
+            if (!cartItemKey) {
+                var $product = $button.closest('.snap-sidebar-cart__product');
+                cartItemKey = $product.data('key');
+            }
+            var currentVal = parseInt($input.val(), 10) || 0;
+            var newVal = currentVal;
+            if ($button.hasClass('quantity-up')) {
+                newVal = currentVal + 1;
+            } else if ($button.hasClass('quantity-down')) {
+                newVal = Math.max(currentVal - 1, 0);
+            }
+            if (!cartItemKey) {
+                console.error('No se pudo obtener la clave del producto para actualizar cantidad');
+                return;
+            }
+            var $product = $button.closest('.snap-sidebar-cart__product');
+            $product.addClass('updating');
+            $.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_update',
+                    nonce: snap_sidebar_cart_params.nonce,
+                    cart_item_key: cartItemKey,
+                    quantity: newVal
+                },
+                success: function(response) {
+                    if (response.success && response.data.cart_html) {
+                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        // Actualizar totales
+                        if (typeof response.data.cart_count !== 'undefined') {
+                            $('.snap-sidebar-cart__count').text(response.data.cart_count);
+                        }
+                        if (typeof response.data.subtotal !== 'undefined') {
+                            $('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
+                        }
+                        if (typeof response.data.shipping_total !== 'undefined') {
+                            $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
+                        }
+                    } else {
+                        alert(response.data?.message || 'Error al actualizar la cantidad');
+                    }
+                },
+                error: function() {
+                    alert('Error de comunicación con el servidor');
+                },
+                complete: function() {
+                    $product.removeClass('updating');
+                }
+            });
+        });
+
+        // Handler para cambio manual de cantidad (input)
+        $('#sidebar-cart-container').on('change', 'input.cart-item__quantity-input', function() {
+            var $input = $(this);
+            var $quantityWrapper = $input.closest('.quantity.buttoned-input');
+            var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
+            var newVal = parseInt($input.val(), 10) || 0;
+            if (!cartItemKey) {
+                console.error('No se pudo obtener la clave del producto para actualizar cantidad');
+                return;
+            }
+            var $product = $input.closest('.snap-sidebar-cart__product');
+            $product.addClass('updating');
+            $.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_update',
+                    nonce: snap_sidebar_cart_params.nonce,
+                    cart_item_key: cartItemKey,
+                    quantity: newVal
+                },
+                success: function(response) {
+                    if (response.success && response.data.cart_html) {
+                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                    } else {
+                        alert(response.data?.message || 'Error al actualizar la cantidad');
+                    }
+                },
+                error: function() {
+                    alert('Error de comunicación con el servidor');
+                },
+                complete: function() {
+                    $product.removeClass('updating');
+                }
+            });
+        });
+
+        // Handler para Enter en el input de cantidad
+        $('#sidebar-cart-container').on('keyup', 'input.cart-item__quantity-input', function(e) {
+            if (e.key === 'Enter') {
+                $(this).trigger('change');
+            }
+        });
+    });
 
     /**
      * Controlador de cantidades de productos
@@ -528,5 +684,147 @@
 
     // Exportar para uso en otros scripts
     window.SnapSidebarCartQuantity = QuantityHandler;
+
+    // Re-inicializar handlers de cantidad y eliminar tras cada cambio en el carrito
+    function reinicializarHandlersSnapSidebarCart() {
+        // Eliminar handlers previos para evitar duplicados
+        jQuery(document).off('click', '.notabutton.quantity-up');
+        jQuery(document).off('click', '.notabutton.quantity-down');
+        jQuery(document).off('click', '.snap-sidebar-cart__product-remove-top');
+
+        // Volver a enganchar los handlers de cantidad
+        if (window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.init === 'function') {
+            window.SnapSidebarCartQuantity.init();
+        }
+
+        // Handler para eliminar producto (por si no está en el handler de cantidad)
+        jQuery(document).on('click', '.snap-sidebar-cart__product-remove-top', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // Log para depuración
+            console.log('Botón eliminar del carrito lateral presionado');
+            var $button = jQuery(this);
+            var cartItemKey = $button.data('key');
+            if (!cartItemKey) {
+                console.error('Error: No se pudo encontrar la clave del producto');
+                return;
+            }
+            var $product = $button.closest('.snap-sidebar-cart__product');
+            // Animación y preloader
+            if ($product.length) {
+                $product.addClass('removing');
+                var $loader = $product.find('.snap-sidebar-cart__product-loader');
+                if ($loader.length) {
+                    $loader.css('display', 'flex');
+                    var $spinner = $loader.find('.snap-sidebar-cart__loader-spinner');
+                    if (window.snap_sidebar_cart_params && window.snap_sidebar_cart_params.preloader) {
+                        var preloaderType = window.snap_sidebar_cart_params.preloader.type || 'circle';
+                        var preloaderPosition = window.snap_sidebar_cart_params.preloader.position || 'center';
+                        $spinner.attr('class', 'snap-sidebar-cart__loader-spinner');
+                        $spinner.addClass('preloader-' + preloaderType);
+                        $spinner.addClass('preloader-position-' + preloaderPosition);
+                        if (preloaderType === 'dots') {
+                            $spinner.html('<span></span><span></span><span></span>');
+                        } else {
+                            $spinner.html('');
+                        }
+                    }
+                }
+            }
+            // AJAX para eliminar producto
+            jQuery.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_remove',
+                    nonce: snap_sidebar_cart_params.nonce,
+                    cart_item_key: cartItemKey
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.cart_html) {
+                            jQuery('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        }
+                        if (response.data.subtotal) {
+                            jQuery('.snap-sidebar-cart__subtotal-price').html(response.data.subtotal);
+                        }
+                        if (response.data.shipping_total) {
+                            jQuery('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
+                        }
+                        var cartCount = parseInt(jQuery('.snap-sidebar-cart__count').text()) || 0;
+                        if (cartCount === 0) {
+                            jQuery('.snap-sidebar-cart__footer').hide();
+                            var $relatedSection = jQuery('.snap-sidebar-cart__related-section');
+                            $relatedSection.hide();
+                            $relatedSection.css('display', 'none');
+                            $relatedSection.attr('style', 'display: none !important');
+                            jQuery('.snap-sidebar-cart').addClass('cart-is-empty');
+                            jQuery('.snap-sidebar-cart__related-container .snap-sidebar-cart__slider-track').empty();
+                            jQuery(document.body).trigger('snap_sidebar_cart_empty');
+                        }
+                        jQuery(document.body).trigger('snap_sidebar_cart_updated');
+                    } else {
+                        if (response.data && response.data.message) {
+                            alert(response.data.message);
+                        } else {
+                            alert('Error al eliminar el producto del carrito');
+                        }
+                        if ($product.length) {
+                            $product.removeClass('removing');
+                            if ($loader.length) {
+                                $loader.hide();
+                            }
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error de comunicación con el servidor');
+                    if ($product.length) {
+                        $product.removeClass('removing');
+                        if ($loader.length) {
+                            $loader.hide();
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    // Llama a la función tras cada cambio en el carrito
+    jQuery(document.body).on('snap_sidebar_cart_updated added_to_cart wc_fragments_refreshed', function() {
+        reinicializarHandlersSnapSidebarCart();
+    });
+
+    // Llama también al cargar la página
+    jQuery(document).ready(function() {
+        reinicializarHandlersSnapSidebarCart();
+    });
+
+    // Observador robusto para detectar cambios en el contenedor de productos del carrito incluso si el nodo se reemplaza
+    (function() {
+        var observer = null;
+        function observeCartProducts() {
+            var cartProductsContainer = document.querySelector('.snap-sidebar-cart__products');
+            if (!cartProductsContainer) return;
+            if (observer) observer.disconnect();
+            observer = new MutationObserver(function(mutationsList, observerInstance) {
+                if (window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.init === 'function') {
+                    window.SnapSidebarCartQuantity.init();
+                }
+            });
+            observer.observe(cartProductsContainer, { childList: true, subtree: true });
+        }
+        // Observar el contenedor padre para detectar si .snap-sidebar-cart__products es reemplazado
+        var parent = document.querySelector('.snap-sidebar-cart__body');
+        if (parent) {
+            var parentObserver = new MutationObserver(function(mutationsList, parentObs) {
+                // Cada vez que aparece un nuevo contenedor de productos, reenganchar el observer
+                observeCartProducts();
+            });
+            parentObserver.observe(parent, { childList: true, subtree: true });
+        }
+        // Enganchar al cargar por primera vez
+        observeCartProducts();
+    })();
 
 })(jQuery);

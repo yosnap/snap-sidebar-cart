@@ -77,7 +77,11 @@ $shipping_days = 3; // Por defecto, 3 días - esto podría ser configurable o ca
 $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sidebar-cart__product';
 ?>
 
-<li class="<?php echo esc_attr($item_class); ?>" data-key="<?php echo esc_attr($cart_item_key); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-debug="product-item-<?php echo esc_attr($product_id); ?>">
+<li class="<?php echo esc_attr($item_class); ?>"
+    data-key="<?php echo esc_attr($cart_item_key); ?>"
+    data-cart-item-key="<?php echo esc_attr($cart_item_key); ?>"
+    data-product-id="<?php echo esc_attr($product_id); ?>"
+    data-debug="product-item-<?php echo esc_attr($product_id); ?>">
     <!-- Información de depuración -->
     <span style="display: none; font-size: 0;" class="cart-item-debug-info" data-cart-key="<?php echo esc_attr($cart_item_key); ?>">
         CartItemKey: <?php echo esc_html($cart_item_key); ?>
@@ -277,7 +281,7 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </button>
-                <input class="cart-item__quantity-input" type="number" size="2" id="updates_<?php echo esc_attr($cart_item_key); ?>" name="updates[]" data-key="<?php echo esc_attr($cart_item_key); ?>" data-initial-value="<?php echo esc_attr($quantity); ?>" data-line="1" value="<?php echo esc_attr($quantity); ?>" min="0" <?php echo $max_purchase !== '' ? 'max="' . esc_attr($max_purchase) . '"' : ''; ?> aria-label="<?php esc_attr_e('Cantidad', 'snap-sidebar-cart'); ?>">
+                <input class="cart-item__quantity-input" type="number" size="2" id="updates_<?php echo esc_attr($cart_item_key); ?>" name="updates[]" data-key="<?php echo esc_attr($cart_item_key); ?>" data-cart-item-key="<?php echo esc_attr($cart_item_key); ?>" data-initial-value="<?php echo esc_attr($quantity); ?>" data-line="1" value="<?php echo esc_attr($quantity); ?>" min="0" <?php echo $max_purchase !== '' ? 'max="' . esc_attr($max_purchase) . '"' : ''; ?> aria-label="<?php esc_attr_e('Cantidad', 'snap-sidebar-cart'); ?>">
                 <button type="button" class="notabutton quantity-up" aria-label="<?php esc_attr_e('Aumentar', 'snap-sidebar-cart'); ?>" <?php echo $is_at_max; ?>>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
                         <title><?php esc_html_e('Más', 'snap-sidebar-cart'); ?></title>
@@ -295,7 +299,7 @@ $item_class = $is_new_item ? 'snap-sidebar-cart__product new-item' : 'snap-sideb
                     // Determinar qué tipo de icono mostrar
                     $icon_type = isset($this->options['delete_icon_type']) ? $this->options['delete_icon_type'] : 'trash';
                 ?>
-                <button type="button" class="snap-sidebar-cart__product-remove-top" data-key="<?php echo esc_attr($cart_item_key); ?>" aria-label="<?php esc_attr_e('Eliminar producto', 'snap-sidebar-cart'); ?>">
+                <button type="button" class="snap-sidebar-cart__product-remove-top" data-key="<?php echo esc_attr($cart_item_key); ?>" data-cart-item-key="<?php echo esc_attr($cart_item_key); ?>" aria-label="<?php esc_attr_e('Eliminar producto', 'snap-sidebar-cart'); ?>">
                     <?php if ($icon_type === 'trash') : ?>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
                         <title><?php esc_html_e('Eliminar', 'snap-sidebar-cart'); ?></title>

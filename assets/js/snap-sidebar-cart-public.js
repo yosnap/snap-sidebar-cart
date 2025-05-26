@@ -159,6 +159,7 @@
           // Update cart products container (replace the whole list)
           if (response.data.cart_html) {
             $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+            if (typeof window.bindQuantityEvents === 'function') window.bindQuantityEvents();
           }
           // Update cart count
           if (response.data.cart_count !== undefined) {
@@ -171,7 +172,8 @@
           // Re-bind quantity events and check stock limits
           checkStockLimits();
         } else {
-          if (response.data && response.data.message) {
+          // Solo mostrar alerta si la cantidad no es 0 (no es eliminación)
+          if (quantity > 0 && response.data && response.data.message) {
             alert(response.data.message);
           }
           // Ocultar loader en caso de error
@@ -179,7 +181,10 @@
         }
       },
       error: function (xhr, status, error) {
-        alert("Error de comunicación con el servidor");
+        // Solo mostrar alerta si la cantidad no es 0 (no es eliminación)
+        if (quantity > 0) {
+          alert("Error de comunicación con el servidor");
+        }
         // Ocultar loader en caso de error
         $(".snap-sidebar-cart__product-loader").hide();
       },
@@ -1483,7 +1488,69 @@
 
     // Definición de bindQuantityEvents
     function bindQuantityEvents() {
-      // ...código existente...
+      // Desenlazar eventos previos para evitar duplicados
+      $(document).off('click', '.quantity-up');
+      $(document).off('click', '.quantity-down');
+      $(document).off('change', '.cart-item__quantity-input');
+      $(document).off('input', '.cart-item__quantity-input');
+
+      // Botón de aumentar cantidad
+      $(document).on('click', '.quantity-up', function (e) {
+        e.preventDefault();
+        var $wrapper = $(this).closest('.quantity.buttoned-input');
+        var $input = $wrapper.find('input.cart-item__quantity-input');
+        var cartItemKey = $wrapper.data('key') || $input.data('key'); // Fallback al input
+        var oldQuantity = parseInt($input.val(), 10) || 0;
+        var maxQty = parseInt($wrapper.data('max-qty'), 10);
+        var newQuantity = oldQuantity + 1;
+        if (!isNaN(maxQty) && newQuantity > maxQty) {
+          newQuantity = maxQty;
+        }
+        $input.val(newQuantity);
+        if (!cartItemKey) {
+          alert("Error: No se pudo determinar la clave del producto");
+          return;
+        }
+        updateCartItemQuantity(cartItemKey, newQuantity, oldQuantity);
+      });
+
+      // Botón de disminuir cantidad
+      $(document).on('click', '.quantity-down', function (e) {
+        e.preventDefault();
+        var $wrapper = $(this).closest('.quantity.buttoned-input');
+        var $input = $wrapper.find('input.cart-item__quantity-input');
+        var cartItemKey = $wrapper.data('key') || $input.data('key'); // Fallback al input
+        var oldQuantity = parseInt($input.val(), 10) || 0;
+        var newQuantity = oldQuantity - 1;
+        if (newQuantity < 0) newQuantity = 0;
+        $input.val(newQuantity);
+        if (!cartItemKey) {
+          alert("Error: No se pudo determinar la clave del producto");
+          return;
+        }
+        updateCartItemQuantity(cartItemKey, newQuantity, oldQuantity);
+      });
+
+      // Cambio manual en el input de cantidad
+      $(document).on('change', '.cart-item__quantity-input', function (e) {
+        var $input = $(this);
+        var $wrapper = $input.closest('.quantity.buttoned-input');
+        var cartItemKey = $wrapper.data('key') || $input.data('key'); // Fallback al input
+        var oldQuantity = parseInt($input.data('old-value'), 10) || 0;
+        var newQuantity = parseInt($input.val(), 10) || 0;
+        if (newQuantity < 0) newQuantity = 0;
+        $input.val(newQuantity);
+        if (!cartItemKey) {
+          alert("Error: No se pudo determinar la clave del producto");
+          return;
+        }
+        updateCartItemQuantity(cartItemKey, newQuantity, oldQuantity);
+      });
+
+      // Guardar el valor anterior al enfocar el input
+      $(document).on('focus', '.cart-item__quantity-input', function () {
+        $(this).data('old-value', $(this).val());
+      });
     }
     window.bindQuantityEvents = bindQuantityEvents;
 

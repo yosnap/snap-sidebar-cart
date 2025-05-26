@@ -261,9 +261,6 @@ class Snap_Sidebar_Cart {
      * @return   array|false                 Los datos del artículo con el timestamp añadido o false para prevenir adición.
      */
     public function add_timestamp_to_cart_item($cart_item_data, $product_id, $variation_id) {
-        // Log detallado para depuración
-        error_log('DEBUG add_timestamp_to_cart_item: action=' . (isset($_POST['action']) ? $_POST['action'] : 'NO_ACTION') . ' | REQUEST=' . json_encode($_REQUEST));
-        // Si la acción es una actualización de cantidad vía AJAX, no hacer nada especial
         if (
             isset($_POST['action']) &&
             $_POST['action'] === 'snap_sidebar_cart_update'
@@ -272,7 +269,6 @@ class Snap_Sidebar_Cart {
         }
         $cart = WC()->cart;
         if (!$cart) {
-            error_log('Error en add_timestamp_to_cart_item: WC()->cart no está disponible');
             return $cart_item_data;
         }
         $product_in_cart = false;
@@ -285,8 +281,21 @@ class Snap_Sidebar_Cart {
             }
         }
         ksort($requested_variation);
-        $requested_serialized = serialize($requested_variation);
-        error_log('REQUESTED VARIATION (normalizada y serializada): ' . $requested_serialized);
+        // Detectar y añadir automáticamente todos los campos personalizados relevantes
+        $custom_fields_request = array();
+        foreach ($_REQUEST as $key => $value) {
+            if (is_string($key) && (
+                strpos(strtolower($key), 'engraving') !== false ||
+                strpos(strtolower($key), 'grabado') !== false ||
+                strpos(strtolower($key), 'custom') !== false ||
+                strpos(strtolower($key), 'personaliz') !== false ||
+                strpos(strtolower($key), 'etiqueta') !== false
+            )) {
+                $custom_fields_request[$key] = is_array($value) ? json_encode($value) : (string)$value;
+            }
+        }
+        ksort($custom_fields_request);
+        $requested_serialized = serialize($requested_variation) . '|' . serialize($custom_fields_request);
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if ($cart_item['product_id'] == $product_id && $cart_item['variation_id'] == $variation_id) {
                 // Normalizar variación del carrito
@@ -297,26 +306,38 @@ class Snap_Sidebar_Cart {
                     }
                 }
                 ksort($cart_variation);
-                $cart_serialized = serialize($cart_variation);
-                error_log('CART VARIATION (normalizada y serializada): ' . $cart_serialized);
-                // Si ambos arrays son vacíos o iguales, es el mismo producto
+                // Normalizar campos personalizados del carrito
+                $custom_fields_cart = array();
+                foreach ($cart_item as $k => $v) {
+                    if (is_string($k) && (
+                        strpos(strtolower($k), 'engraving') !== false ||
+                        strpos(strtolower($k), 'grabado') !== false ||
+                        strpos(strtolower($k), 'custom') !== false ||
+                        strpos(strtolower($k), 'personaliz') !== false ||
+                        strpos(strtolower($k), 'etiqueta') !== false
+                    )) {
+                        $custom_fields_cart[$k] = is_array($v) ? json_encode($v) : (string)$v;
+                    }
+                }
+                ksort($custom_fields_cart);
+                $cart_serialized = serialize($cart_variation) . '|' . serialize($custom_fields_cart);
                 if ($cart_serialized === $requested_serialized) {
                     $product_in_cart = true;
                     $existing_cart_item_key = $cart_item_key;
-                    error_log('¡MATCH! Producto ya en carrito. NO se añade timestamp ni se permite duplicado.');
-                    // Devolver false para que WooCommerce NO cree una nueva línea
                     return false;
                 }
             }
         }
         $product = wc_get_product($product_id);
-        $product_name = $product ? $product->get_name() : 'Producto desconocido';
         $timestamp = time();
-        error_log('Nuevo producto añadido con timestamp: ' . $timestamp);
         if (!is_array($cart_item_data)) {
             $cart_item_data = array();
         }
         $cart_item_data['time_added'] = $timestamp;
+        // Guardar todos los campos personalizados detectados en el cart_item_data
+        foreach ($custom_fields_request as $k => $v) {
+            $cart_item_data[$k] = $v;
+        }
         return $cart_item_data;
     }
 
