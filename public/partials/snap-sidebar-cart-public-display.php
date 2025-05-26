@@ -54,7 +54,6 @@ $cart_count = WC()->cart->get_cart_contents_count();
                         return ($a_time < $b_time) ? -1 : 1;
                     }
                 });
-                $cart_items = array_values($cart_items);
                 
                 if (empty($cart_items)) {
                     ?>

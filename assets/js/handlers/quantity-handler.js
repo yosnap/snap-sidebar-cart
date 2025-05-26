@@ -25,6 +25,10 @@
             var $button = $(this);
             var cartItemKey = $button.data('key');
             if (!cartItemKey) {
+                var $product = $button.closest('.snap-sidebar-cart__product');
+                cartItemKey = $product.data('key');
+            }
+            if (!cartItemKey) {
                 console.error('No se pudo obtener la clave del producto para eliminar');
                 return;
             }
@@ -40,7 +44,7 @@
                 },
                 success: function(response) {
                     if (response.success && response.data.cart_html) {
-                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
                         // Actualizar totales
                         if (typeof response.data.cart_count !== 'undefined') {
                             $('.snap-sidebar-cart__count').text(response.data.cart_count);
@@ -98,7 +102,7 @@
                 },
                 success: function(response) {
                     if (response.success && response.data.cart_html) {
-                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
                         // Actualizar totales
                         if (typeof response.data.cart_count !== 'undefined') {
                             $('.snap-sidebar-cart__count').text(response.data.cart_count);
@@ -127,6 +131,10 @@
             var $input = $(this);
             var $quantityWrapper = $input.closest('.quantity.buttoned-input');
             var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
+            if (!cartItemKey) {
+                var $product = $input.closest('.snap-sidebar-cart__product');
+                cartItemKey = $product.data('key');
+            }
             var newVal = parseInt($input.val(), 10) || 0;
             if (!cartItemKey) {
                 console.error('No se pudo obtener la clave del producto para actualizar cantidad');
@@ -145,7 +153,7 @@
                 },
                 success: function(response) {
                     if (response.success && response.data.cart_html) {
-                        $('.snap-sidebar-cart__products').html(response.data.cart_html);
+                        actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
                     } else {
                         alert(response.data?.message || 'Error al actualizar la cantidad');
                     }
@@ -826,5 +834,31 @@
         // Enganchar al cargar por primera vez
         observeCartProducts();
     })();
+
+    function actualizarSidebarCartHTML(cartHtml, cartCount) {
+        var $productsContainer = $('.snap-sidebar-cart__products');
+        if ($productsContainer.length === 0) {
+            // Si no existe, crearlo y añadirlo al body del sidebar
+            var $body = $('#sidebar-cart-container .snap-sidebar-cart__body');
+            if ($body.length) {
+                $productsContainer = $('<div class="snap-sidebar-cart__products"></div>');
+                $body.prepend($productsContainer);
+            }
+        }
+        if ($productsContainer.length) {
+            $productsContainer.empty(); // Limpiar antes de insertar
+            $productsContainer.html(cartHtml);
+        }
+        // Mostrar/ocultar el footer según si el carrito está vacío
+        if (typeof cartCount !== 'undefined' && cartCount > 0) {
+            $('.snap-sidebar-cart__footer').show();
+            $('.snap-sidebar-cart__related-section').show();
+            $('.snap-sidebar-cart').removeClass('cart-is-empty');
+        } else {
+            $('.snap-sidebar-cart__footer').hide();
+            $('.snap-sidebar-cart__related-section').hide();
+            $('.snap-sidebar-cart').addClass('cart-is-empty');
+        }
+    }
 
 })(jQuery);
