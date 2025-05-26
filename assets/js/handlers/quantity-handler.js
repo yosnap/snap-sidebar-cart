@@ -18,8 +18,6 @@
     'use strict';
 
     jQuery(document).ready(function($) {
-        console.log('quantity-handler.js cargado');
-
         // Handler delegado para el botón eliminar dentro del sidebar
         $('#sidebar-cart-container').on('click', '.snap-sidebar-cart__product-remove-top', function() {
             var $button = $(this);
@@ -29,7 +27,6 @@
                 cartItemKey = $product.data('key');
             }
             if (!cartItemKey) {
-                console.error('No se pudo obtener la clave del producto para eliminar');
                 return;
             }
             var $product = $button.closest('.snap-sidebar-cart__product');
@@ -55,6 +52,8 @@
                         if (typeof response.data.shipping_total !== 'undefined') {
                             $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
                         }
+                        refreshWooFragments();
+                        ajaxRefreshCartPage();
                     } else {
                         alert(response.data?.message || 'Error al eliminar el producto');
                     }
@@ -86,7 +85,6 @@
                 newVal = Math.max(currentVal - 1, 0);
             }
             if (!cartItemKey) {
-                console.error('No se pudo obtener la clave del producto para actualizar cantidad');
                 return;
             }
             var $product = $button.closest('.snap-sidebar-cart__product');
@@ -113,6 +111,8 @@
                         if (typeof response.data.shipping_total !== 'undefined') {
                             $('.snap-sidebar-cart__shipping-price').html(response.data.shipping_total);
                         }
+                        refreshWooFragments();
+                        ajaxRefreshCartPage();
                     } else {
                         alert(response.data?.message || 'Error al actualizar la cantidad');
                     }
@@ -126,8 +126,10 @@
             });
         });
 
-        // Handler para cambio manual de cantidad (input)
-        $('#sidebar-cart-container').on('change', 'input.cart-item__quantity-input', function() {
+        // Debounce para evitar múltiples peticiones rápidas al escribir en el input de cantidad
+        let quantityInputTimeout = null;
+
+        $('#sidebar-cart-container').on('input', 'input.cart-item__quantity-input', function() {
             var $input = $(this);
             var $quantityWrapper = $input.closest('.quantity.buttoned-input');
             var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
@@ -137,40 +139,93 @@
             }
             var newVal = parseInt($input.val(), 10) || 0;
             if (!cartItemKey) {
-                console.error('No se pudo obtener la clave del producto para actualizar cantidad');
                 return;
             }
             var $product = $input.closest('.snap-sidebar-cart__product');
             $product.addClass('updating');
-            $.ajax({
-                type: 'POST',
-                url: snap_sidebar_cart_params.ajax_url,
-                data: {
-                    action: 'snap_sidebar_cart_update',
-                    nonce: snap_sidebar_cart_params.nonce,
-                    cart_item_key: cartItemKey,
-                    quantity: newVal
-                },
-                success: function(response) {
-                    if (response.success && response.data.cart_html) {
-                        actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
-                    } else {
-                        alert(response.data?.message || 'Error al actualizar la cantidad');
+
+            // Limpiar timeout anterior
+            if (quantityInputTimeout) clearTimeout(quantityInputTimeout);
+
+            // Esperar 500ms tras el último cambio antes de enviar AJAX
+            quantityInputTimeout = setTimeout(function() {
+                $.ajax({
+                    type: 'POST',
+                    url: snap_sidebar_cart_params.ajax_url,
+                    data: {
+                        action: 'snap_sidebar_cart_update',
+                        nonce: snap_sidebar_cart_params.nonce,
+                        cart_item_key: cartItemKey,
+                        quantity: newVal
+                    },
+                    success: function(response) {
+                        if (response.success && response.data.cart_html) {
+                            actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
+                            refreshWooFragments();
+                            ajaxRefreshCartPage();
+                        } else {
+                            alert(response.data?.message || 'Error al actualizar la cantidad');
+                        }
+                    },
+                    error: function() {
+                        alert('Error de comunicación con el servidor');
+                    },
+                    complete: function() {
+                        $product.removeClass('updating');
                     }
-                },
-                error: function() {
-                    alert('Error de comunicación con el servidor');
-                },
-                complete: function() {
-                    $product.removeClass('updating');
-                }
-            });
+                });
+            }, 500);
         });
 
         // Handler para Enter en el input de cantidad
-        $('#sidebar-cart-container').on('keyup', 'input.cart-item__quantity-input', function(e) {
+        $('#sidebar-cart-container').off('keyup', 'input.cart-item__quantity-input');
+        $('#sidebar-cart-container').on('keydown', 'input.cart-item__quantity-input', function(e) {
             if (e.key === 'Enter') {
-                $(this).trigger('change');
+                var $input = $(this);
+                var $quantityWrapper = $input.closest('.quantity.buttoned-input');
+                var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
+                if (!cartItemKey) {
+                    var $product = $input.closest('.snap-sidebar-cart__product');
+                    cartItemKey = $product.data('key');
+                }
+                var newVal = parseInt($input.val(), 10) || 0;
+                if (!cartItemKey) {
+                    return;
+                }
+                var $product = $input.closest('.snap-sidebar-cart__product');
+                $product.addClass('updating');
+
+                // Limpiar el debounce pendiente para evitar doble petición
+                if (quantityInputTimeout) clearTimeout(quantityInputTimeout);
+
+                // Enviar AJAX inmediatamente
+                $.ajax({
+                    type: 'POST',
+                    url: snap_sidebar_cart_params.ajax_url,
+                    data: {
+                        action: 'snap_sidebar_cart_update',
+                        nonce: snap_sidebar_cart_params.nonce,
+                        cart_item_key: cartItemKey,
+                        quantity: newVal
+                    },
+                    success: function(response) {
+                        if (response.success && response.data.cart_html) {
+                            actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
+                            refreshWooFragments();
+                            ajaxRefreshCartPage();
+                        } else {
+                            alert(response.data?.message || 'Error al actualizar la cantidad');
+                        }
+                    },
+                    error: function() {
+                        alert('Error de comunicación con el servidor');
+                    },
+                    complete: function() {
+                        $product.removeClass('updating');
+                    }
+                });
+                e.preventDefault();
+                return false;
             }
         });
     });
@@ -242,16 +297,6 @@
                 
                 // Verificar si el botón está deshabilitado
                 if ($button.hasClass('disabled') || $button.attr('disabled')) {
-                    console.log("Botón de incremento deshabilitado - Stock máximo alcanzado");
-                    
-                    // Opcionalmente mostrar mensaje de stock máximo
-                    var $quantityWrapper = $button.closest('.quantity.buttoned-input');
-                    var maxQty = parseInt($quantityWrapper.data('max-qty'), 10);
-                    if (!isNaN(maxQty)) {
-                        // Mostrar notificación flotante
-                        self.showMaxStockNotification($button, maxQty);
-                    }
-                    
                     return;
                 }
                 
@@ -267,7 +312,6 @@
                 
                 // Verificar si tenemos una clave válida
                 if (!cartItemKey) {
-                    console.error("Error: No se pudo determinar la clave del producto");
                     return;
                 }
                 
@@ -278,7 +322,6 @@
                 // Verificar límite de stock
                 var maxQty = parseInt($quantityWrapper.data('max-qty'), 10);
                 if (!isNaN(maxQty) && currentVal >= maxQty) {
-                    console.log("Stock máximo alcanzado:", maxQty);
                     $button.addClass('disabled').attr('disabled', 'disabled');
                     self.showMaxStockNotification($button, maxQty);
                     return;
@@ -288,7 +331,6 @@
                 
                 // Mostrar el preloader ANTES de actualizar
                 if ($product.length) {
-                    console.log("Mostrando preloader para incremento");
                     self.setupAndShowLoader($product);
                 }
                 
@@ -298,7 +340,6 @@
                     
                     // Mostrar indicador de último producto disponible
                     if (newVal === maxQty) {
-                        console.log("Último producto disponible");
                         $quantityWrapper.addClass('last-available');
                         setTimeout(function() {
                             $quantityWrapper.removeClass('last-available');
@@ -330,7 +371,6 @@
                 
                 // Verificar si tenemos una clave válida
                 if (!cartItemKey) {
-                    console.error("Error: No se pudo determinar la clave del producto");
                     return;
                 }
                 
@@ -341,13 +381,11 @@
                 
                 // Mostrar preloader inmediatamente en cualquier caso
                 if ($product.length) {
-                    console.log("Mostrando preloader para decremento");
                     self.setupAndShowLoader($product);
                 }
                 
                 // Si se va a eliminar (cantidad 0), mostrar animación especial
                 if (newVal === 0) {
-                    console.log("Eliminando producto del carrito (cantidad 0)");
                     $product.addClass('removing');
                 }
                 
@@ -362,64 +400,6 @@
                 
                 // Enviar actualización al servidor
                 self.updateCartItemQuantity(cartItemKey, newVal, currentVal);
-            });
-            
-            // Cambio manual de cantidad (input)
-            $(document).on('change', '.cart-item__quantity-input', function() {
-                var $input = $(this);
-                var $product = $input.closest('.snap-sidebar-cart__product');
-                var cartItemKey = $product.data('key') || $input.data('key');
-                var $quantityWrapper = $input.closest('.quantity.buttoned-input');
-                var maxQty = parseInt($quantityWrapper.data('max-qty'), 10);
-                
-                // Verificar si tenemos una clave válida de producto
-                if (!cartItemKey) {
-                    console.error("Error: No se pudo determinar la clave del producto");
-                    return;
-                }
-                
-                var oldVal = parseInt($input.data('initial-value'), 10) || 0;
-                var newVal = parseInt($input.val(), 10);
-                
-                // Validar valor
-                if (isNaN(newVal) || newVal < 0) {
-                    newVal = 0;
-                }
-                
-                // Limitar al stock máximo si está definido
-                if (!isNaN(maxQty) && newVal > maxQty) {
-                    newVal = maxQty;
-                }
-                
-                // Mostrar preloader inmediatamente para todos los cambios de cantidad
-                if ($product.length) {
-                    console.log("Mostrando preloader para cambio manual de cantidad");
-                    self.setupAndShowLoader($product);
-                }
-                
-                // Actualizar valor visual
-                $input.val(newVal);
-                
-                // Actualizar estado del botón de incremento
-                var $increaseBtn = $quantityWrapper.find('.notabutton.quantity-up');
-                if (!isNaN(maxQty)) {
-                    if (newVal >= maxQty) {
-                        $increaseBtn.addClass('disabled').attr('disabled', 'disabled');
-                    } else {
-                        $increaseBtn.removeClass('disabled').removeAttr('disabled');
-                    }
-                }
-                
-                // Si se va a eliminar (cantidad 0), agregar clase adicional
-                if (newVal === 0) {
-                    $product.addClass('removing');
-                }
-                
-                // Enviar actualización al servidor
-                self.updateCartItemQuantity(cartItemKey, newVal, oldVal);
-                
-                // Actualizar el valor inicial para la próxima vez
-                $input.data('initial-value', newVal);
             });
             
             // Verificar límites de stock cuando se actualiza el carrito
@@ -439,12 +419,9 @@
             var self = this;
             
             if (!cartItemKey) {
-                console.error("Error: Clave de producto no válida para actualizar cantidad");
                 $('.snap-sidebar-cart__product-loader').hide();
                 return;
             }
-            
-            console.log("Actualizando cantidad - Clave:", cartItemKey, "De:", oldQuantity, "A:", quantity);
             
             // Determinar si es actualización o eliminación
             var isQuantityUpdate = quantity > 0 && oldQuantity > 0;
@@ -504,6 +481,8 @@
                         } else {
                             // Fallback si no está disponible el módulo UI
                         }
+                        refreshWooFragments();
+                        ajaxRefreshCartPage();
                     } else {
                         if (response.data && response.data.message) {
                             alert(response.data.message);
@@ -525,8 +504,6 @@
          */
         setupAndShowLoader: function($product) {
             if (!$product || !$product.length) return;
-            
-            console.log("Mostrando preloader para producto: ", $product.data('key'));
             
             // Obtener configuración del preloader
             var preloaderType = 'circle';
@@ -614,8 +591,6 @@
          * Verifica los límites de stock y actualiza el estado de los botones
          */
         checkStockLimits: function() {
-            console.log("Verificando límites de stock");
-            
             $('.quantity.buttoned-input').each(function() {
                 var $wrapper = $(this);
                 var maxQty = parseInt($wrapper.data('max-qty'), 10);
@@ -710,11 +685,9 @@
             e.preventDefault();
             e.stopPropagation();
             // Log para depuración
-            console.log('Botón eliminar del carrito lateral presionado');
             var $button = jQuery(this);
             var cartItemKey = $button.data('key');
             if (!cartItemKey) {
-                console.error('Error: No se pudo encontrar la clave del producto');
                 return;
             }
             var $product = $button.closest('.snap-sidebar-cart__product');
@@ -836,32 +809,70 @@
     })();
 
     function actualizarSidebarCartHTML(cartHtml, cartCount) {
-        console.log('DEBUG cartHtml:', cartHtml);
-        console.log('DEBUG cartCount:', cartCount);
         var $productsContainer = $('.snap-sidebar-cart__products');
-        if ($productsContainer.length === 0) {
-            // Si no existe, crearlo y añadirlo al body del sidebar
-            var $body = $('#sidebar-cart-container .snap-sidebar-cart__body');
-            if ($body.length) {
-                $productsContainer = $('<div class="snap-sidebar-cart__products"></div>');
-                $body.prepend($productsContainer);
-            }
-        }
         if ($productsContainer.length) {
-            $productsContainer.empty(); // Limpiar antes de insertar
+            $productsContainer.empty();
             $productsContainer.html(cartHtml);
         }
-        // Mostrar/ocultar el footer según si el carrito está vacío
-        if (typeof cartCount !== 'undefined' && cartCount > 0) {
-            $('.snap-sidebar-cart__footer').show();
-            $('.snap-sidebar-cart__related-section').show();
-            $('.snap-sidebar-cart').removeClass('cart-is-empty');
-        } else {
-            $('.snap-sidebar-cart__footer').hide();
-            $('.snap-sidebar-cart__related-section').hide();
-            $('.snap-sidebar-cart').addClass('cart-is-empty');
+        // Actualizar el contador de productos
+        if (typeof cartCount !== 'undefined') {
+            $('.snap-sidebar-cart__count').text(cartCount);
+        }
+        // Extraer y reemplazar el subtotal desde el HTML recibido
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = cartHtml;
+        var newSubtotal = tempDiv.querySelector('.snap-sidebar-cart__subtotal-price');
+        if (newSubtotal) {
+            document.querySelectorAll('.snap-sidebar-cart__subtotal-price').forEach(function(el) {
+                el.innerHTML = newSubtotal.innerHTML;
+            });
         }
     }
     window.actualizarSidebarCartHTML = actualizarSidebarCartHTML;
+
+    // Función global para refrescar los fragmentos de WooCommerce (contador, mini-cart, etc.)
+    function refreshWooFragments() {
+        if (typeof wc_cart_fragments_params !== 'undefined') {
+            jQuery.ajax({
+                url: wc_cart_fragments_params.wc_ajax_url.toString().replace('%%endpoint%%', 'get_refreshed_fragments'),
+                type: 'POST',
+                success: function(data) {
+                    if (data && data.fragments) {
+                        jQuery.each(data.fragments, function(key, value) {
+                            jQuery(key).replaceWith(value);
+                        });
+                        if (typeof sessionStorage !== 'undefined') {
+                            sessionStorage.setItem(wc_cart_fragments_params.fragment_name, JSON.stringify(data.fragments));
+                            sessionStorage.setItem('wc_cart_hash', data.cart_hash);
+                        }
+                        jQuery(document.body).trigger('wc_fragments_refreshed');
+                        ajaxRefreshCartPage();
+                    }
+                }
+            });
+        }
+    }
+    window.refreshWooFragments = refreshWooFragments;
+
+    // Función para refrescar la página del carrito vía AJAX si está presente
+    function ajaxRefreshCartPage() {
+        if (jQuery('.woocommerce-cart-form').length > 0) {
+            jQuery.ajax({
+                url: window.location.href,
+                type: 'GET',
+                dataType: 'html',
+                success: function(response) {
+                    var $html = jQuery('<div>').html(response);
+                    var $newTable = $html.find('.shop_table.cart');
+                    var $newTotals = $html.find('.cart_totals');
+                    if ($newTable.length && $newTotals.length) {
+                        jQuery('.shop_table.cart').replaceWith($newTable);
+                        jQuery('.cart_totals').replaceWith($newTotals);
+                    }
+                }
+            });
+        }
+    }
+    window.ajaxRefreshCartPage = ajaxRefreshCartPage;
 
 })(jQuery);

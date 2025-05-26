@@ -1153,6 +1153,7 @@ class Snap_Sidebar_Cart_Ajax {
         $cart_items = WC()->cart->get_cart();
         $cart_count = WC()->cart->get_cart_contents_count();
         $cart_subtotal = WC()->cart->get_cart_subtotal();
+        $shipping_total = WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax();
         
         if ($debug) {
             // error_log('DEBUG: Número de productos en el carrito: ' . count($cart_items));
@@ -1204,6 +1205,19 @@ class Snap_Sidebar_Cart_Ajax {
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }
             echo '</ul>';
+            // Añadir el bloque de subtotal igual que en la plantilla principal
+            echo '<div class="snap-sidebar-cart__footer">';
+            if (isset($this->options['show_shipping']) && $this->options['show_shipping']) {
+                echo '<div class="snap-sidebar-cart__shipping">';
+                echo '<span>' . __('Envío:', 'snap-sidebar-cart') . '</span>';
+                echo '<span class="snap-sidebar-cart__shipping-price">' . wc_price($shipping_total) . '</span>';
+                echo '</div>';
+            }
+            echo '<div class="snap-sidebar-cart__subtotal">';
+            echo '<span>' . __('Subtotal (IVA incluido):', 'snap-sidebar-cart') . '</span>';
+            echo '<span class="snap-sidebar-cart__subtotal-price">' . wc_price($cart_subtotal) . '</span>';
+            echo '</div>';
+            echo '</div>';
         }
         
         // Obtener el contenido del buffer
@@ -1214,6 +1228,8 @@ class Snap_Sidebar_Cart_Ajax {
             'cart_content' => $cart_content,
             'cart_count' => $cart_count,
             'cart_subtotal' => $cart_subtotal,
+            'shipping_total' => wc_price($shipping_total),
+            'total' => wc_price($cart_subtotal + $shipping_total),
             'is_cart_empty' => (WC()->cart->is_empty() ? 1 : 0),
             'cart_items' => $items_data // Añadir datos detallados de cada producto
         );
@@ -1380,6 +1396,19 @@ class Snap_Sidebar_Cart_Ajax {
                 include SNAP_SIDEBAR_CART_PATH . 'public/partials/snap-sidebar-cart-product.php';
             }
             echo '</ul>';
+            // Añadir el bloque de subtotal igual que en la plantilla principal
+            echo '<div class="snap-sidebar-cart__footer">';
+            if (isset($this->options['show_shipping']) && $this->options['show_shipping']) {
+                echo '<div class="snap-sidebar-cart__shipping">';
+                echo '<span>' . __('Envío:', 'snap-sidebar-cart') . '</span>';
+                echo '<span class="snap-sidebar-cart__shipping-price">' . wc_price($shipping_total) . '</span>';
+                echo '</div>';
+            }
+            echo '<div class="snap-sidebar-cart__subtotal">';
+            echo '<span>' . __('Subtotal (IVA incluido):', 'snap-sidebar-cart') . '</span>';
+            echo '<span class="snap-sidebar-cart__subtotal-price">' . wc_price($subtotal) . '</span>';
+            echo '</div>';
+            echo '</div>';
         }
         $cart_html = ob_get_clean();
         // Combinar datos adicionales con la respuesta
