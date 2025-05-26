@@ -94,6 +94,9 @@ Sí, el plugin es compatible con WPML y Polylang. Todos los textos son traducibl
 * Nuevo: Añadido soporte para productos virtuales y descargables
 * Mejora: Mejorada la accesibilidad del carrito lateral
 
+= 1.2.10 =
+* Fix: Se mantiene la clave hash original de WooCommerce en el loop del carrito lateral, corrigiendo el funcionamiento de los botones de cantidad y eliminar.
+
 = 1.0.0 =
 * Versión inicial
 
@@ -114,3 +117,4 @@ Versión inicial del plugin Snap Sidebar Cart para WooCommerce.
 == Uso ==
 - Los botones de cantidad (+ y -) y el botón eliminar funcionan correctamente y actualizan los totales del carrito en tiempo real.
 - El sistema es compatible con recarga dinámica del HTML del carrito (AJAX).
+- Los atributos data-key ahora siempre contienen el hash real de WooCommerce, garantizando compatibilidad total con el JS del plugin.
