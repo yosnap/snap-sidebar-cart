@@ -836,6 +836,8 @@
     })();
 
     function actualizarSidebarCartHTML(cartHtml, cartCount) {
+        console.log('DEBUG cartHtml:', cartHtml);
+        console.log('DEBUG cartCount:', cartCount);
         var $productsContainer = $('.snap-sidebar-cart__products');
         if ($productsContainer.length === 0) {
             // Si no existe, crearlo y añadirlo al body del sidebar
@@ -860,5 +862,6 @@
             $('.snap-sidebar-cart').addClass('cart-is-empty');
         }
     }
+    window.actualizarSidebarCartHTML = actualizarSidebarCartHTML;
 
 })(jQuery);

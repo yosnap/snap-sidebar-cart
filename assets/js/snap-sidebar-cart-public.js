@@ -156,36 +156,32 @@
       },
       success: function (response) {
         if (response.success) {
-          // Update cart products container (replace the whole list)
           if (response.data.cart_html) {
-            $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+            if (typeof window.actualizarSidebarCartHTML === 'function') {
+              window.actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
+            } else {
+              $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+            }
             if (typeof window.bindQuantityEvents === 'function') window.bindQuantityEvents();
           }
-          // Update cart count
           if (response.data.cart_count !== undefined) {
             $(".snap-sidebar-cart .snap-sidebar-cart__count").text(response.data.cart_count);
           }
-          // Update subtotal
           if (response.data.subtotal !== undefined) {
             $(".snap-sidebar-cart .snap-sidebar-cart__subtotal-price, .snap-sidebar-cart .snap-sidebar-cart__subtotal-value").html(response.data.subtotal);
           }
-          // Re-bind quantity events and check stock limits
           checkStockLimits();
         } else {
-          // Solo mostrar alerta si la cantidad no es 0 (no es eliminación)
           if (quantity > 0 && response.data && response.data.message) {
             alert(response.data.message);
           }
-          // Ocultar loader en caso de error
           $(".snap-sidebar-cart__product-loader").hide();
         }
       },
       error: function (xhr, status, error) {
-        // Solo mostrar alerta si la cantidad no es 0 (no es eliminación)
         if (quantity > 0) {
           alert("Error de comunicación con el servidor");
         }
-        // Ocultar loader en caso de error
         $(".snap-sidebar-cart__product-loader").hide();
       },
     });
@@ -1237,7 +1233,7 @@
             console.log("Respuesta de añadir producto:", response);
             if (response.success) {
               // Eliminar el placeholder
-              if ($newItemPlaceholder && $newItemPlaceholder.length) {
+              if ($newItemPlaceholder && $newItemPlaceholder.length > 0) {
                 $newItemPlaceholder.remove();
               }
               
@@ -1435,12 +1431,10 @@
 
     // Modificar el handler global para sincronizar el sidebar tras cualquier cambio en el carrito
     $(document.body).on('added_to_cart updated_cart_totals', function(event, fragments, cart_hash, $button) {
-      // Detectar el ID del producto añadido si está disponible
       let productId = null;
       if ($button && $button.data && $button.data('product_id')) {
         productId = $button.data('product_id');
       }
-      // Guardar los IDs antes de la actualización
       prevProductIds = getCurrentProductIds();
       $.ajax({
         type: "POST",
@@ -1450,7 +1444,13 @@
         },
         success: function (response) {
           if (response.success) {
-            $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+            if (response.data.cart_html) {
+              if (typeof window.actualizarSidebarCartHTML === 'function') {
+                window.actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
+              } else {
+                $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+              }
+            }
             if (response.data.cart_count !== undefined) {
               $(".snap-sidebar-cart .snap-sidebar-cart__count").text(response.data.cart_count);
             }
@@ -1459,20 +1459,17 @@
             }
             if (typeof window.bindQuantityEvents === 'function') window.bindQuantityEvents();
             if (typeof checkStockLimits === 'function') checkStockLimits();
-            // Detectar si el producto es nuevo o ya estaba
             let newProductIds = getCurrentProductIds();
             let isNew = false;
             if (productId && newProductIds.includes(productId)) {
               isNew = !prevProductIds.includes(productId);
             }
-            // Obtener la posición configurada
             let position = 'top';
             if (typeof window.getNewProductPosition === 'function') {
               position = window.getNewProductPosition();
             } else if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.new_product_position) {
               position = snap_sidebar_cart_params.new_product_position;
             }
-            // Animar según la lógica solicitada
             if (productId) {
               animateNewOrUpdatedProduct(productId, isNew, position);
             }
