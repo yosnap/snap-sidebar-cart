@@ -161,6 +161,8 @@
               window.actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
             } else {
               $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+              // Eliminar footers incrustados dentro del listado de productos
+              $(".snap-sidebar-cart__products .snap-sidebar-cart__footer, .snap-sidebar-cart__products-list .snap-sidebar-cart__footer").remove();
             }
             if (typeof window.bindQuantityEvents === 'function') window.bindQuantityEvents();
           }
@@ -1449,6 +1451,8 @@
                 window.actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
               } else {
                 $(".snap-sidebar-cart .snap-sidebar-cart__products-list").replaceWith(response.data.cart_html);
+                // Eliminar footers incrustados dentro del listado de productos
+                $(".snap-sidebar-cart__products .snap-sidebar-cart__footer, .snap-sidebar-cart__products-list .snap-sidebar-cart__footer").remove();
               }
             }
             if (response.data.cart_count !== undefined) {
