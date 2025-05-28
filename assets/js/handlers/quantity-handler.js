@@ -843,42 +843,25 @@
                 $activeTab.addClass('active');
             }
             var activeTabType = $activeTab.length ? $activeTab.data('tab') : null;
-            var $targetContent = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
-            var $targetContainer = $targetContent.find('.swiper-wrapper');
-
-            // Mostrar preloader según configuración
-            var preloaderType = window.snap_sidebar_cart_params?.preloader?.type || 'circle';
-            var preloaderPosition = window.snap_sidebar_cart_params?.preloader?.position || 'center';
-            var preloaderColor = window.snap_sidebar_cart_params?.preloader?.color || '#3498db';
-            var preloaderColor2 = window.snap_sidebar_cart_params?.preloader?.color2 || '#e74c3c';
-            var preloaderSize = window.snap_sidebar_cart_params?.preloader?.size || '40px';
-
-            var preloaderClasses = 'snap-sidebar-cart__loader-spinner preloader-' + preloaderType + ' preloader-position-' + preloaderPosition;
-            var inlineStyles = preloaderType === 'circle'
-                ? 'width: ' + preloaderSize + '; height: ' + preloaderSize + '; border-color: ' + preloaderColor + '; border-top-color: ' + preloaderColor2 + ';'
-                : 'width: ' + preloaderSize + '; height: ' + preloaderSize + ';';
-            var preloaderHTML = '<div class="' + preloaderClasses + '" style="' + inlineStyles + '">';
-            if (preloaderType === 'dots') {
-                preloaderHTML += '<span style="background-color: ' + preloaderColor + ';"></span>' +
-                                 '<span style="background-color: ' + preloaderColor + ';"></span>' +
-                                 '<span style="background-color: ' + preloaderColor + ';"></span>';
+            if (activeTabType) {
+                $('.snap-sidebar-cart__related-container').removeClass('active');
+                $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]').addClass('active');
             }
-            preloaderHTML += '</div>';
-
-            $targetContainer.html(
-                '<div class="snap-sidebar-cart__loading-products">' +
-                preloaderHTML +
-                '<span>Cargando productos...</span>' +
-                '</div>'
-            );
-
-            // Obtener el ID del primer producto
-            var $firstProduct = $('.snap-sidebar-cart__product').first();
-            var productId = $firstProduct.data('product-id');
-            if (productId && window.snapSidebarCartSlider && typeof window.snapSidebarCartSlider.loadRelatedProducts === 'function') {
-                window.snapSidebarCartSlider.loadRelatedProducts(activeTabType, productId);
+            var $activeContainer = $('.snap-sidebar-cart__related-container[data-content="' + activeTabType + '"]');
+            var $productsWrapper = $activeContainer.find('.swiper-wrapper');
+            if ($productsWrapper.length && $productsWrapper.children().length === 0) {
+                var $firstProduct = $('.snap-sidebar-cart__product').first();
+                if ($firstProduct.length) {
+                    var productId = $firstProduct.data('product-id');
+                    if (productId && window.snapSidebarCartSlider && typeof window.snapSidebarCartSlider.loadRelatedProducts === 'function') {
+                        window.snapSidebarCartSlider.loadRelatedProducts(activeTabType, productId);
+                    }
+                }
             }
-            $('.snap-sidebar-cart__related-section').show();
+        }
+        // Asegurar visibilidad del footer tras cualquier actualización
+        if (typeof window.updateFooterVisibility === 'function') {
+            window.updateFooterVisibility(count);
         }
     }
     window.actualizarSidebarCartHTML = actualizarSidebarCartHTML;

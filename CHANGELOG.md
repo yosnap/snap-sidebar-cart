@@ -102,3 +102,11 @@
 
 ## 1.0.0 - 2023-10-01
 * Versión inicial del plugin
+
+## 1.2.10 - 2025-05-15
+* **Corrección**: Eliminado el footer duplicado que aparecía dentro del listado de productos en el sidebar.
+* **Mejora**: Ahora los productos relacionados se cargan automáticamente al agregar el primer producto al carrito, sin necesidad de recargar ni cerrar el sidebar.
+* **Mejora**: El slider de productos relacionados se oculta automáticamente al vaciar el carrito.
+
+## 1.2.11 - 2025-05-15
+* **Fix**: El footer del sidebar ahora aparece correctamente al agregar el primer producto al carrito sin recargar ni cerrar el sidebar. Se asegura la visibilidad dinámica vía JS tras cada actualización del carrito.

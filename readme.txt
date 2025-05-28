@@ -4,7 +4,7 @@ Tags: woocommerce, cart, sidebar, ajax, minicart, slide-cart
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 1.2.4
+Stable tag: 1.2.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,14 @@ Sí, el plugin es compatible con WPML y Polylang. Todos los textos son traducibl
 5. Vista en dispositivo móvil
 
 == Changelog ==
+
+= 1.2.11 =
+* Fix: El footer del sidebar ahora aparece correctamente al agregar el primer producto al carrito sin recargar ni cerrar el sidebar. Se asegura la visibilidad dinámica vía JS tras cada actualización del carrito.
+
+= 1.2.10 =
+* Corrección: Eliminado el footer duplicado que aparecía dentro del listado de productos en el sidebar.
+* Mejora: Ahora los productos relacionados se cargan automáticamente al agregar el primer producto al carrito, sin necesidad de recargar ni cerrar el sidebar.
+* Mejora: El slider de productos relacionados se oculta automáticamente al vaciar el carrito.
 
 = 1.2.9 =
 * Corrección crítica: ahora los botones + y - y el botón eliminar funcionan correctamente usando la clave hash real de WooCommerce.

@@ -150,7 +150,7 @@ Si necesitas ayuda con el plugin, consulta primero la página de Diagnóstico in
 
 ## Changelog
 
-Para ver los cambios recientes, consulta el archivo [CHANGELOG.md](CHANGELOG.md) incluido con el plugin.
+Para ver los cambios recientes de la versión 1.2.11, consulta el archivo [CHANGELOG.md](CHANGELOG.md) incluido con el plugin.
 
 ## Licencia
 

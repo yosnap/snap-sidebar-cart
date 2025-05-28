@@ -163,19 +163,18 @@ $cart_count = WC()->cart->get_cart_contents_count();
                 </div>
             <?php endif; ?>
             
-            <div class="snap-sidebar-cart__footer" <?php echo empty($cart_items) ? 'style="display:none;"' : ''; ?>>
-                <?php if (isset($this->options['show_shipping']) && $this->options['show_shipping']) : ?>
+            <div class="snap-sidebar-cart__footer">
+                <?php if (isset(
+                    $this->options['show_shipping']) && $this->options['show_shipping']) : ?>
                     <div class="snap-sidebar-cart__shipping">
                         <span><?php _e('Envío:', 'snap-sidebar-cart'); ?></span>
                         <span class="snap-sidebar-cart__shipping-price"><?php echo wc_price(WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax()); ?></span>
                     </div>
                 <?php endif; ?>
-                
                 <div class="snap-sidebar-cart__subtotal">
                     <span><?php _e('Subtotal (IVA incluido):', 'snap-sidebar-cart'); ?></span>
                     <span class="snap-sidebar-cart__subtotal-price"><?php echo wc_price(WC()->cart->get_subtotal() + WC()->cart->get_subtotal_tax()); ?></span>
                 </div>
-                
                 <?php if (!empty($cart_items)) : ?>
                     <div class="snap-sidebar-cart__buttons">
                         <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart"><?php _e('Ver carrito', 'snap-sidebar-cart'); ?></a>

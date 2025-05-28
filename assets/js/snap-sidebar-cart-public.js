@@ -850,6 +850,7 @@
       e.stopPropagation();
     });
 
+    /*
     // Cambiar de pestaña en productos relacionados
     $(document).on("click", ".snap-sidebar-cart__related-tab", function (e) {
       e.preventDefault();
@@ -1043,7 +1044,8 @@
         }
       );
     });
-    
+    */
+
     // Función para actualizar la visibilidad de los botones de navegación del slider
     window.updateSliderNavigation = function($track) {
       var maxScrollLeft = $track[0].scrollWidth - $track.outerWidth();

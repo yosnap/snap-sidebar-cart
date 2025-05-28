@@ -632,9 +632,7 @@
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    background-color: #f5f5f5;
     border: none;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -644,12 +642,9 @@
     line-height: 1;
     font-weight: normal;
     color: #666;
-    transition: background-color 0.2s, color 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .snap-sidebar-cart__slider-nav:hover {
-    background-color: #616161;
 }
 
 .snap-sidebar-cart__slider-prev {
@@ -772,25 +767,30 @@
 }
 
 .snap-sidebar-cart__related-product-regular-price {
-    font-size: 11px;
-    color: var(--product-text-color);
-    opacity: 0.7;
-    text-decoration: line-through;
+    color: #e74c3c !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    opacity: 1 !important;
+    text-decoration: line-through !important;
+    margin-right: 6px !important;
 }
 
 .snap-sidebar-cart__related-product-discount {
-    font-size: 10px;
-    font-weight: 600;
-    color: #e3256e;
-    background-color: rgba(227, 37, 110, 0.1);
-    padding: 1px 4px;
-    border-radius: 2px;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #43a047 !important;
+    background: none !important;
+    margin-left: 6px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 .snap-sidebar-cart__related-product-price {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--product-text-color);
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--product-text-color) !important;
 }
 
 /* Estilos para las calificaciones */
@@ -886,12 +886,12 @@
 
 /* Mensaje de carga para productos relacionados */
 .snap-sidebar-cart__loading-products {
-    display: flex !important; /* Mostrar el preloader */
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    width: 100%;
+    min-height: 220px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .snap-sidebar-cart__loading-products span {
@@ -1183,12 +1183,22 @@
     .snap-sidebar-cart {
         width: 100% !important;
     }
-    
-    /* Eliminamos esta regla para que se respete la configuración del backend */
-    /* .snap-sidebar-cart__related-product {
-        width: calc(50% - 10px);
-        min-width: calc(50% - 10px);
-    } */
+    .snap-sidebar-cart__related-tabs {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+    }
+    .snap-sidebar-cart__related-tabs::-webkit-scrollbar {
+        height: 4px !important;
+        background: #eee !important;
+    }
+    .snap-sidebar-cart__related-tabs::-webkit-scrollbar-thumb {
+        background: #ccc !important;
+        border-radius: 2px !important;
+    }
+    .snap-sidebar-cart__slider-track {
+        scroll-behavior: smooth !important;
+    }
 }
 
 /* Estado global para body cuando el carrito está abierto */
@@ -1301,7 +1311,6 @@ body.snap-sidebar-cart-open {
     width: 100% !important;
     padding: 15px 20px !important;
     border-top: 1px solid var(--border-color, #e5e5e5) !important;
-    margin-top: auto !important;
 }
 
 /* Ajuste específico para contenedores verticales */
@@ -1339,53 +1348,30 @@ body.snap-sidebar-cart-open {
 
 .snap-sidebar-cart__related-tabs {
     display: flex !important;
-    overflow-x: hidden !important;
-    padding: 0 15px !important;
-    margin-bottom: 5px !important;
-    border-bottom: 1px solid #eee !important;
-}
-
-.snap-sidebar-cart__related-tab {
-    background: none !important;
-    border: none !important;
-    padding: 10px 0 !important;
-    margin-right: 20px !important;
-    font-size: 13px !important;
-    color: #666 !important;
-    cursor: pointer !important;
-    opacity: 0.8 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     white-space: nowrap !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
 }
 
-.snap-sidebar-cart__related-tab:hover {
-    opacity: 1 !important;
-}
-
-.snap-sidebar-cart__related-tab.active {
-    opacity: 1 !important;
-    font-weight: 500 !important;
-    position: relative !important;
-}
-
-.snap-sidebar-cart__related-tab.active:after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    bottom: -1px !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 2px !important;
-    background-color: #666 !important;
-}
-
-
-.snap-sidebar-cart__related-container {
+.snap-sidebar-cart__related-tabs::-webkit-scrollbar {
     display: none !important;
-    min-height: 250px !important; /* Altura mínima para evitar saltos durante las cargas */
 }
 
-.snap-sidebar-cart__related-container.active {
-    display: block !important;
+/* Slider: solo min-height para evitar saltos pero permitir scroll vertical */
+.snap-sidebar-cart__related-container,
+.swiper-wrapper,
+.snap-sidebar-cart__slider-track {
+    min-height: 240px !important;
+    height: auto !important;
+    transition: height 0.2s !important;
+}
+
+.snap-sidebar-cart__related-product {
+    min-height: 220px !important;
+    height: auto !important;
+    transition: height 0.2s !important;
 }
 
 /* SLIDER - Estilo y comportamiento con Scroll Snap */
@@ -1472,14 +1458,11 @@ body.snap-sidebar-cart-open {
     cursor: pointer !important;
     opacity: 0.8 !important;
     transition: opacity 0.3s ease !important;
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    border-radius: 50% !important;
     width: 30px !important;
     height: 30px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
 }
 
 .snap-sidebar-cart__slider-next {
@@ -1490,14 +1473,11 @@ body.snap-sidebar-cart-open {
     cursor: pointer !important;
     opacity: 0.8 !important;
     transition: opacity 0.3s ease !important;
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    border-radius: 50% !important;
     width: 30px !important;
     height: 30px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
 }
 
 .snap-sidebar-cart__slider-prev:hover,
@@ -1594,8 +1574,10 @@ body.snap-sidebar-cart-open {
 
 /* Estilos para la información del producto */
 .snap-sidebar-cart__related-product-details {
-    padding: 10px !important;
     text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 10px !important;
 }
 
 .snap-sidebar-cart__related-product-title {
@@ -1634,25 +1616,30 @@ body.snap-sidebar-cart-open {
 }
 
 .snap-sidebar-cart__related-product-regular-price {
-    font-size: 11px !important;
-    color: #666 !important;
-    opacity: 0.7 !important;
+    color: #e74c3c !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    opacity: 1 !important;
     text-decoration: line-through !important;
+    margin-right: 6px !important;
 }
 
 .snap-sidebar-cart__related-product-discount {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    color: #e3256e !important;
-    background-color: rgba(227, 37, 110, 0.1) !important;
-    padding: 1px 4px !important;
-    border-radius: 2px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #43a047 !important;
+    background: none !important;
+    margin-left: 6px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 .snap-sidebar-cart__related-product-price {
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
-    color: #333 !important;
+    color: var(--product-text-color) !important;
 }
 
 /* Control de cantidad - Uniformar tamaños */
@@ -1701,4 +1688,22 @@ body.snap-sidebar-cart-open {
     outline: none !important;
     border: none !important;
     box-shadow: none !important;
+}
+
+/* Ocultar barra de scroll horizontal en las tabs en todos los navegadores */
+.snap-sidebar-cart__related-tabs {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+.snap-sidebar-cart__related-tabs::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Testimonios debajo de las estrellas */
+.snap-sidebar-cart__related-product-ratings .review-count {
+    font-size: 8px !important;
+    color: #bdbdbd !important;
+    margin-left: 3px !important;
+    margin-top: 0 !important;
+    opacity: 1 !important;
 }

@@ -206,14 +206,18 @@ if (!$has_gallery) {
                 </div>
             <?php endif; ?>
 
-            <?php if (!empty($product_price)) : ?>
+            <?php if ($related_product->is_type('variable')) : ?>
+                <div class="snap-sidebar-cart__related-product-price-container">
+                    <span class="snap-sidebar-cart__related-product-price"><?php echo $related_product->get_price_html(); ?></span>
+                </div>
+            <?php elseif (!empty($product_price)) : ?>
                 <div class="snap-sidebar-cart__related-product-price-container">
                     <?php if ($has_discount) : ?>
                         <span class="snap-sidebar-cart__related-product-regular-price"><?php echo wc_price($regular_price); ?></span>
                         <span class="snap-sidebar-cart__related-product-price"><?php echo wc_price($sale_price); ?></span>
                         <span class="snap-sidebar-cart__related-product-discount">-<?php echo $discount_percentage; ?>%</span>
                     <?php else : ?>
-                        <span class="snap-sidebar-cart__related-product-price"><?php echo $product_price; ?></span>
+                        <span class="snap-sidebar-cart__related-product-price"><?php echo wc_price($regular_price); ?></span>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

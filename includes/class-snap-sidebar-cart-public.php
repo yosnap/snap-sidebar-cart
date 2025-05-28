@@ -442,18 +442,14 @@ class Snap_Sidebar_Cart_Public {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border: 1px solid var(--border-color);
-                background-color: #f8f8f8;
                 color: #333;
                 font-size: 18px;
                 cursor: pointer;
-                border-radius: 3px;
                 transition: all 0.2s ease;
             }
             
             .snap-sidebar-cart__slider-nav:hover {
-                background-color: var(--button-background);
-                color: var(--button-text-color);
+    
             }
             
             .snap-sidebar-cart__slider-nav.disabled {
@@ -563,7 +559,6 @@ class Snap_Sidebar_Cart_Public {
             .snap-sidebar-cart__related-product-price {
                 color: #000;
                 font-weight: bold;
-                margin-right: 8px;
             }
             
             /* Estilos para el tiempo de entrega en productos relacionados */

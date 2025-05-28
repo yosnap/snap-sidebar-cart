@@ -42,7 +42,7 @@ class Snap_Sidebar_Cart {
         
         // Inicializar el sistema de logging
         Snap_Sidebar_Cart_Logger::init();
-        Snap_Sidebar_Cart_Logger::info('Plugin inicializado - Versión ' . SNAP_SIDEBAR_CART_VERSION);
+        //Snap_Sidebar_Cart_Logger::info('Plugin inicializado - Versión ' . SNAP_SIDEBAR_CART_VERSION);
     }
 
     /**

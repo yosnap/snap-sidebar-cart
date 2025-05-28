@@ -93,6 +93,7 @@
          * Inicialización y vinculación de eventos
          */
         init: function() {
+            console.log('[SnapSidebarCart] RelatedProductsHandler.init ejecutado');
             this.bindEvents();
             this.initSlider();
         },
@@ -101,10 +102,14 @@
          * Vincula todos los eventos relacionados con productos relacionados
          */
         bindEvents: function() {
+            console.log('[SnapSidebarCart] RelatedProductsHandler.bindEvents ejecutado');
             var self = this;
             
+            // Listener global para cualquier click dentro del sidebar (debug)
+            $('.snap-sidebar-cart').off('click'); // Eliminar el listener de depuración
+
             // Cambiar de pestaña en productos relacionados
-            $(document).on('click', '.snap-sidebar-cart__related-tab', function(e) {
+            $('.snap-sidebar-cart').on('click', '.snap-sidebar-cart__related-tab', function(e) {
                 e.preventDefault();
                 var $tab = $(this);
                 var tabType = $tab.data('tab');
@@ -113,14 +118,14 @@
             });
             
             // Navegación del slider (botones prev/next)
-            $(document).on('click', '.snap-sidebar-cart__slider-prev', function(e) {
+            $('.snap-sidebar-cart').on('click', '.snap-sidebar-cart__slider-prev', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var $track = $(this).siblings('.snap-sidebar-cart__slider-track');
                 self.slideLeft($track);
             });
             
-            $(document).on('click', '.snap-sidebar-cart__slider-next', function(e) {
+            $('.snap-sidebar-cart').on('click', '.snap-sidebar-cart__slider-next', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var $track = $(this).siblings('.snap-sidebar-cart__slider-track');
@@ -199,7 +204,11 @@
          * @param {jQuery} $track - El elemento contenedor del slider
          */
         slideLeft: function($track) {
-            var scrollAmount = $track.width() * 0.8;
+            // Obtener la cantidad de slides a desplazar desde la config del backend
+            var slidesToScroll = (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.slides_to_scroll) ? parseInt(snap_sidebar_cart_params.slides_to_scroll) : 2;
+            var $item = $track.children('.snap-sidebar-cart__related-product').first();
+            var itemWidth = $item.length ? $item.outerWidth(true) : ($track.width() / 2);
+            var scrollAmount = itemWidth * slidesToScroll;
             $track.animate({
                 scrollLeft: $track.scrollLeft() - scrollAmount
             }, 300);
@@ -211,7 +220,11 @@
          * @param {jQuery} $track - El elemento contenedor del slider
          */
         slideRight: function($track) {
-            var scrollAmount = $track.width() * 0.8;
+            // Obtener la cantidad de slides a desplazar desde la config del backend
+            var slidesToScroll = (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.slides_to_scroll) ? parseInt(snap_sidebar_cart_params.slides_to_scroll) : 2;
+            var $item = $track.children('.snap-sidebar-cart__related-product').first();
+            var itemWidth = $item.length ? $item.outerWidth(true) : ($track.width() / 2);
+            var scrollAmount = itemWidth * slidesToScroll;
             $track.animate({
                 scrollLeft: $track.scrollLeft() + scrollAmount
             }, 300);
