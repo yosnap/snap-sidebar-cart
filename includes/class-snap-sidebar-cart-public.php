@@ -684,9 +684,62 @@ class Snap_Sidebar_Cart_Public {
                 50% { background-color: rgba(" . $this->hex2rgb($preloader_color) . ", 0.3); }
                 100% { background-color: transparent; }
             }
+            
+            /* Asegura que el contenedor vacío ocupe el alto restante del sidebar */
+            .snap-sidebar-cart__body {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+            }
+            .snap-sidebar-cart__products {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+            .snap-sidebar-cart__empty {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 0;
+            }
+            .snap-sidebar-cart__empty .snap-sidebar-cart__button {
+                flex: unset !important;
+            }
         ";
         
-        return $css;
+        return $css . "\n
+            /* Asegura que el contenedor vacío ocupe el alto restante del sidebar (versión reforzada) */
+            .snap-sidebar-cart__container,
+            .snap-sidebar-cart {
+                height: 100vh !important;
+                display: flex;
+                flex-direction: column;
+            }
+            .snap-sidebar-cart__body {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 0 !important;
+            }
+            .snap-sidebar-cart__products {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 0 !important;
+            }
+            .snap-sidebar-cart__empty {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 0 !important;
+            }
+        ";
     }
 
     /**
