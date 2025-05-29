@@ -110,3 +110,7 @@
 
 ## 1.2.11 - 2025-05-15
 * **Fix**: El footer del sidebar ahora aparece correctamente al agregar el primer producto al carrito sin recargar ni cerrar el sidebar. Se asegura la visibilidad dinámica vía JS tras cada actualización del carrito.
+
+## [Versión X.X.X] - YYYY-MM-DD
+* Mejora: El footer del carrito ahora permanece siempre visible y fuera del área de scroll, mejorando la experiencia de usuario en todas las posiciones (izquierda, derecha, popup).
+* Fix: El scroll solo afecta a los productos y productos relacionados, nunca al header ni al footer.

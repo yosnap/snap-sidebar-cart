@@ -17,7 +17,7 @@ $cart_count = WC()->cart->get_cart_contents_count();
 <!-- Overlay fuera del contenedor principal -->
 <div class="snap-sidebar-cart__overlay"></div>
 
-<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart">
+<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart no-animate">
     
     <div class="snap-sidebar-cart__container">
         <div class="snap-sidebar-cart__header">
@@ -88,7 +88,7 @@ $cart_count = WC()->cart->get_cart_contents_count();
             <?php endif; ?>
             
             <?php if (isset($this->options['related_products']['show']) && $this->options['related_products']['show']) : ?>
-                <div class="snap-sidebar-cart__related-section" <?php echo empty($cart_items) ? 'style="display:none;"' : ''; ?>>
+                <div class="snap-sidebar-cart__related-section" <?php echo empty($cart_items) ? 'style="display:none;"' : ''; ?> >
                     <h3 class="snap-sidebar-cart__related-title"><?php echo isset($this->options['related_products']['title']) ? esc_html($this->options['related_products']['title']) : _e('Te puede gustar', 'snap-sidebar-cart'); ?></h3>
                     
                     <div class="snap-sidebar-cart__related-header">
@@ -162,25 +162,23 @@ $cart_count = WC()->cart->get_cart_contents_count();
                     </div>
                 </div>
             <?php endif; ?>
-            
-            <div class="snap-sidebar-cart__footer">
-                <?php if (isset(
-                    $this->options['show_shipping']) && $this->options['show_shipping']) : ?>
-                    <div class="snap-sidebar-cart__shipping">
-                        <span><?php _e('Envío:', 'snap-sidebar-cart'); ?></span>
-                        <span class="snap-sidebar-cart__shipping-price"><?php echo wc_price(WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax()); ?></span>
-                    </div>
-                <?php endif; ?>
-                <div class="snap-sidebar-cart__subtotal">
-                    <span><?php _e('Subtotal (IVA incluido):', 'snap-sidebar-cart'); ?></span>
-                    <span class="snap-sidebar-cart__subtotal-price"><?php echo wc_price(WC()->cart->get_subtotal() + WC()->cart->get_subtotal_tax()); ?></span>
+        </div>
+        <!-- Mover el footer aquí, fuera del body -->
+        <div class="snap-sidebar-cart__footer">
+            <?php if (isset(
+                $this->options['show_shipping']) && $this->options['show_shipping']) : ?>
+                <div class="snap-sidebar-cart__shipping">
+                    <span><?php _e('Envío:', 'snap-sidebar-cart'); ?></span>
+                    <span class="snap-sidebar-cart__shipping-price"><?php echo wc_price(WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax()); ?></span>
                 </div>
-                <?php if (!empty($cart_items)) : ?>
-                    <div class="snap-sidebar-cart__buttons">
-                        <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart"><?php _e('Ver carrito', 'snap-sidebar-cart'); ?></a>
-                        <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="snap-sidebar-cart__button snap-sidebar-cart__button--checkout"><?php _e('Finalizar pedido', 'snap-sidebar-cart'); ?></a>
-                    </div>
-                <?php endif; ?>
+            <?php endif; ?>
+            <div class="snap-sidebar-cart__subtotal">
+                <span><?php _e('Subtotal (IVA incluido):', 'snap-sidebar-cart'); ?></span>
+                <span class="snap-sidebar-cart__subtotal-price"><?php echo wc_price(WC()->cart->get_subtotal() + WC()->cart->get_subtotal_tax()); ?></span>
+            </div>
+            <div class="snap-sidebar-cart__buttons" style="<?php echo empty($cart_items) ? 'display:none;' : ''; ?>">
+                <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="snap-sidebar-cart__button snap-sidebar-cart__button--cart"><?php _e('Ver carrito', 'snap-sidebar-cart'); ?></a>
+                <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="snap-sidebar-cart__button snap-sidebar-cart__button--checkout"><?php _e('Finalizar pedido', 'snap-sidebar-cart'); ?></a>
             </div>
         </div>
     </div>
