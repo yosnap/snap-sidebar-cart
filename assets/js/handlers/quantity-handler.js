@@ -89,6 +89,10 @@
             }
             var $product = $button.closest('.snap-sidebar-cart__product');
             $product.addClass('updating');
+            // Mostrar preloader antes de AJAX
+            if ($product.length && window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.setupAndShowLoader === 'function') {
+                window.SnapSidebarCartQuantity.setupAndShowLoader($product);
+            }
             $.ajax({
                 type: 'POST',
                 url: snap_sidebar_cart_params.ajax_url,
@@ -126,10 +130,8 @@
             });
         });
 
-        // Debounce para evitar múltiples peticiones rápidas al escribir en el input de cantidad
-        let quantityInputTimeout = null;
-
-        $('#sidebar-cart-container').on('input', 'input.cart-item__quantity-input', function() {
+        // Handler para blur en el input de cantidad
+        $('#sidebar-cart-container').on('blur', 'input.cart-item__quantity-input', function() {
             var $input = $(this);
             var $quantityWrapper = $input.closest('.quantity.buttoned-input');
             var cartItemKey = $quantityWrapper.data('key') || $input.data('key');
@@ -143,38 +145,36 @@
             }
             var $product = $input.closest('.snap-sidebar-cart__product');
             $product.addClass('updating');
-
-            // Limpiar timeout anterior
-            if (quantityInputTimeout) clearTimeout(quantityInputTimeout);
-
-            // Esperar 500ms tras el último cambio antes de enviar AJAX
-            quantityInputTimeout = setTimeout(function() {
-                $.ajax({
-                    type: 'POST',
-                    url: snap_sidebar_cart_params.ajax_url,
-                    data: {
-                        action: 'snap_sidebar_cart_update',
-                        nonce: snap_sidebar_cart_params.nonce,
-                        cart_item_key: cartItemKey,
-                        quantity: newVal
-                    },
-                    success: function(response) {
-                        if (response.success && response.data.cart_html) {
-                            actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
-                            refreshWooFragments();
-                            ajaxRefreshCartPage();
-                        } else {
-                            alert(response.data?.message || 'Error al actualizar la cantidad');
-                        }
-                    },
-                    error: function() {
-                        alert('Error de comunicación con el servidor');
-                    },
-                    complete: function() {
-                        $product.removeClass('updating');
+            // Mostrar preloader antes de AJAX
+            if ($product.length && window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.setupAndShowLoader === 'function') {
+                window.SnapSidebarCartQuantity.setupAndShowLoader($product);
+            }
+            // Enviar AJAX inmediatamente
+            $.ajax({
+                type: 'POST',
+                url: snap_sidebar_cart_params.ajax_url,
+                data: {
+                    action: 'snap_sidebar_cart_update',
+                    nonce: snap_sidebar_cart_params.nonce,
+                    cart_item_key: cartItemKey,
+                    quantity: newVal
+                },
+                success: function(response) {
+                    if (response.success && response.data.cart_html) {
+                        actualizarSidebarCartHTML(response.data.cart_html, response.data.cart_count);
+                        refreshWooFragments();
+                        ajaxRefreshCartPage();
+                    } else {
+                        alert(response.data?.message || 'Error al actualizar la cantidad');
                     }
-                });
-            }, 500);
+                },
+                error: function() {
+                    alert('Error de comunicación con el servidor');
+                },
+                complete: function() {
+                    $product.removeClass('updating');
+                }
+            });
         });
 
         // Handler para Enter en el input de cantidad
@@ -194,10 +194,12 @@
                 }
                 var $product = $input.closest('.snap-sidebar-cart__product');
                 $product.addClass('updating');
-
+                // Mostrar preloader antes de AJAX
+                if ($product.length && window.SnapSidebarCartQuantity && typeof window.SnapSidebarCartQuantity.setupAndShowLoader === 'function') {
+                    window.SnapSidebarCartQuantity.setupAndShowLoader($product);
+                }
                 // Limpiar el debounce pendiente para evitar doble petición
                 if (quantityInputTimeout) clearTimeout(quantityInputTimeout);
-
                 // Enviar AJAX inmediatamente
                 $.ajax({
                     type: 'POST',
@@ -553,7 +555,6 @@
             $spinner.css({
                 'width': '40px',
                 'height': '40px',
-                'position': 'relative',
                 'z-index': '10000'
             });
             

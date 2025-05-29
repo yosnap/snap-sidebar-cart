@@ -114,3 +114,7 @@
 ## [Versión X.X.X] - YYYY-MM-DD
 * Mejora: El footer del carrito ahora permanece siempre visible y fuera del área de scroll, mejorando la experiencia de usuario en todas las posiciones (izquierda, derecha, popup).
 * Fix: El scroll solo afecta a los productos y productos relacionados, nunca al header ni al footer.
+
+## [Unreleased]
+### Mejoras
+- El preloader de cantidad ahora solo se muestra y actualiza la cantidad cuando el usuario termina de editar (al perder el foco o presionar Enter), evitando peticiones AJAX y animaciones en cada dígito escrito manualmente.

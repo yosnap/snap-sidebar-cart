@@ -152,6 +152,9 @@ Si necesitas ayuda con el plugin, consulta primero la página de Diagnóstico in
 
 Para ver los cambios recientes de la versión 1.2.11, consulta el archivo [CHANGELOG.md](CHANGELOG.md) incluido con el plugin.
 
+## Cambios recientes
+- El preloader de cantidad ahora solo aparece y actualiza la cantidad al perder el foco o presionar Enter, evitando AJAX en cada dígito escrito manualmente.
+
 ## Licencia
 
 Snap Sidebar Cart se distribuye bajo la licencia GPL v2 o posterior.
