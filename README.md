@@ -154,6 +154,7 @@ Para ver los cambios recientes de la versión 1.2.11, consulta el archivo [CHANG
 
 ## Cambios recientes
 - El preloader de cantidad ahora solo aparece y actualiza la cantidad al perder el foco o presionar Enter, evitando AJAX en cada dígito escrito manualmente.
+- Se añadió un valor por defecto (fallback) de 300ms en todas las transiciones CSS que usan --cart-animation-duration para evitar errores si la variable no está definida o se guarda vacía desde los ajustes.
 
 ## Licencia
 

@@ -1767,15 +1767,15 @@ body.snap-sidebar-cart-open {
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.95) !important;
-  transition: opacity var(--cart-animation-duration) !important;
+  transition: opacity var(--cart-animation-duration, 300ms) !important;
   transform: var(--cart-animation-duration,300ms)!important;
   z-index: 1000000;
   background: var(--sidebar-background, #fff);
   display: none;
-  -webkit-transition: opacity var(--cart-animation-duration) !important;
-  -moz-transition: opacity var(--cart-animation-duration) !important;
-  -ms-transition: opacity var(--cart-animation-duration) !important;
-  -o-transition: opacity var(--cart-animation-duration) !important;
+  -webkit-transition: opacity var(--cart-animation-duration, 300ms) !important;
+  -moz-transition: opacity var(--cart-animation-duration, 300ms) !important;
+  -ms-transition: opacity var(--cart-animation-duration, 300ms) !important;
+  -o-transition: opacity var(--cart-animation-duration, 300ms) !important;
 }
 .snap-sidebar-cart--modal.open {
   opacity: 1;

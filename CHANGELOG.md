@@ -118,3 +118,4 @@
 ## [Unreleased]
 ### Mejoras
 - El preloader de cantidad ahora solo se muestra y actualiza la cantidad cuando el usuario termina de editar (al perder el foco o presionar Enter), evitando peticiones AJAX y animaciones en cada dígito escrito manualmente.
+- Se añade fallback (valor por defecto) de 300ms en todas las transiciones CSS que usan --cart-animation-duration para evitar errores si la variable no está definida o se guarda vacía desde los ajustes.
