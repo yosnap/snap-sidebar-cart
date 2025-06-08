@@ -225,7 +225,9 @@ class Snap_Sidebar_Cart_Public {
             // Forzar debug a true
             'debug' => true,
             // Slides a desplazar (redundante pero por compatibilidad)
-            'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2
+            'slides_to_scroll' => isset($this->options['related_products']['slides_to_scroll']) ? intval($this->options['related_products']['slides_to_scroll']) : 2,
+            'cart_position' => isset($this->options['cart_position']) ? $this->options['cart_position'] : 'right',
+            'cart_animation_duration' => isset($this->options['cart_animation_duration']) ? intval($this->options['cart_animation_duration']) : 300
         );
         
         wp_localize_script('snap-sidebar-cart-public', 'snap_sidebar_cart_params', $script_options);
@@ -265,6 +267,8 @@ class Snap_Sidebar_Cart_Public {
             $sidebar_width = '540px';
         }
         
+        $cart_animation_duration = isset($this->options['cart_animation_duration']) ? intval($this->options['cart_animation_duration']) : 300;
+        
         $css = "
             :root {
                 --animation-duration: " . $animation_duration . "ms;
@@ -279,6 +283,7 @@ class Snap_Sidebar_Cart_Public {
                 --border-color: #e5e5e5;
                 --remove-color: #e74c3c;
                 --highlight-color: #f1c40f;
+                --cart-animation-duration: " . $cart_animation_duration . "ms;
             }
             
             #" . esc_attr($this->options['container_selector']) . " {
@@ -696,7 +701,7 @@ class Snap_Sidebar_Cart_Public {
                 flex: 1 1 auto;
                 display: flex;
                 flex-direction: column;
-                min-height: 0;
+                min-height: fit-content;
             }
             .snap-sidebar-cart__empty {
                 flex: 1 1 auto;
@@ -729,7 +734,7 @@ class Snap_Sidebar_Cart_Public {
                 flex: 1 1 auto !important;
                 display: flex !important;
                 flex-direction: column !important;
-                min-height: 0 !important;
+                min-height: fit-content !important;
             }
             .snap-sidebar-cart__empty {
                 flex: 1 1 auto !important;

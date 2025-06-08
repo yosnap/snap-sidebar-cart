@@ -353,6 +353,22 @@ class Snap_Sidebar_Cart_Admin {
             'snap_sidebar_cart_animations_section'
         );
         
+        add_settings_field(
+            'snap_cart_position',
+            __('Posición del carrito', 'snap-sidebar-cart'),
+            array($this, 'cart_position_callback'),
+            'snap-sidebar-cart-settings-animations',
+            'snap_sidebar_cart_animations_section'
+        );
+        
+        add_settings_field(
+            'snap_cart_animation_duration',
+            __('Duración de animación del carrito (ms)', 'snap-sidebar-cart'),
+            array($this, 'cart_animation_duration_callback'),
+            'snap-sidebar-cart-settings-animations',
+            'snap_sidebar_cart_animations_section'
+        );
+        
         // Sección de Productos Relacionados
         add_settings_section(
             'snap_sidebar_cart_related_products_section',
@@ -701,6 +717,16 @@ class Snap_Sidebar_Cart_Admin {
         // Fusionar con las opciones existentes para preservar valores no presentes en el input
         $existing_options = get_option('snap_sidebar_cart_options', array());
         $output = array_merge($existing_options, $output);
+        
+        // Validación de posición del carrito
+        if (isset($input['cart_position']) && in_array($input['cart_position'], array('right', 'left', 'modal'))) {
+            $output['cart_position'] = $input['cart_position'];
+        }
+        
+        // Validación de duración de animación
+        if (isset($input['cart_animation_duration'])) {
+            $output['cart_animation_duration'] = max(100, min(2000, intval($input['cart_animation_duration'])));
+        }
         
         return $output;
     }
@@ -1300,6 +1326,36 @@ $args = array(
 $products = get_posts($args);
 return wp_list_pluck($products, \'ID\');</pre>';
         echo '</details>';
+    }
+
+    /**
+     * Callback para el campo de posición del carrito.
+     *
+     * @since    1.0.0
+     */
+    public function cart_position_callback() {
+        $value = isset($this->options['cart_position']) ? $this->options['cart_position'] : 'right';
+        ?>
+        <select name="snap_sidebar_cart_options[cart_position]">
+            <option value="right" <?php selected($value, 'right'); ?>><?php _e('Derecha', 'snap-sidebar-cart'); ?></option>
+            <option value="left" <?php selected($value, 'left'); ?>><?php _e('Izquierda', 'snap-sidebar-cart'); ?></option>
+            <option value="modal" <?php selected($value, 'modal'); ?>><?php _e('Modal (centro)', 'snap-sidebar-cart'); ?></option>
+        </select>
+        <p class="description"><?php _e('Selecciona dónde se mostrará el carrito lateral.', 'snap-sidebar-cart'); ?></p>
+        <?php
+    }
+
+    /**
+     * Callback para el campo de duración de animación del carrito.
+     *
+     * @since    1.0.0
+     */
+    public function cart_animation_duration_callback() {
+        $value = isset($this->options['cart_animation_duration']) ? intval($this->options['cart_animation_duration']) : 300;
+        ?>
+        <input type="number" name="snap_sidebar_cart_options[cart_animation_duration]" value="<?php echo esc_attr($value); ?>" min="100" max="2000" step="50">
+        <p class="description"><?php _e('Duración en milisegundos de la animación de entrada y salida del carrito (afecta apertura/cierre y transiciones).', 'snap-sidebar-cart'); ?></p>
+        <?php
     }
 
     /**

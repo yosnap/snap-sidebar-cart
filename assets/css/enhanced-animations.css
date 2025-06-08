@@ -4,8 +4,8 @@
 
 /* Animaciones para productos nuevos */
 .snap-sidebar-cart__product.new-item {
-    animation: fadeIn var(--animation-duration, 300ms) ease-out;
-    transform-origin: top center;
+    background-color: #ffe066 !important;
+    transition: background-color 0.5s;
 }
 
 /* Animación para cambio de cantidad */
@@ -112,8 +112,12 @@
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    transform: translateX(0) !important;
-    right: 0 !important;
+    /* transform: translateX(0); */
+    /* right: 0 !important; */
+    /* -webkit-transform: translateX(0); */
+    /* -moz-transform: translateX(0); */
+    /* -ms-transform: translateX(0); */
+    /* -o-transform: translateX(0); */
 }
 
 /* Asegurar que el overlay sea visible */
@@ -243,9 +247,9 @@ body.snap-sidebar-cart-open .snap-sidebar-cart__overlay {
 
 /* Correcciones para el overlay y visibilidad general */
 .snap-sidebar-cart {
-    transition: transform var(--animation-duration, 300ms) ease, 
+    /* transition: transform var(--animation-duration, 300ms) ease, 
                 opacity var(--animation-duration, 300ms) ease,
-                visibility var(--animation-duration, 300ms) ease;
+                visibility var(--animation-duration, 300ms) ease; */
 }
 
 .snap-sidebar-cart__overlay {
@@ -256,4 +260,22 @@ body.snap-sidebar-cart-open .snap-sidebar-cart__overlay {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 9998;
+}
+
+@keyframes fallingNewItem {
+    0% {
+        opacity: 0;
+        transform: translateY(-60px);
+        background-color: #ffe066;
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0);
+        background-color: #ffe066;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        background-color: transparent;
+    }
 }

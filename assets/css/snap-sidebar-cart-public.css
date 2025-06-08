@@ -16,6 +16,7 @@
     --border-color: #e5e5e5;
     --remove-color: #e74c3c;
     --highlight-color: #f1c40f;
+    --cart-animation-duration: 300ms;
 }
 
 /* Estilos del contenedor principal */
@@ -1706,4 +1707,82 @@ body.snap-sidebar-cart-open {
     margin-left: 3px !important;
     margin-top: 0 !important;
     opacity: 1 !important;
+}
+
+/* Sidebar derecha (por defecto) */
+.snap-sidebar-cart--right {
+  right: 0;
+  left: auto;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(100%);
+  transition: transform var(--cart-animation-duration, 300ms) cubic-bezier(0.4,0,0.2,1), opacity var(--cart-animation-duration, 300ms) !important;
+  display: none;
+}
+.snap-sidebar-cart--right.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+  display: block;
+}
+.snap-sidebar-cart--right:not(.open) {
+  display: none !important;
+}
+
+/* Sidebar izquierda */
+.snap-sidebar-cart--left {
+  left: 0;
+  right: auto;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-100%);
+  transition: transform var(--cart-animation-duration, 300ms) cubic-bezier(0.4,0,0.2,1), opacity var(--cart-animation-duration, 300ms) !important;
+  display: none;
+}
+.snap-sidebar-cart--left.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+  display: block;
+}
+.snap-sidebar-cart--left:not(.open) {
+  display: none !important;
+}
+
+/* Modal centrado */
+.snap-sidebar-cart--modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  width: var(--sidebar-width) !important;
+  /*max-width: 95vw !important;
+  */height: auto;
+  /*max-height: 90vh;
+  */border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.95) !important;
+  transition: opacity var(--cart-animation-duration) !important;
+  transform: var(--cart-animation-duration,300ms)!important;
+  z-index: 1000000;
+  background: var(--sidebar-background, #fff);
+  display: none;
+  -webkit-transition: opacity var(--cart-animation-duration) !important;
+  -moz-transition: opacity var(--cart-animation-duration) !important;
+  -ms-transition: opacity var(--cart-animation-duration) !important;
+  -o-transition: opacity var(--cart-animation-duration) !important;
+}
+.snap-sidebar-cart--modal.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1) !important;
+  display: block;
+}
+.snap-sidebar-cart--modal:not(.open) {
+  display: none !important;
 }
