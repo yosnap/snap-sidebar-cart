@@ -1718,16 +1718,16 @@ body.snap-sidebar-cart-open {
   pointer-events: none;
   transform: translateX(100%);
   transition: transform var(--cart-animation-duration, 300ms) cubic-bezier(0.4,0,0.2,1), opacity var(--cart-animation-duration, 300ms) !important;
-  display: none;
+  /* display: none; */
 }
 .snap-sidebar-cart--right.open {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);
-  display: block;
+  /* display: block; */
 }
 .snap-sidebar-cart--right:not(.open) {
-  display: none !important;
+  /* display: none !important; */
 }
 
 /* Sidebar izquierda */
@@ -1739,16 +1739,16 @@ body.snap-sidebar-cart-open {
   pointer-events: none;
   transform: translateX(-100%);
   transition: transform var(--cart-animation-duration, 300ms) cubic-bezier(0.4,0,0.2,1), opacity var(--cart-animation-duration, 300ms) !important;
-  display: none;
+  /* display: none; */
 }
 .snap-sidebar-cart--left.open {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);
-  display: block;
+  /* display: block; */
 }
 .snap-sidebar-cart--left:not(.open) {
-  display: none !important;
+  /* display: none !important; */
 }
 
 /* Modal centrado */
@@ -1759,30 +1759,28 @@ body.snap-sidebar-cart-open {
   right: auto;
   bottom: auto;
   width: var(--sidebar-width) !important;
-  /*max-width: 95vw !important;
-  */height: auto;
-  /*max-height: 90vh;
-  */border-radius: 16px;
+  /*max-width: 95vw !important;*/
+  height: auto;
+  /*max-height: 90vh;*/
+  border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.95) !important;
-  transition: opacity var(--cart-animation-duration, 300ms) !important;
-  transform: var(--cart-animation-duration,300ms)!important;
+  transition: opacity var(--cart-animation-duration, 300ms), transform var(--cart-animation-duration, 300ms) !important;
   z-index: 1000000;
   background: var(--sidebar-background, #fff);
-  display: none;
-  -webkit-transition: opacity var(--cart-animation-duration, 300ms) !important;
-  -moz-transition: opacity var(--cart-animation-duration, 300ms) !important;
-  -ms-transition: opacity var(--cart-animation-duration, 300ms) !important;
-  -o-transition: opacity var(--cart-animation-duration, 300ms) !important;
+  display: block !important;
+  -webkit-transition: opacity var(--cart-animation-duration, 300ms), transform var(--cart-animation-duration, 300ms) !important;
+  -moz-transition: opacity var(--cart-animation-duration, 300ms), transform var(--cart-animation-duration, 300ms) !important;
+  -ms-transition: opacity var(--cart-animation-duration, 300ms), transform var(--cart-animation-duration, 300ms) !important;
+  -o-transition: opacity var(--cart-animation-duration, 300ms), transform var(--cart-animation-duration, 300ms) !important;
 }
 .snap-sidebar-cart--modal.open {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1) !important;
-  display: block;
 }
 .snap-sidebar-cart--modal:not(.open) {
-  display: none !important;
+  /* display: none !important; */
 }
