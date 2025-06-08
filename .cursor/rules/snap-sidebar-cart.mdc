@@ -1,8 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: false
----
- - No crees archivos adicionales ni fixes
- - Cuando te pida hacer commmit y push, actualiza la documentación, el changelog y la versión del plugin
- 
