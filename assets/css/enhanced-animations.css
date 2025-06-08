@@ -109,7 +109,7 @@
 
 /* Asegurar que el carrito lateral sea visible cuando está abierto */
 .snap-sidebar-cart.open {
-    display: block !important;
+    /* display: block !important; */
     visibility: visible !important;
     opacity: 1 !important;
     /* transform: translateX(0); */

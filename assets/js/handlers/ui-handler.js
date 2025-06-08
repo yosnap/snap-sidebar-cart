@@ -226,6 +226,15 @@
         },
         
         /**
+         * Cierra el sidebar del carrito
+         */
+        closeSidebar: function() {
+            $('.snap-sidebar-cart').removeClass('open');
+            $('.snap-sidebar-cart__overlay').css('display', 'none');
+            $('body').removeClass('snap-sidebar-cart-open');
+        },
+        
+        /**
          * Actualiza los botones del carrito según haya productos o no
          * 
          * @param {number} cartCount - Número de productos en el carrito

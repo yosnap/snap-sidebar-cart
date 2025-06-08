@@ -368,6 +368,11 @@
       "--animation-delay": quantityUpdateDelay + "ms"
     });
 
+    // Actualizar la variable CSS de duración de animación del carrito según los ajustes
+    if (typeof snap_sidebar_cart_params !== 'undefined' && snap_sidebar_cart_params.cart_animation_duration) {
+      document.documentElement.style.setProperty('--cart-animation-duration', snap_sidebar_cart_params.cart_animation_duration + 'ms');
+    }
+
     // Selector específico para los elementos que activan el carrito lateral
     $('body').on(
       "click",

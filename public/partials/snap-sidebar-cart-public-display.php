@@ -12,12 +12,15 @@ if (!function_exists('WC') || !WC()->cart) {
 
 // Obtener el conteo actual de items en el carrito
 $cart_count = WC()->cart->get_cart_contents_count();
+
+$cart_position = isset($this->options['cart_position']) ? $this->options['cart_position'] : 'right';
+$sidebar_position_class = 'snap-sidebar-cart--' . $cart_position;
 ?>
 
 <!-- Overlay fuera del contenedor principal -->
 <div class="snap-sidebar-cart__overlay"></div>
 
-<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart no-animate">
+<div id="<?php echo esc_attr($this->options['container_selector']); ?>" class="snap-sidebar-cart no-animate <?php echo esc_attr($sidebar_position_class); ?>">
     
     <div class="snap-sidebar-cart__container">
         <div class="snap-sidebar-cart__header">
